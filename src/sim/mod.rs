@@ -74,3 +74,70 @@ impl<P: Planet> System<6> for TranslationalEquations<P> {
         );
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::f32::consts::PI;
+
+    use nalgebra::vector;
+
+    use super::*;
+    use crate::sim::integration::runge_kutta::RK4;
+    use crate::sim::integration::Integrator;
+    use crate::sim::planet::SPHERICAL_EARTH;
+
+    #[test]
+    fn circular_orbit() {
+        let r: f32 = 7000e3;
+        // v^2 = mu / r
+        let v = f32::sqrt(SPHERICAL_EARTH.mu / r);
+        // T = 2 PI * sqrt(r^3 / mu)
+        let period = 2. * PI * f32::sqrt(r.powi(3) / SPHERICAL_EARTH.mu);
+
+        let mut system =
+            TranslationalEquations::new(0., vector![r, 0., 0., 0., v, 0.], SPHERICAL_EARTH);
+
+        while system.time < period {
+            RK4.step(&mut system, 10.);
+            assert!(
+                (system.position().norm() - 7000e3 < 10e3),
+                "Distance from planet should always be 7000 km but is: {:.0} km",
+                system.position().norm() / 1000.
+            );
+            assert_eq!(
+                system.position()[2],
+                0.,
+                "Third entry in position should always be 0, but is: {} km",
+                system.position()[2]
+            );
+            assert_eq!(
+                system.velocity()[2],
+                0.,
+                "Third entry in velocity should always be 0, but is: {} km",
+                system.velocity()[2]
+            );
+        }
+
+        assert!(
+            (system.position()[0] - 7000e3).abs() < 10e3,
+            "First entry in position should be roughly 7000 km after full orbit, but is: {:.0} km",
+            system.position()[0] / 1000.
+        );
+        assert!(
+            system.position()[1].abs() < 50e3,
+            "Second entry in position should be roughly 0 km after full orbit, but is: {:.0} km",
+            system.position()[1] / 1000.
+        );
+        assert!(
+            system.velocity()[0].abs() < 10e3,
+            "Second entry in position should be roughly 0 m/s after full orbit, but is: {:.0} km",
+            system.velocity()[0]
+        );
+        assert!(
+            (system.velocity()[1] - v).abs() < 10.,
+            "First entry in position should be roughly {:.0} m/s after full orbit, but is: {:.0} km",
+            v,
+            system.position()[0]
+        );
+    }
+}
