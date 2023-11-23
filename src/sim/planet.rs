@@ -1,7 +1,8 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.11.23
-// Last modified by Tibor Völcker on 18.11.23
+// Last modified by Tibor Völcker on 23.11.23
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
+use crate::sim::utils::*;
 use nalgebra::Vector3;
 
 pub trait Planet {
@@ -29,7 +30,11 @@ impl Planet for SphericalPlanet {
     }
 }
 
-pub const SPHERICAL_EARTH: SphericalPlanet = SphericalPlanet::new(6378165.9, 3.986032e14);
+// [1] IV-1
+pub const SPHERICAL_EARTH: SphericalPlanet = SphericalPlanet::new(
+    2.0925741e7 * METER_PER_FOOT,
+    1.4076539e16 * CUBIC_METER_PER_CUBIC_FOOT,
+);
 
 #[cfg(test)]
 mod tests {

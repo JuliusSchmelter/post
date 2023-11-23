@@ -6,6 +6,7 @@ use nalgebra::{SVector, Vector3, Vector6};
 
 pub mod integration;
 pub mod planet;
+pub mod utils;
 
 use planet::Planet;
 
