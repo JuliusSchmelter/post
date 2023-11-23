@@ -1,8 +1,6 @@
-/*
- * Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
- * Last modified by Tibor Völcker on 18.11.23
- * Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
- */
+// Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
+// Last modified by Tibor Völcker on 18.11.23
+// Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{matrix, vector, SMatrix, SVector};
 
