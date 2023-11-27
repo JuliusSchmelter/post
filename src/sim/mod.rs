@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 18.11.23
+// Last modified by Tibor Völcker on 27.11.23
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{SVector, Vector3, Vector6};
@@ -22,15 +22,15 @@ pub trait System<const D: usize> {
     fn set_time(&mut self, time: f32);
 }
 
-pub struct TranslationalEquations<P: Planet> {
+pub struct TranslationalEquations {
     time: f32,
     // state = [position, velocity]
     state: Vector6<f32>,
-    planet: P,
+    planet: Planet,
 }
 
-impl<P: Planet> TranslationalEquations<P> {
-    pub fn new(time: f32, state: Vector6<f32>, planet: P) -> Self {
+impl TranslationalEquations {
+    pub fn new(time: f32, state: Vector6<f32>, planet: Planet) -> Self {
         return TranslationalEquations {
             time,
             state,
@@ -47,7 +47,7 @@ impl<P: Planet> TranslationalEquations<P> {
     }
 }
 
-impl<P: Planet> System<6> for TranslationalEquations<P> {
+impl System<6> for TranslationalEquations {
     fn get_time(&self) -> f32 {
         return self.time;
     }
@@ -90,9 +90,9 @@ mod tests {
     fn circular_orbit() {
         let r: f32 = 7000e3;
         // v^2 = mu / r
-        let v = f32::sqrt(SPHERICAL_EARTH.mu / r);
+        let v = f32::sqrt(SPHERICAL_EARTH.mu() / r);
         // T = 2 PI * sqrt(r^3 / mu)
-        let period = 2. * PI * f32::sqrt(r.powi(3) / SPHERICAL_EARTH.mu);
+        let period = 2. * PI * f32::sqrt(r.powi(3) / SPHERICAL_EARTH.mu());
 
         let mut system =
             TranslationalEquations::new(0., vector![r, 0., 0., 0., v, 0.], SPHERICAL_EARTH);
