@@ -2,18 +2,20 @@
 // Last modified by Tibor Völcker on 27.11.23
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
-use nalgebra::{SVector, Vector3, Vector6};
+use nalgebra::{SVector, Vector6};
 
 pub mod integration;
 pub mod planet;
 pub mod utils;
+pub mod vehicle;
 
 use planet::Planet;
+use vehicle::Vehicle;
 
 pub trait System<const D: usize> {
     fn system(&self, time: f32, state: &SVector<f32, D>) -> SVector<f32, D>;
 
-    fn get_state(&self) -> &SVector<f32, D>;
+    fn get_state(&self) -> SVector<f32, D>;
 
     fn get_time(&self) -> f32;
 
@@ -24,26 +26,17 @@ pub trait System<const D: usize> {
 
 pub struct TranslationalEquations {
     time: f32,
-    // state = [position, velocity]
-    state: Vector6<f32>,
+    vehicle: Vehicle,
     planet: Planet,
 }
 
 impl TranslationalEquations {
-    pub fn new(time: f32, state: Vector6<f32>, planet: Planet) -> Self {
+    pub fn new(vehicle: Vehicle, planet: Planet) -> Self {
         return TranslationalEquations {
-            time,
-            state,
+            time: 0.,
+            vehicle,
             planet,
         };
-    }
-
-    pub fn position(&self) -> Vector3<f32> {
-        self.state.fixed_rows::<3>(0).into()
-    }
-
-    pub fn velocity(&self) -> Vector3<f32> {
-        self.state.fixed_rows::<3>(3).into()
     }
 }
 
@@ -52,11 +45,18 @@ impl System<6> for TranslationalEquations {
         return self.time;
     }
 
-    fn get_state(&self) -> &Vector6<f32> {
-        return &self.state;
+    fn get_state(&self) -> Vector6<f32> {
+        return Vector6::from_row_slice(
+            &[
+                self.vehicle.position.as_slice(),
+                self.vehicle.velocity.as_slice(),
+            ]
+            .concat(),
+        );
     }
     fn set_state(&mut self, state: Vector6<f32>) {
-        self.state = state;
+        self.vehicle.position = state.fixed_rows::<3>(0).into();
+        self.vehicle.velocity = state.fixed_rows::<3>(3).into();
     }
 
     fn set_time(&mut self, time: f32) {
@@ -94,50 +94,54 @@ mod tests {
         // T = 2 PI * sqrt(r^3 / mu)
         let period = 2. * PI * f32::sqrt(r.powi(3) / EARTH_SPHERICAL.mu());
 
-        let mut system =
-            TranslationalEquations::new(0., vector![r, 0., 0., 0., v, 0.], EARTH_SPHERICAL);
+        let mut system = TranslationalEquations::new(Vehicle::new(10e3, vec![]), EARTH_SPHERICAL);
+        system.vehicle.position = vector![r, 0., 0.];
+        system.vehicle.velocity = vector![0., v, 0.];
 
         while system.time < period {
             RK4.step(&mut system, 10.);
+            println!(
+                "Time: {:.0}\nPosition: {:.0}\nVelocity: {:.0}",
+                system.time, system.vehicle.position, system.vehicle.velocity
+            );
             assert!(
-                (system.position().norm() - 7000e3 < 10e3),
-                "Distance from planet should always be 7000 km but is: {:.0} km",
-                system.position().norm() / 1000.
+                (system.vehicle.position.norm() - 7000e3 < 10e3),
+                "Distance from planet should always be 7000 km but is: {:.0} km (Time: {})",
+                system.vehicle.position.norm() / 1000.,
+                system.time
             );
             assert_eq!(
-                system.position()[2],
-                0.,
-                "Third entry in position should always be 0, but is: {} km",
-                system.position()[2]
+                system.vehicle.position[2], 0.,
+                "Third entry in position should always be 0, but is: {} km (Time: {})",
+                system.vehicle.position[2], system.time
             );
             assert_eq!(
-                system.velocity()[2],
-                0.,
-                "Third entry in velocity should always be 0, but is: {} km",
-                system.velocity()[2]
+                system.vehicle.velocity[2], 0.,
+                "Third entry in velocity should always be 0, but is: {} km (Time: {})",
+                system.vehicle.velocity[2], system.time
             );
         }
 
         assert!(
-            (system.position()[0] - 7000e3).abs() < 10e3,
+            (system.vehicle.position[0] - 7000e3).abs() < 10e3,
             "First entry in position should be roughly 7000 km after full orbit, but is: {:.0} km",
-            system.position()[0] / 1000.
+            system.vehicle.position[0] / 1000.
         );
         assert!(
-            system.position()[1].abs() < 50e3,
+            system.vehicle.position[1].abs() < 50e3,
             "Second entry in position should be roughly 0 km after full orbit, but is: {:.0} km",
-            system.position()[1] / 1000.
+            system.vehicle.position[1] / 1000.
         );
         assert!(
-            system.velocity()[0].abs() < 10e3,
+            system.vehicle.velocity[0].abs() < 10e3,
             "Second entry in position should be roughly 0 m/s after full orbit, but is: {:.0} km",
-            system.velocity()[0]
+            system.vehicle.velocity[0]
         );
         assert!(
-            (system.velocity()[1] - v).abs() < 10.,
+            (system.vehicle.velocity[1] - v).abs() < 10.,
             "First entry in position should be roughly {:.0} m/s after full orbit, but is: {:.0} km",
             v,
-            system.position()[0]
+            system.vehicle.position[0]
         );
     }
 }
