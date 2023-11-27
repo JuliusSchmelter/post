@@ -43,11 +43,32 @@ impl Planet {
     }
 }
 
-pub const SPHERICAL_EARTH: Planet = Planet {
+pub const EARTH_SPHERICAL: Planet = Planet {
     equatorial_radius: 2.0925741e7 * METER_PER_FOOT,
     polar_radius: 2.0925741e7 * METER_PER_FOOT,
     // [mu, J_2, J_3, J_4]
     gravitational_parameters: [1.4076539e16 * CUBIC_METER_PER_CUBIC_FOOT, 0., 0., 0.],
+    rotation_rate: 7.29211e-5,
+};
+
+pub const EARTH_FISHER_1960: Planet = Planet {
+    equatorial_radius: 2.0925741e7 * METER_PER_FOOT,
+    polar_radius: 2.0855590 * METER_PER_FOOT,
+    // [mu, J_2, J_3, J_4]
+    gravitational_parameters: [1.4076539e16 * CUBIC_METER_PER_CUBIC_FOOT, 1.0823e-3, 0., 0.],
+    rotation_rate: 7.29211e-5,
+};
+
+pub const EARTH_SMITHSONIAN: Planet = Planet {
+    equatorial_radius: 2.0925741e7 * METER_PER_FOOT,
+    polar_radius: 2.0855590 * METER_PER_FOOT,
+    // [mu, J_2, J_3, J_4]
+    gravitational_parameters: [
+        1.407645794e16 * CUBIC_METER_PER_CUBIC_FOOT,
+        1.082639e-3,
+        -2.565e-6,
+        -1.608e-6,
+    ],
     rotation_rate: 7.29211e-5,
 };
 
@@ -62,19 +83,19 @@ mod tests {
         // test that gravity everywhere at the surface is 9.80
         let vec = vector![6378165.9, 0., 0.];
         assert!(
-            (SPHERICAL_EARTH.gravity(vec).norm() - 9.8).abs() < 0.01,
+            (EARTH_SPHERICAL.gravity(vec).norm() - 9.8).abs() < 0.01,
             "Gravity at {:.0} is not roughly 9.80, but '{:.2}'",
             vec,
-            SPHERICAL_EARTH.gravity(vec).norm()
+            EARTH_SPHERICAL.gravity(vec).norm()
         );
 
         let vec = vector![4510044.4, 4510044.4, 0.];
-        let acc = SPHERICAL_EARTH.gravity(vec);
+        let acc = EARTH_SPHERICAL.gravity(vec);
         assert!(
             acc.norm() - 9.8 < 0.01,
             "Gravity at {:.0} is not roughly 9.80, but {:.2}",
             vec,
-            SPHERICAL_EARTH.gravity(vec).norm()
+            EARTH_SPHERICAL.gravity(vec).norm()
         );
         assert!(
             acc[0] < 0.,
@@ -96,10 +117,10 @@ mod tests {
 
         let vec = vector![0., 0., 6378165.9];
         assert!(
-            SPHERICAL_EARTH.gravity(vec).norm() - 9.8 < 0.01,
+            EARTH_SPHERICAL.gravity(vec).norm() - 9.8 < 0.01,
             "Gravity at {:.0} is not roughly 9.80, but {:.2}",
             vec,
-            SPHERICAL_EARTH.gravity(vec).norm()
+            EARTH_SPHERICAL.gravity(vec).norm()
         );
     }
 }

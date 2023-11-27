@@ -84,18 +84,18 @@ mod tests {
     use super::*;
     use crate::sim::integration::runge_kutta::RK4;
     use crate::sim::integration::Integrator;
-    use crate::sim::planet::SPHERICAL_EARTH;
+    use crate::sim::planet::EARTH_SPHERICAL;
 
     #[test]
     fn circular_orbit() {
         let r: f32 = 7000e3;
         // v^2 = mu / r
-        let v = f32::sqrt(SPHERICAL_EARTH.mu() / r);
+        let v = f32::sqrt(EARTH_SPHERICAL.mu() / r);
         // T = 2 PI * sqrt(r^3 / mu)
-        let period = 2. * PI * f32::sqrt(r.powi(3) / SPHERICAL_EARTH.mu());
+        let period = 2. * PI * f32::sqrt(r.powi(3) / EARTH_SPHERICAL.mu());
 
         let mut system =
-            TranslationalEquations::new(0., vector![r, 0., 0., 0., v, 0.], SPHERICAL_EARTH);
+            TranslationalEquations::new(0., vector![r, 0., 0., 0., v, 0.], EARTH_SPHERICAL);
 
         while system.time < period {
             RK4.step(&mut system, 10.);
