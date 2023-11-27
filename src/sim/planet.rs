@@ -5,14 +5,60 @@
 use crate::sim::utils::*;
 use nalgebra::{vector, Vector3};
 
+use super::atmosphere::Atmosphere;
+
 pub struct Planet {
     equatorial_radius: f32,
     polar_radius: f32,
     gravitational_parameters: [f32; 4],
     rotation_rate: f32,
+    atmosphere: Option<Atmosphere>,
 }
 
 impl Planet {
+    pub fn earth_spherical(atmosphere: Option<Atmosphere>) -> Self {
+        return Self {
+            equatorial_radius: 2.0925741e7 * METER_PER_FOOT,
+            polar_radius: 2.0925741e7 * METER_PER_FOOT,
+            // [mu, J_2, J_3, J_4]
+            gravitational_parameters: [1.4076539e16 * CUBIC_METER_PER_CUBIC_FOOT, 0., 0., 0.],
+            rotation_rate: 7.29211e-5,
+            atmosphere,
+        };
+    }
+
+    pub fn earth_fisher_1960(atmosphere: Option<Atmosphere>) -> Self {
+        return Self {
+            equatorial_radius: 2.0925741e7 * METER_PER_FOOT,
+            polar_radius: 2.0855590 * METER_PER_FOOT,
+            // [mu, J_2, J_3, J_4]
+            gravitational_parameters: [
+                1.4076539e16 * CUBIC_METER_PER_CUBIC_FOOT,
+                1.0823e-3,
+                0.,
+                0.,
+            ],
+            rotation_rate: 7.29211e-5,
+            atmosphere,
+        };
+    }
+
+    pub fn earth_smithsonian(atmosphere: Option<Atmosphere>) -> Self {
+        return Self {
+            equatorial_radius: 2.0925741e7 * METER_PER_FOOT,
+            polar_radius: 2.0855590 * METER_PER_FOOT,
+            // [mu, J_2, J_3, J_4]
+            gravitational_parameters: [
+                1.407645794e16 * CUBIC_METER_PER_CUBIC_FOOT,
+                1.082639e-3,
+                -2.565e-6,
+                -1.608e-6,
+            ],
+            rotation_rate: 7.29211e-5,
+            atmosphere,
+        };
+    }
+
     pub fn gravity(&self, position: Vector3<f32>) -> Vector3<f32> {
         let r: f32 = position.norm();
         let R = self.equatorial_radius / r;
@@ -43,35 +89,6 @@ impl Planet {
     }
 }
 
-pub const EARTH_SPHERICAL: Planet = Planet {
-    equatorial_radius: 2.0925741e7 * METER_PER_FOOT,
-    polar_radius: 2.0925741e7 * METER_PER_FOOT,
-    // [mu, J_2, J_3, J_4]
-    gravitational_parameters: [1.4076539e16 * CUBIC_METER_PER_CUBIC_FOOT, 0., 0., 0.],
-    rotation_rate: 7.29211e-5,
-};
-
-pub const EARTH_FISHER_1960: Planet = Planet {
-    equatorial_radius: 2.0925741e7 * METER_PER_FOOT,
-    polar_radius: 2.0855590 * METER_PER_FOOT,
-    // [mu, J_2, J_3, J_4]
-    gravitational_parameters: [1.4076539e16 * CUBIC_METER_PER_CUBIC_FOOT, 1.0823e-3, 0., 0.],
-    rotation_rate: 7.29211e-5,
-};
-
-pub const EARTH_SMITHSONIAN: Planet = Planet {
-    equatorial_radius: 2.0925741e7 * METER_PER_FOOT,
-    polar_radius: 2.0855590 * METER_PER_FOOT,
-    // [mu, J_2, J_3, J_4]
-    gravitational_parameters: [
-        1.407645794e16 * CUBIC_METER_PER_CUBIC_FOOT,
-        1.082639e-3,
-        -2.565e-6,
-        -1.608e-6,
-    ],
-    rotation_rate: 7.29211e-5,
-};
-
 #[cfg(test)]
 mod tests {
     use nalgebra::vector;
@@ -82,20 +99,21 @@ mod tests {
     fn spherical_earth() {
         // test that gravity everywhere at the surface is 9.80
         let vec = vector![6378165.9, 0., 0.];
+        let planet = Planet::earth_spherical(None);
         assert!(
-            (EARTH_SPHERICAL.gravity(vec).norm() - 9.8).abs() < 0.01,
+            (planet.gravity(vec).norm() - 9.8).abs() < 0.01,
             "Gravity at {:.0} is not roughly 9.80, but '{:.2}'",
             vec,
-            EARTH_SPHERICAL.gravity(vec).norm()
+            planet.gravity(vec).norm()
         );
 
         let vec = vector![4510044.4, 4510044.4, 0.];
-        let acc = EARTH_SPHERICAL.gravity(vec);
+        let acc = planet.gravity(vec);
         assert!(
             acc.norm() - 9.8 < 0.01,
             "Gravity at {:.0} is not roughly 9.80, but {:.2}",
             vec,
-            EARTH_SPHERICAL.gravity(vec).norm()
+            planet.gravity(vec).norm()
         );
         assert!(
             acc[0] < 0.,
@@ -117,10 +135,10 @@ mod tests {
 
         let vec = vector![0., 0., 6378165.9];
         assert!(
-            EARTH_SPHERICAL.gravity(vec).norm() - 9.8 < 0.01,
+            planet.gravity(vec).norm() - 9.8 < 0.01,
             "Gravity at {:.0} is not roughly 9.80, but {:.2}",
             vec,
-            EARTH_SPHERICAL.gravity(vec).norm()
+            planet.gravity(vec).norm()
         );
     }
 }

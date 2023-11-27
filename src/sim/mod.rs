@@ -4,6 +4,7 @@
 
 use nalgebra::{SVector, Vector6};
 
+pub mod atmosphere;
 pub mod integration;
 pub mod planet;
 pub mod utils;
@@ -84,17 +85,17 @@ mod tests {
     use super::*;
     use crate::sim::integration::runge_kutta::RK4;
     use crate::sim::integration::Integrator;
-    use crate::sim::planet::EARTH_SPHERICAL;
 
     #[test]
     fn circular_orbit() {
+        let planet = Planet::earth_spherical(None);
         let r: f32 = 7000e3;
         // v^2 = mu / r
-        let v = f32::sqrt(EARTH_SPHERICAL.mu() / r);
+        let v = f32::sqrt(planet.mu() / r);
         // T = 2 PI * sqrt(r^3 / mu)
-        let period = 2. * PI * f32::sqrt(r.powi(3) / EARTH_SPHERICAL.mu());
+        let period = 2. * PI * f32::sqrt(r.powi(3) / planet.mu());
 
-        let mut system = TranslationalEquations::new(Vehicle::new(10e3, vec![]), EARTH_SPHERICAL);
+        let mut system = TranslationalEquations::new(Vehicle::new(10e3, vec![]), planet);
         system.vehicle.position = vector![r, 0., 0.];
         system.vehicle.velocity = vector![0., v, 0.];
 
