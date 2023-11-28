@@ -98,16 +98,16 @@ mod tests {
 
         #[test]
         fn equatorial_x() {
-            // test that gravity everywhere at the surface is 9.80
-            let vec = vector![6378165.9, 0., 0.];
             let planet = Planet::earth_spherical(None);
+            let vec = vector![planet.equatorial_radius, 0., 0.];
             assert_almost_eq!(planet.gravity(vec).norm(), 9.798, 0.0005);
         }
 
         #[test]
         fn equatorial_xy() {
             let planet = Planet::earth_spherical(None);
-            let vec = vector![4510044.4, 4510044.4, 0.];
+            let r = f32::sqrt(planet.equatorial_radius.powi(2) / 2.);
+            let vec = vector![r, r, 0.];
             let acc = planet.gravity(vec);
             assert_almost_eq!(acc.norm(), 9.798, 0.0005);
             assert_lt!(acc[0], 0.);
@@ -118,7 +118,7 @@ mod tests {
         #[test]
         fn polar() {
             let planet = Planet::earth_spherical(None);
-            let vec = vector![0., 0., 6378165.9];
+            let vec = vector![0., 0., planet.polar_radius];
             assert_almost_eq!(planet.gravity(vec).norm(), 9.798, 0.0005);
         }
     }
