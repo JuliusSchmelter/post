@@ -30,7 +30,7 @@ impl Planet {
     pub fn earth_fisher_1960(atmosphere: Option<Atmosphere>) -> Self {
         return Self {
             equatorial_radius: 2.0925741e7 * METER_PER_FOOT,
-            polar_radius: 2.0855590 * METER_PER_FOOT,
+            polar_radius: 2.0855590e7 * METER_PER_FOOT,
             // [mu, J_2, J_3, J_4]
             gravitational_parameters: [
                 1.4076539e16 * CUBIC_METER_PER_CUBIC_FOOT,
@@ -46,7 +46,7 @@ impl Planet {
     pub fn earth_smithsonian(atmosphere: Option<Atmosphere>) -> Self {
         return Self {
             equatorial_radius: 2.0925741e7 * METER_PER_FOOT,
-            polar_radius: 2.0855590 * METER_PER_FOOT,
+            polar_radius: 2.0855590e7 * METER_PER_FOOT,
             // [mu, J_2, J_3, J_4]
             gravitational_parameters: [
                 1.407645794e16 * CUBIC_METER_PER_CUBIC_FOOT,
