@@ -59,6 +59,7 @@ impl Planet {
         };
     }
 
+    #[allow(non_snake_case)]
     pub fn gravity(&self, position: Vector3<f32>) -> Vector3<f32> {
         let r: f32 = position.norm();
         let R = self.equatorial_radius / r;
