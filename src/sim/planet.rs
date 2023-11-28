@@ -166,4 +166,42 @@ mod tests {
             assert_almost_eq!(2. * PI / planet.rotation_rate, 86164., 0.5);
         }
     }
+
+    mod smithsonian {
+        use super::super::*;
+        use crate::assert_almost_eq;
+        use nalgebra::vector;
+        use std::f32::consts::PI;
+
+        #[test]
+        fn equatorial_x() {
+            let planet = Planet::earth_smithsonian(None);
+            let vec = vector![planet.equatorial_radius, 0., 0.];
+            assert_almost_eq!(planet.gravity(vec).norm(), 9.814, 0.0005);
+        }
+
+        #[test]
+        fn equatorial_xy() {
+            let planet = Planet::earth_smithsonian(None);
+            let r = f32::sqrt(planet.equatorial_radius.powi(2) / 2.);
+            let vec = vector![r, r, 0.];
+            let acc = planet.gravity(vec);
+            assert_almost_eq!(acc[0], -f32::sqrt(9.814_f32.powi(2) / 2.), 0.0005);
+            assert_almost_eq!(acc[1], -f32::sqrt(9.814_f32.powi(2) / 2.), 0.0005);
+            assert_ne!(acc[2], 0.);
+        }
+
+        #[test]
+        fn polar() {
+            let planet = Planet::earth_smithsonian(None);
+            let vec = vector![0., 0., planet.polar_radius];
+            assert_almost_eq!(planet.gravity(vec).norm(), 9.832, 0.0005);
+        }
+
+        #[test]
+        fn sidereal_day() {
+            let planet = Planet::earth_smithsonian(None);
+            assert_almost_eq!(2. * PI / planet.rotation_rate, 86164., 0.5);
+        }
+    }
 }
