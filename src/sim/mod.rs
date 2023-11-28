@@ -14,19 +14,19 @@ use planet::Planet;
 use vehicle::Vehicle;
 
 pub trait System<const D: usize> {
-    fn system(&self, time: f32, state: &SVector<f32, D>) -> SVector<f32, D>;
+    fn system(&self, time: f64, state: &SVector<f64, D>) -> SVector<f64, D>;
 
-    fn get_state(&self) -> SVector<f32, D>;
+    fn get_state(&self) -> SVector<f64, D>;
 
-    fn get_time(&self) -> f32;
+    fn get_time(&self) -> f64;
 
-    fn set_state(&mut self, state: SVector<f32, D>);
+    fn set_state(&mut self, state: SVector<f64, D>);
 
-    fn set_time(&mut self, time: f32);
+    fn set_time(&mut self, time: f64);
 }
 
 pub struct TranslationalEquations {
-    time: f32,
+    time: f64,
     vehicle: Vehicle,
     planet: Planet,
 }
@@ -42,11 +42,11 @@ impl TranslationalEquations {
 }
 
 impl System<6> for TranslationalEquations {
-    fn get_time(&self) -> f32 {
+    fn get_time(&self) -> f64 {
         return self.time;
     }
 
-    fn get_state(&self) -> Vector6<f32> {
+    fn get_state(&self) -> Vector6<f64> {
         return Vector6::from_row_slice(
             &[
                 self.vehicle.position.as_slice(),
@@ -55,16 +55,16 @@ impl System<6> for TranslationalEquations {
             .concat(),
         );
     }
-    fn set_state(&mut self, state: Vector6<f32>) {
+    fn set_state(&mut self, state: Vector6<f64>) {
         self.vehicle.position = state.fixed_rows::<3>(0).into();
         self.vehicle.velocity = state.fixed_rows::<3>(3).into();
     }
 
-    fn set_time(&mut self, time: f32) {
+    fn set_time(&mut self, time: f64) {
         self.time = time;
     }
 
-    fn system(&self, time: f32, state: &Vector6<f32>) -> Vector6<f32> {
+    fn system(&self, time: f64, state: &Vector6<f64>) -> Vector6<f64> {
         // r_dot_I = V_I
         // V_dot_I = [IB]^-1 [A_TB + A_AB] + G_I
 
@@ -83,16 +83,16 @@ mod tests {
     use crate::sim::integration::runge_kutta::RK4;
     use crate::sim::integration::Integrator;
     use nalgebra::vector;
-    use std::f32::consts::PI;
+    use std::f64::consts::PI;
 
     #[test]
     fn circular_orbit() {
         let planet = Planet::earth_spherical(None);
-        let r: f32 = 7000e3;
+        let r: f64 = 7000e3;
         // v^2 = mu / r
-        let v = f32::sqrt(planet.mu() / r);
+        let v = f64::sqrt(planet.mu() / r);
         // T = 2 PI * sqrt(r^3 / mu)
-        let period = 2. * PI * f32::sqrt(r.powi(3) / planet.mu());
+        let period = 2. * PI * f64::sqrt(r.powi(3) / planet.mu());
 
         let mut system = TranslationalEquations::new(Vehicle::new(10e3, vec![]), planet);
         system.vehicle.position = vector![r, 0., 0.];

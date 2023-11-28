@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 27.11.23
+// Last modified by Tibor Völcker on 28.11.23
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use crate::sim::utils::*;
@@ -13,7 +13,7 @@ pub enum Atmosphere {
 }
 
 impl Atmosphere {
-    fn temperature(&self, alt: f32) -> f32 {
+    fn temperature(&self, alt: f64) -> f64 {
         match self {
             Self::StandardAtmosphere1962 => {
                 // T = T_B + L_B * (H_g - H_B)
@@ -24,7 +24,7 @@ impl Atmosphere {
         }
     }
 
-    fn pressure(&self, alt: f32) -> f32 {
+    fn pressure(&self, alt: f64) -> f64 {
         match self {
             Self::StandardAtmosphere1962 => {
                 // P = P_B * (T_B / T) exp[(g_0*M_0/R*) / L_B] if L_B != 0
@@ -36,10 +36,10 @@ impl Atmosphere {
                 if base_temp_gradient != 0. {
                     return base_pressure
                         * (base_temperature / temperature)
-                        * f32::exp((STD_GRAVITY / AIR_GAS_CONSTANT) / base_temp_gradient);
+                        * f64::exp((STD_GRAVITY / AIR_GAS_CONSTANT) / base_temp_gradient);
                 } else {
                     return base_pressure
-                        * f32::exp(
+                        * f64::exp(
                             -(STD_GRAVITY / AIR_GAS_CONSTANT) * (alt - base_altitude)
                                 / base_temperature,
                         );
@@ -48,17 +48,17 @@ impl Atmosphere {
         }
     }
 
-    fn density(&self, alt: f32) -> f32 {
+    fn density(&self, alt: f64) -> f64 {
         // rho = (M_0/R*) * P / T
         let temperature = self.temperature(alt);
         let pressure = self.pressure(alt);
         return pressure / (temperature * AIR_GAS_CONSTANT);
     }
 
-    fn speed_of_sound(&self, alt: f32) -> f32 {
+    fn speed_of_sound(&self, alt: f64) -> f64 {
         // C_s = (gamma*R*/M_0)^0.5 * T^0.5
         let temperature = self.temperature(alt);
-        return f32::sqrt(AIR_KAPPA * AIR_GAS_CONSTANT * temperature);
+        return f64::sqrt(AIR_KAPPA * AIR_GAS_CONSTANT * temperature);
     }
 }
 

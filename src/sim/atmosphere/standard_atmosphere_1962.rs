@@ -1,10 +1,10 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 27.11.23
+// Last modified by Tibor Völcker on 28.11.23
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use crate::sim::utils::*;
 
-pub fn get_table_row(geopotational_alt: f32) -> (f32, f32, f32, f32) {
+pub fn get_table_row(geopotational_alt: f64) -> (f64, f64, f64, f64) {
     for i in 1..STD_ATMOS_TABLE.len() {
         if STD_ATMOS_TABLE[i].0 > geopotational_alt {
             return STD_ATMOS_TABLE[i - 1];
@@ -14,7 +14,7 @@ pub fn get_table_row(geopotational_alt: f32) -> (f32, f32, f32, f32) {
 }
 
 // TABLE DATA
-const STD_ATMOS_TABLE: [(f32, f32, f32, f32); 22] = [
+const STD_ATMOS_TABLE: [(f64, f64, f64, f64); 22] = [
     // [H_B, P_B, T_B, L_B]
     (
         0.0 * METER_PER_FOOT,

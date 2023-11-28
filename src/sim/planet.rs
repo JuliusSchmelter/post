@@ -8,10 +8,10 @@ use nalgebra::{vector, Vector3};
 use super::atmosphere::Atmosphere;
 
 pub struct Planet {
-    equatorial_radius: f32,
-    polar_radius: f32,
-    gravitational_parameters: [f32; 4],
-    rotation_rate: f32,
+    equatorial_radius: f64,
+    polar_radius: f64,
+    gravitational_parameters: [f64; 4],
+    rotation_rate: f64,
     atmosphere: Option<Atmosphere>,
 }
 
@@ -60,8 +60,8 @@ impl Planet {
     }
 
     #[allow(non_snake_case)]
-    pub fn gravity(&self, position: Vector3<f32>) -> Vector3<f32> {
-        let r: f32 = position.norm();
+    pub fn gravity(&self, position: Vector3<f64>) -> Vector3<f64> {
+        let r: f64 = position.norm();
         let R = self.equatorial_radius / r;
         let Z = position.z / r;
         let J = 3. / 2. * self.gravitational_parameters[1];
@@ -85,7 +85,7 @@ impl Planet {
         ];
     }
 
-    pub fn mu(&self) -> f32 {
+    pub fn mu(&self) -> f64 {
         return self.gravitational_parameters[0];
     }
 }
@@ -96,7 +96,7 @@ mod tests {
         use super::super::*;
         use crate::assert_almost_eq;
         use nalgebra::vector;
-        use std::f32::consts::PI;
+        use std::f64::consts::PI;
 
         #[test]
         fn equatorial_x() {
@@ -108,11 +108,11 @@ mod tests {
         #[test]
         fn equatorial_xy() {
             let planet = Planet::earth_spherical(None);
-            let r = f32::sqrt(planet.equatorial_radius.powi(2) / 2.);
+            let r = f64::sqrt(planet.equatorial_radius.powi(2) / 2.);
             let vec = vector![r, r, 0.];
             let acc = planet.gravity(vec);
-            assert_almost_eq!(acc[0], -f32::sqrt(9.798_f32.powi(2) / 2.), 0.0005);
-            assert_almost_eq!(acc[1], -f32::sqrt(9.798_f32.powi(2) / 2.), 0.0005);
+            assert_almost_eq!(acc[0], -f64::sqrt(9.798_f64.powi(2) / 2.), 0.0005);
+            assert_almost_eq!(acc[1], -f64::sqrt(9.798_f64.powi(2) / 2.), 0.0005);
             assert_eq!(acc[2], 0.);
         }
 
@@ -134,7 +134,7 @@ mod tests {
         use super::super::*;
         use crate::assert_almost_eq;
         use nalgebra::vector;
-        use std::f32::consts::PI;
+        use std::f64::consts::PI;
 
         #[test]
         fn equatorial_x() {
@@ -146,11 +146,11 @@ mod tests {
         #[test]
         fn equatorial_xy() {
             let planet = Planet::earth_fisher_1960(None);
-            let r = f32::sqrt(planet.equatorial_radius.powi(2) / 2.);
+            let r = f64::sqrt(planet.equatorial_radius.powi(2) / 2.);
             let vec = vector![r, r, 0.];
             let acc = planet.gravity(vec);
-            assert_almost_eq!(acc[0], -f32::sqrt(9.814_f32.powi(2) / 2.), 0.0005);
-            assert_almost_eq!(acc[1], -f32::sqrt(9.814_f32.powi(2) / 2.), 0.0005);
+            assert_almost_eq!(acc[0], -f64::sqrt(9.814_f64.powi(2) / 2.), 0.0005);
+            assert_almost_eq!(acc[1], -f64::sqrt(9.814_f64.powi(2) / 2.), 0.0005);
             assert_eq!(acc[2], 0.);
         }
 
@@ -172,7 +172,7 @@ mod tests {
         use super::super::*;
         use crate::assert_almost_eq;
         use nalgebra::vector;
-        use std::f32::consts::PI;
+        use std::f64::consts::PI;
 
         #[test]
         fn equatorial_x() {
@@ -184,11 +184,11 @@ mod tests {
         #[test]
         fn equatorial_xy() {
             let planet = Planet::earth_smithsonian(None);
-            let r = f32::sqrt(planet.equatorial_radius.powi(2) / 2.);
+            let r = f64::sqrt(planet.equatorial_radius.powi(2) / 2.);
             let vec = vector![r, r, 0.];
             let acc = planet.gravity(vec);
-            assert_almost_eq!(acc[0], -f32::sqrt(9.814_f32.powi(2) / 2.), 0.0005);
-            assert_almost_eq!(acc[1], -f32::sqrt(9.814_f32.powi(2) / 2.), 0.0005);
+            assert_almost_eq!(acc[0], -f64::sqrt(9.814_f64.powi(2) / 2.), 0.0005);
+            assert_almost_eq!(acc[1], -f64::sqrt(9.814_f64.powi(2) / 2.), 0.0005);
             assert_ne!(acc[2], 0.);
         }
 
