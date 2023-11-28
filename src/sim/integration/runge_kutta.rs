@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 27.11.23
+// Last modified by Tibor Völcker on 28.11.23
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{matrix, vector, SMatrix, SVector};
@@ -59,11 +59,10 @@ pub const RK4: RungeKutta<4> = RungeKutta::new(
 
 #[cfg(test)]
 mod tests {
-    use nalgebra::Vector2;
-
-    use crate::sim::System;
-
     use super::*;
+    use crate::assert_lt;
+    use crate::sim::System;
+    use nalgebra::Vector2;
 
     pub struct Example {
         time: f32,
@@ -141,10 +140,7 @@ mod tests {
 
         println!("Avg. Error={avg_err:.2e}");
 
-        assert!(
-            avg_err < 5e-2,
-            "Average error is too big ({avg_err:.2e} > 5e-2)"
-        )
+        assert_lt!(avg_err, 5e-2);
     }
 
     #[test]
@@ -159,9 +155,6 @@ mod tests {
         }
         avg_err = avg_err / 41.;
 
-        assert!(
-            avg_err < 5e-5,
-            "Average error is too big ({avg_err:.2e} > 5e-5)"
-        )
+        assert_lt!(avg_err, 5e-5);
     }
 }

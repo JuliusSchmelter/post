@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 27.11.23
+// Last modified by Tibor Völcker on 28.11.23
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{SVector, Vector6};
@@ -78,13 +78,12 @@ impl System<6> for TranslationalEquations {
 
 #[cfg(test)]
 mod tests {
-    use std::f32::consts::PI;
-
-    use nalgebra::vector;
-
     use super::*;
+    use crate::assert_almost_eq;
     use crate::sim::integration::runge_kutta::RK4;
     use crate::sim::integration::Integrator;
+    use nalgebra::vector;
+    use std::f32::consts::PI;
 
     #[test]
     fn circular_orbit() {
@@ -105,44 +104,14 @@ mod tests {
                 "Time: {:.0}\nPosition: {:.0}\nVelocity: {:.0}",
                 system.time, system.vehicle.position, system.vehicle.velocity
             );
-            assert!(
-                (system.vehicle.position.norm() - 7000e3 < 10e3),
-                "Distance from planet should always be 7000 km but is: {:.0} km (Time: {})",
-                system.vehicle.position.norm() / 1000.,
-                system.time
-            );
-            assert_eq!(
-                system.vehicle.position[2], 0.,
-                "Third entry in position should always be 0, but is: {} km (Time: {})",
-                system.vehicle.position[2], system.time
-            );
-            assert_eq!(
-                system.vehicle.velocity[2], 0.,
-                "Third entry in velocity should always be 0, but is: {} km (Time: {})",
-                system.vehicle.velocity[2], system.time
-            );
+            assert_almost_eq!(system.vehicle.position.norm(), 7000e3, 10e3);
+            assert_eq!(system.vehicle.position[2], 0.);
+            assert_eq!(system.vehicle.velocity[2], 0.);
         }
 
-        assert!(
-            (system.vehicle.position[0] - 7000e3).abs() < 10e3,
-            "First entry in position should be roughly 7000 km after full orbit, but is: {:.0} km",
-            system.vehicle.position[0] / 1000.
-        );
-        assert!(
-            system.vehicle.position[1].abs() < 50e3,
-            "Second entry in position should be roughly 0 km after full orbit, but is: {:.0} km",
-            system.vehicle.position[1] / 1000.
-        );
-        assert!(
-            system.vehicle.velocity[0].abs() < 10e3,
-            "Second entry in position should be roughly 0 m/s after full orbit, but is: {:.0} km",
-            system.vehicle.velocity[0]
-        );
-        assert!(
-            (system.vehicle.velocity[1] - v).abs() < 10.,
-            "First entry in position should be roughly {:.0} m/s after full orbit, but is: {:.0} km",
-            v,
-            system.vehicle.position[0]
-        );
+        assert_almost_eq!(system.vehicle.position[0], 7000e3, 10e3);
+        assert_almost_eq!(system.vehicle.position[1].abs(), 0., 50e3);
+        assert_almost_eq!(system.vehicle.velocity[0].abs(), 0., 10e3);
+        assert_almost_eq!(system.vehicle.velocity[1], v, 10.);
     }
 }

@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 27.11.23
+// Last modified by Tibor Völcker on 28.11.23
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 pub const METER_PER_FOOT: f32 = 12. * 25.4 / 1000.;
@@ -17,3 +17,23 @@ const AIR_MOLECULAR_WEIGHT: f32 = 28.9644;
 const GAS_CONSTANT: f32 = 8.31432e3;
 pub const AIR_KAPPA: f32 = 1.40;
 pub const AIR_GAS_CONSTANT: f32 = GAS_CONSTANT / AIR_MOLECULAR_WEIGHT;
+
+#[macro_export]
+macro_rules! assert_lt {
+    ($left: expr, $right: expr) => {
+        assert!($left < $right, "assertion `left < right` failed\n  left: {}\n right: {}", $left, $right);
+    };
+    ($left: expr, $right: expr, $($arg:tt)+) => {
+        assert!($left < $right, $($arg)*);
+    };
+}
+
+#[macro_export]
+macro_rules! assert_almost_eq {
+    ($left: expr, $right: expr, $eps: expr) => {
+        assert!(($left - $right as f32).abs() < $eps, "assertion `left ≈ right` failed\n    left: {}\n   right: {}\n epsilon: {}", $left, $right, $eps);
+    };
+    ($left: expr, $right: expr, $eps: expr, $($arg:tt)+) => {
+        assert!(($left - $right as f32).abs() < $eps, $($arg)*);
+    };
+}
