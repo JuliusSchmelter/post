@@ -129,4 +129,43 @@ mod tests {
             assert_almost_eq!(2. * PI / planet.rotation_rate, 86164., 0.5);
         }
     }
+
+    mod oblate {
+        use super::super::*;
+        use crate::{assert_almost_eq, assert_lt};
+        use nalgebra::vector;
+        use std::f32::consts::PI;
+
+        #[test]
+        fn equatorial_x() {
+            let planet = Planet::earth_fisher_1960(None);
+            let vec = vector![planet.equatorial_radius, 0., 0.];
+            assert_almost_eq!(planet.gravity(vec).norm(), 9.814, 0.0005);
+        }
+
+        #[test]
+        fn equatorial_xy() {
+            let planet = Planet::earth_fisher_1960(None);
+            let r = f32::sqrt(planet.equatorial_radius.powi(2) / 2.);
+            let vec = vector![r, r, 0.];
+            let acc = planet.gravity(vec);
+            assert_almost_eq!(acc.norm(), 9.814, 0.0005);
+            assert_lt!(acc[0], 0.);
+            assert_lt!(acc[1], 0.);
+            assert_eq!(acc[2], 0.);
+        }
+
+        #[test]
+        fn polar() {
+            let planet = Planet::earth_fisher_1960(None);
+            let vec = vector![0., 0., planet.polar_radius];
+            assert_almost_eq!(planet.gravity(vec).norm(), 9.832, 0.0005);
+        }
+
+        #[test]
+        fn sidereal_day() {
+            let planet = Planet::earth_fisher_1960(None);
+            assert_almost_eq!(2. * PI / planet.rotation_rate, 86164., 0.5);
+        }
+    }
 }
