@@ -39,7 +39,7 @@ impl<const D: usize> Integrator for RungeKutta<D> {
         // See [1] p. VI-12
         // y_n+1 = y_n + SUM[b_i * k_i]
         // This could be done in one loop, but would be less readable
-        let new_state = system.get_state().clone()
+        let new_state = system.get_state()
             + (0..D)
                 .map(|i| self.b[i] * k.column(i))
                 .sum::<SVector<f64, R>>();
@@ -72,29 +72,29 @@ mod tests {
 
     impl Example {
         pub fn new() -> Self {
-            return Self {
+            Self {
                 time: 0.,
                 state: Vector2::new(-0.5, 0.5),
-            };
+            }
         }
 
         fn solution(&self) -> Vector2<f64> {
             // x = 1/3*t^3 + t^2 + t - 0.5e^t
             // y = t^2 + 2t + 1 - 0.5e^t
-            return vector![
+            vector![
                 1. / 3. * self.time.powi(3) + self.time.powi(2) + self.time - 0.5 * self.time.exp(),
                 self.time.powi(2) + 2. * self.time + 1. - 0.5 * self.time.exp()
-            ];
+            ]
         }
     }
 
     impl System<2> for Example {
         fn get_time(&self) -> f64 {
-            return self.time;
+            self.time
         }
 
         fn get_state(&self) -> Vector2<f64> {
-            return self.state;
+            self.state
         }
         fn set_state(&mut self, state: Vector2<f64>) {
             self.state = state;
@@ -107,7 +107,7 @@ mod tests {
         fn system(&self, time: f64, state: &Vector2<f64>) -> Vector2<f64> {
             // x' = y
             // y' = y - t^2 + 1
-            return vector![state.y, (state.y - time.powi(2) + 1.)];
+            vector![state.y, (state.y - time.powi(2) + 1.)]
         }
     }
 
@@ -136,7 +136,7 @@ mod tests {
                 err[1]
             );
         }
-        avg_err = avg_err / 9.;
+        avg_err /= 9.;
 
         println!("Avg. Error={avg_err:.2e}");
 
@@ -153,7 +153,7 @@ mod tests {
             let err = (example.solution() - example.state).abs();
             avg_err += err.norm();
         }
-        avg_err = avg_err / 41.;
+        avg_err /= 41.;
 
         assert_lt!(avg_err, 5e-5);
     }

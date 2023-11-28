@@ -19,7 +19,7 @@ impl Atmosphere {
                 // T = T_B + L_B * (H_g - H_B)
                 let (base_altitude, _, base_temperature, base_temp_gradient) = get_table_row(alt);
 
-                return base_temperature + base_temp_gradient * (alt - base_altitude);
+                base_temperature + base_temp_gradient * (alt - base_altitude)
             }
         }
     }
@@ -34,15 +34,15 @@ impl Atmosphere {
                 let temperature = self.temperature(alt);
 
                 if base_temp_gradient != 0. {
-                    return base_pressure
+                    base_pressure
                         * (base_temperature / temperature)
-                        * f64::exp((STD_GRAVITY / AIR_GAS_CONSTANT) / base_temp_gradient);
+                        * f64::exp((STD_GRAVITY / AIR_GAS_CONSTANT) / base_temp_gradient)
                 } else {
-                    return base_pressure
+                    base_pressure
                         * f64::exp(
                             -(STD_GRAVITY / AIR_GAS_CONSTANT) * (alt - base_altitude)
                                 / base_temperature,
-                        );
+                        )
                 }
             }
         }
@@ -52,13 +52,13 @@ impl Atmosphere {
         // rho = (M_0/R*) * P / T
         let temperature = self.temperature(alt);
         let pressure = self.pressure(alt);
-        return pressure / (temperature * AIR_GAS_CONSTANT);
+        pressure / (temperature * AIR_GAS_CONSTANT)
     }
 
     fn speed_of_sound(&self, alt: f64) -> f64 {
         // C_s = (gamma*R*/M_0)^0.5 * T^0.5
         let temperature = self.temperature(alt);
-        return f64::sqrt(AIR_KAPPA * AIR_GAS_CONSTANT * temperature);
+        f64::sqrt(AIR_KAPPA * AIR_GAS_CONSTANT * temperature)
     }
 }
 

@@ -41,20 +41,20 @@ pub struct Engine {
 
 impl Engine {
     pub fn new(incidence: [f64; 2], thrust_vac: f64, exit_area: f64) -> Self {
-        return Self {
+        Self {
             incidence,
             throttle: 1.,
             thrust_vac,
             exit_area,
-        };
+        }
     }
 
     fn thrust(&self, pressure_atmos: f64) -> Vector3<f64> {
-        return vector![
+        vector![
             self.incidence[1].cos() * self.incidence[0].cos(),
             self.incidence[1].sin(),
             self.incidence[1].cos() * self.incidence[0].sin()
-        ] * (self.throttle * self.thrust_vac - self.exit_area * pressure_atmos);
+        ] * (self.throttle * self.thrust_vac - self.exit_area * pressure_atmos)
     }
 }
 

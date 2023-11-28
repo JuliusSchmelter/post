@@ -33,17 +33,17 @@ pub struct TranslationalEquations {
 
 impl TranslationalEquations {
     pub fn new(vehicle: Vehicle, planet: Planet) -> Self {
-        return TranslationalEquations {
+        TranslationalEquations {
             time: 0.,
             vehicle,
             planet,
-        };
+        }
     }
 }
 
 impl System<6> for TranslationalEquations {
     fn get_time(&self) -> f64 {
-        return self.time;
+        self.time
     }
 
     fn get_state(&self) -> Vector6<f64> {
@@ -64,7 +64,7 @@ impl System<6> for TranslationalEquations {
         self.time = time;
     }
 
-    fn system(&self, time: f64, state: &Vector6<f64>) -> Vector6<f64> {
+    fn system(&self, _time: f64, state: &Vector6<f64>) -> Vector6<f64> {
         // r_dot_I = V_I
         // V_dot_I = [IB]^-1 [A_TB + A_AB] + G_I
 

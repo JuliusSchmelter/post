@@ -17,18 +17,18 @@ pub struct Planet {
 
 impl Planet {
     pub fn earth_spherical(atmosphere: Option<Atmosphere>) -> Self {
-        return Self {
+        Self {
             equatorial_radius: 2.0925741e7 * METER_PER_FOOT,
             polar_radius: 2.0925741e7 * METER_PER_FOOT,
             // [mu, J_2, J_3, J_4]
             gravitational_parameters: [1.4076539e16 * CUBIC_METER_PER_CUBIC_FOOT, 0., 0., 0.],
             rotation_rate: 7.29211e-5,
             atmosphere,
-        };
+        }
     }
 
     pub fn earth_fisher_1960(atmosphere: Option<Atmosphere>) -> Self {
-        return Self {
+        Self {
             equatorial_radius: 2.0925741e7 * METER_PER_FOOT,
             polar_radius: 2.0855590e7 * METER_PER_FOOT,
             // [mu, J_2, J_3, J_4]
@@ -40,11 +40,11 @@ impl Planet {
             ],
             rotation_rate: 7.29211e-5,
             atmosphere,
-        };
+        }
     }
 
     pub fn earth_smithsonian(atmosphere: Option<Atmosphere>) -> Self {
-        return Self {
+        Self {
             equatorial_radius: 2.0925741e7 * METER_PER_FOOT,
             polar_radius: 2.0855590e7 * METER_PER_FOOT,
             // [mu, J_2, J_3, J_4]
@@ -56,7 +56,7 @@ impl Planet {
             ],
             rotation_rate: 7.29211e-5,
             atmosphere,
-        };
+        }
     }
 
     #[allow(non_snake_case)]
@@ -72,7 +72,7 @@ impl Planet {
             + H * R.powi(3) / r * (3. - 7. * Z.powi(2)) * position.z
             + D * R.powi(4) * (9. * Z.powi(4) - 6. * Z.powi(2) + 3. / 7.);
 
-        return vector![
+        vector![
             -self.mu() * position.x / r.powi(3) * P,
             -self.mu() * position.y / r.powi(3) * P,
             -self.mu() / r.powi(3)
@@ -82,11 +82,11 @@ impl Planet {
                             - 7. * position.z.powi(2) * Z.powi(2)
                             - 3. / 5. * r.powi(2))
                     + D * R.powi(4) * (15. / 7. - 10. * Z.powi(2) + 9. * Z.powi(4)) * position.z)
-        ];
+        ]
     }
 
     pub fn mu(&self) -> f64 {
-        return self.gravitational_parameters[0];
+        self.gravitational_parameters[0]
     }
 }
 

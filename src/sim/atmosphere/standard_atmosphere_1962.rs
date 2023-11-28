@@ -10,7 +10,7 @@ pub fn get_table_row(geopotational_alt: f64) -> (f64, f64, f64, f64) {
             return STD_ATMOS_TABLE[i - 1];
         }
     }
-    return STD_ATMOS_TABLE[STD_ATMOS_TABLE.len()];
+    STD_ATMOS_TABLE[STD_ATMOS_TABLE.len()]
 }
 
 // TABLE DATA
