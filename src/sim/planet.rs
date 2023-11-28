@@ -93,7 +93,7 @@ impl Planet {
 mod tests {
     mod spherical {
         use super::super::*;
-        use crate::{assert_almost_eq, assert_lt};
+        use crate::assert_almost_eq;
         use nalgebra::vector;
         use std::f32::consts::PI;
 
@@ -110,9 +110,8 @@ mod tests {
             let r = f32::sqrt(planet.equatorial_radius.powi(2) / 2.);
             let vec = vector![r, r, 0.];
             let acc = planet.gravity(vec);
-            assert_almost_eq!(acc.norm(), 9.798, 0.0005);
-            assert_lt!(acc[0], 0.);
-            assert_lt!(acc[1], 0.);
+            assert_almost_eq!(acc[0], -f32::sqrt(9.798_f32.powi(2) / 2.), 0.0005);
+            assert_almost_eq!(acc[1], -f32::sqrt(9.798_f32.powi(2) / 2.), 0.0005);
             assert_eq!(acc[2], 0.);
         }
 
@@ -132,7 +131,7 @@ mod tests {
 
     mod oblate {
         use super::super::*;
-        use crate::{assert_almost_eq, assert_lt};
+        use crate::assert_almost_eq;
         use nalgebra::vector;
         use std::f32::consts::PI;
 
@@ -149,9 +148,8 @@ mod tests {
             let r = f32::sqrt(planet.equatorial_radius.powi(2) / 2.);
             let vec = vector![r, r, 0.];
             let acc = planet.gravity(vec);
-            assert_almost_eq!(acc.norm(), 9.814, 0.0005);
-            assert_lt!(acc[0], 0.);
-            assert_lt!(acc[1], 0.);
+            assert_almost_eq!(acc[0], -f32::sqrt(9.814_f32.powi(2) / 2.), 0.0005);
+            assert_almost_eq!(acc[1], -f32::sqrt(9.814_f32.powi(2) / 2.), 0.0005);
             assert_eq!(acc[2], 0.);
         }
 
