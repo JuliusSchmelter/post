@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.11.23
-// Last modified by Tibor Völcker on 27.11.23
+// Last modified by Tibor Völcker on 28.11.23
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use crate::sim::utils::*;
@@ -91,54 +91,63 @@ impl Planet {
 
 #[cfg(test)]
 mod tests {
-    use nalgebra::vector;
+    mod spherical {
+        use super::super::*;
+        use nalgebra::vector;
 
-    use super::*;
+        #[test]
+        fn equatorial_x() {
+            // test that gravity everywhere at the surface is 9.80
+            let vec = vector![6378165.9, 0., 0.];
+            let planet = Planet::earth_spherical(None);
+            assert!(
+                (planet.gravity(vec).norm() - 9.8).abs() < 0.01,
+                "Gravity at {:.0} is not roughly 9.80, but '{:.2}'",
+                vec,
+                planet.gravity(vec).norm()
+            );
+        }
 
-    #[test]
-    fn spherical_earth() {
-        // test that gravity everywhere at the surface is 9.80
-        let vec = vector![6378165.9, 0., 0.];
-        let planet = Planet::earth_spherical(None);
-        assert!(
-            (planet.gravity(vec).norm() - 9.8).abs() < 0.01,
-            "Gravity at {:.0} is not roughly 9.80, but '{:.2}'",
-            vec,
-            planet.gravity(vec).norm()
-        );
+        #[test]
+        fn equatorial_xy() {
+            let planet = Planet::earth_spherical(None);
+            let vec = vector![4510044.4, 4510044.4, 0.];
+            let acc = planet.gravity(vec);
+            assert!(
+                acc.norm() - 9.8 < 0.01,
+                "Gravity at {:.0} is not roughly 9.80, but {:.2}",
+                vec,
+                planet.gravity(vec).norm()
+            );
+            assert!(
+                acc[0] < 0.,
+                "Gravity at {:.0} has wrong entry at position 0: {:.3} (should be < 0)",
+                vec,
+                acc[0]
+            );
+            assert!(
+                acc[1] < 0.,
+                "Gravity at {:.0} has wrong entry at position 1: {:.3} (should be < 0)",
+                vec,
+                acc[1]
+            );
+            assert_eq!(
+                acc[2], 0.,
+                "Gravity at {:.0} has wrong entry at position 2: {:.3} (should be 0)",
+                vec, acc[2]
+            );
+        }
 
-        let vec = vector![4510044.4, 4510044.4, 0.];
-        let acc = planet.gravity(vec);
-        assert!(
-            acc.norm() - 9.8 < 0.01,
-            "Gravity at {:.0} is not roughly 9.80, but {:.2}",
-            vec,
-            planet.gravity(vec).norm()
-        );
-        assert!(
-            acc[0] < 0.,
-            "Gravity at {:.0} has wrong entry at position 0: {:.3} (should be < 0)",
-            vec,
-            acc[0]
-        );
-        assert!(
-            acc[1] < 0.,
-            "Gravity at {:.0} has wrong entry at position 1: {:.3} (should be < 0)",
-            vec,
-            acc[1]
-        );
-        assert_eq!(
-            acc[2], 0.,
-            "Gravity at {:.0} has wrong entry at position 2: {:.3} (should be 0)",
-            vec, acc[2]
-        );
-
-        let vec = vector![0., 0., 6378165.9];
-        assert!(
-            planet.gravity(vec).norm() - 9.8 < 0.01,
-            "Gravity at {:.0} is not roughly 9.80, but {:.2}",
-            vec,
-            planet.gravity(vec).norm()
-        );
+        #[test]
+        fn polar() {
+            let planet = Planet::earth_spherical(None);
+            let vec = vector![0., 0., 6378165.9];
+            assert!(
+                planet.gravity(vec).norm() - 9.8 < 0.01,
+                "Gravity at {:.0} is not roughly 9.80, but {:.2}",
+                vec,
+                planet.gravity(vec).norm()
+            );
+        }
     }
 }
