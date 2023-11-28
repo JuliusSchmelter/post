@@ -95,6 +95,7 @@ mod tests {
         use super::super::*;
         use crate::{assert_almost_eq, assert_lt};
         use nalgebra::vector;
+        use std::f32::consts::PI;
 
         #[test]
         fn equatorial_x() {
@@ -120,6 +121,12 @@ mod tests {
             let planet = Planet::earth_spherical(None);
             let vec = vector![0., 0., planet.polar_radius];
             assert_almost_eq!(planet.gravity(vec).norm(), 9.798, 0.0005);
+        }
+
+        #[test]
+        fn sidereal_day() {
+            let planet = Planet::earth_fisher_1960(None);
+            assert_almost_eq!(2. * PI / planet.rotation_rate, 86164., 0.5);
         }
     }
 }
