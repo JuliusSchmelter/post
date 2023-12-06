@@ -7,14 +7,16 @@
 
 use nalgebra::{SVector, Vector6};
 
-pub mod atmosphere;
+mod atmosphere;
 pub mod integration;
-pub mod planet;
-pub mod utils;
-pub mod vehicle;
+mod planet;
+mod utils;
+mod vehicle;
 
-use planet::Planet;
-use vehicle::Vehicle;
+pub use atmosphere::Atmosphere;
+pub use integration::Integrator;
+pub use planet::Planet;
+pub use vehicle::Vehicle;
 
 pub trait System<const D: usize> {
     fn system(&self, time: f64, state: &SVector<f64, D>) -> SVector<f64, D>;

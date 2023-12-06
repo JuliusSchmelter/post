@@ -3,9 +3,8 @@
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use crate::utils::*;
+use crate::Atmosphere;
 use nalgebra::{vector, Vector3};
-
-use super::atmosphere::Atmosphere;
 
 pub struct Planet {
     equatorial_radius: f64,

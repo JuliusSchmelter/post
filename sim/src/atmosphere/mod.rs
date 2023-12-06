@@ -4,8 +4,6 @@
 
 use crate::utils::*;
 
-use self::standard_atmosphere_1962::get_table_row;
-
 mod standard_atmosphere_1962;
 
 pub enum Atmosphere {
@@ -17,7 +15,8 @@ impl Atmosphere {
         match self {
             Self::StandardAtmosphere1962 => {
                 // T = T_B + L_B * (H_g - H_B)
-                let (base_altitude, _, base_temperature, base_temp_gradient) = get_table_row(alt);
+                let (base_altitude, _, base_temperature, base_temp_gradient) =
+                    standard_atmosphere_1962::get_table_row(alt);
 
                 base_temperature + base_temp_gradient * (alt - base_altitude)
             }
@@ -30,7 +29,7 @@ impl Atmosphere {
                 // P = P_B * (T_B / T) exp[(g_0*M_0/R*) / L_B] if L_B != 0
                 // P = P_B exp[-(g_0*M_0/R*) * (H - H_B) / T_B] if L_B = 0
                 let (base_altitude, base_pressure, base_temperature, base_temp_gradient) =
-                    get_table_row(alt);
+                    standard_atmosphere_1962::get_table_row(alt);
                 let temperature = self.temperature(alt);
 
                 if base_temp_gradient != 0. {
