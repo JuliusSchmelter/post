@@ -1,8 +1,8 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 28.11.23
+// Last modified by Tibor Völcker on 06.12.23
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
-use crate::sim::utils::*;
+use crate::utils::*;
 
 pub fn get_table_row(geopotational_alt: f64) -> (f64, f64, f64, f64) {
     for i in 1..STD_ATMOS_TABLE.len() {

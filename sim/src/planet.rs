@@ -1,8 +1,8 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.11.23
-// Last modified by Tibor Völcker on 28.11.23
+// Last modified by Tibor Völcker on 06.12.23
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
-use crate::sim::utils::*;
+use crate::utils::*;
 use nalgebra::{vector, Vector3};
 
 use super::atmosphere::Atmosphere;

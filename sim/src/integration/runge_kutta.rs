@@ -1,7 +1,8 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 28.11.23
+// Last modified by Tibor Völcker on 06.12.23
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
+use crate::System;
 use nalgebra::{matrix, vector, SMatrix, SVector};
 
 use super::Integrator;
@@ -19,7 +20,7 @@ impl<const D: usize> RungeKutta<D> {
 }
 
 impl<const D: usize> Integrator for RungeKutta<D> {
-    fn step<const R: usize>(&self, system: &mut impl crate::sim::System<R>, stepsize: f64) {
+    fn step<const R: usize>(&self, system: &mut impl System<R>, stepsize: f64) {
         let mut k = SMatrix::<f64, R, D>::zeros();
 
         for i in 0..D {
@@ -61,7 +62,7 @@ pub const RK4: RungeKutta<4> = RungeKutta::new(
 mod tests {
     use super::*;
     use crate::assert_lt;
-    use crate::sim::System;
+    use crate::System;
     use nalgebra::Vector2;
 
     pub struct Example {

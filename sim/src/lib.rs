@@ -1,6 +1,9 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 28.11.23
+// Last modified by Tibor Völcker on 06.12.23
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
+
+// allow dead code for now, as it's still WIP
+#![allow(dead_code)]
 
 use nalgebra::{SVector, Vector6};
 
@@ -80,8 +83,8 @@ impl System<6> for TranslationalEquations {
 mod tests {
     use super::*;
     use crate::assert_almost_eq;
-    use crate::sim::integration::runge_kutta::RK4;
-    use crate::sim::integration::Integrator;
+    use crate::integration::runge_kutta::RK4;
+    use crate::integration::Integrator;
     use nalgebra::vector;
     use std::f64::consts::PI;
 
