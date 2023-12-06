@@ -11,7 +11,7 @@ mod atmosphere;
 pub mod integration;
 mod planet;
 mod utils;
-mod vehicle;
+pub mod vehicle;
 
 pub use atmosphere::Atmosphere;
 pub use integration::Integrator;

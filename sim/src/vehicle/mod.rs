@@ -3,21 +3,28 @@
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{vector, Vector3};
+pub use steering::{Angular, Steering};
+
+mod steering;
 
 pub struct Vehicle {
+    pub attitude: Vector3<f64>,
     pub position: Vector3<f64>,
     pub velocity: Vector3<f64>,
     mass: f64,
     engines: Vec<Engine>,
+    steering: Steering,
 }
 
 impl Vehicle {
-    pub fn new(mass: f64, engines: Vec<Engine>) -> Self {
+    pub fn new(mass: f64, engines: Vec<Engine>, steering: Steering) -> Self {
         Self {
+            attitude: vector![0., 0., 0.],
             position: vector![0., 0., 0.],
             velocity: vector![0., 0., 0.],
             mass,
             engines,
+            steering,
         }
     }
 

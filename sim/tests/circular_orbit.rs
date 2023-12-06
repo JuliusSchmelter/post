@@ -4,13 +4,18 @@
 
 use nalgebra::vector;
 use sim::integration::RK4;
+use sim::vehicle::{Angular, Steering};
 use sim::*;
 use std::f64::consts::PI;
 
 #[test]
 fn circular_orbit() {
     let planet = Planet::earth_spherical(None);
-    let vehicle = Vehicle::new(10e3, vec![]);
+    let vehicle = Vehicle::new(
+        10e3,
+        vec![],
+        Steering::Angular(Angular::Polynomials(vector![0., 0., 0., 0.])),
+    );
     let r: f64 = 7000e3;
     // v^2 = mu / r
     let v = f64::sqrt(planet.mu() / r);
