@@ -29,9 +29,9 @@ pub trait System<const D: usize> {
 }
 
 pub struct TranslationalEquations {
-    time: f64,
-    vehicle: Vehicle,
-    planet: Planet,
+    pub time: f64,
+    pub vehicle: Vehicle,
+    pub planet: Planet,
 }
 
 impl TranslationalEquations {
@@ -76,45 +76,5 @@ impl System<6> for TranslationalEquations {
         return Vector6::from_row_slice(
             &[state.fixed_rows::<3>(3).as_slice(), gravity.as_slice()].concat(),
         );
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::assert_almost_eq;
-    use crate::integration::runge_kutta::RK4;
-    use crate::integration::Integrator;
-    use nalgebra::vector;
-    use std::f64::consts::PI;
-
-    #[test]
-    fn circular_orbit() {
-        let planet = Planet::earth_spherical(None);
-        let r: f64 = 7000e3;
-        // v^2 = mu / r
-        let v = f64::sqrt(planet.mu() / r);
-        // T = 2 PI * sqrt(r^3 / mu)
-        let period = 2. * PI * f64::sqrt(r.powi(3) / planet.mu());
-
-        let mut system = TranslationalEquations::new(Vehicle::new(10e3, vec![]), planet);
-        system.vehicle.position = vector![r, 0., 0.];
-        system.vehicle.velocity = vector![0., v, 0.];
-
-        while system.time < period {
-            RK4.step(&mut system, 10.);
-            println!(
-                "Time: {:.0}\nPosition: {:.0}\nVelocity: {:.0}",
-                system.time, system.vehicle.position, system.vehicle.velocity
-            );
-            assert_almost_eq!(system.vehicle.position.norm(), 7000e3, 10e3);
-            assert_eq!(system.vehicle.position[2], 0.);
-            assert_eq!(system.vehicle.velocity[2], 0.);
-        }
-
-        assert_almost_eq!(system.vehicle.position[0], 7000e3, 10e3);
-        assert_almost_eq!(system.vehicle.position[1].abs(), 0., 50e3);
-        assert_almost_eq!(system.vehicle.velocity[0].abs(), 0., 10e3);
-        assert_almost_eq!(system.vehicle.velocity[1], v, 10.);
     }
 }
