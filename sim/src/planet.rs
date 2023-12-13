@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.11.23
-// Last modified by Tibor Völcker on 09.12.23
+// Last modified by Tibor Völcker on 13.12.23
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use crate::utils::*;
@@ -87,6 +87,58 @@ impl Planet {
     pub fn geopotational_altitude(&self, altitude: f64) -> f64 {
         let avg_altitude = 0.5 * (self.equatorial_radius + self.polar_radius);
         avg_altitude * altitude / (avg_altitude + altitude)
+    }
+
+    pub fn temperature(&self, position: Vector3<f64>) -> f64 {
+        if let Some(atmos) = &self.atmosphere {
+            match atmos {
+                Atmosphere::StandardAtmosphere1962 => {
+                    let geopotential_alt = self.geopotational_altitude(position.norm());
+                    atmos.temperature(geopotential_alt)
+                }
+            }
+        } else {
+            0.
+        }
+    }
+
+    pub fn pressure(&self, position: Vector3<f64>) -> f64 {
+        if let Some(atmos) = &self.atmosphere {
+            match atmos {
+                Atmosphere::StandardAtmosphere1962 => {
+                    let geopotential_alt = self.geopotational_altitude(position.norm());
+                    atmos.pressure(geopotential_alt)
+                }
+            }
+        } else {
+            0.
+        }
+    }
+
+    pub fn density(&self, position: Vector3<f64>) -> f64 {
+        if let Some(atmos) = &self.atmosphere {
+            match atmos {
+                Atmosphere::StandardAtmosphere1962 => {
+                    let geopotential_alt = self.geopotational_altitude(position.norm());
+                    atmos.density(geopotential_alt)
+                }
+            }
+        } else {
+            0.
+        }
+    }
+
+    pub fn speed_of_sound(&self, position: Vector3<f64>) -> f64 {
+        if let Some(atmos) = &self.atmosphere {
+            match atmos {
+                Atmosphere::StandardAtmosphere1962 => {
+                    let geopotential_alt = self.geopotational_altitude(position.norm());
+                    atmos.speed_of_sound(geopotential_alt)
+                }
+            }
+        } else {
+            0.
+        }
     }
 
     pub fn mu(&self) -> f64 {

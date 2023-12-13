@@ -11,7 +11,7 @@ pub enum Atmosphere {
 }
 
 impl Atmosphere {
-    fn temperature(&self, alt: f64) -> f64 {
+    pub fn temperature(&self, alt: f64) -> f64 {
         match self {
             Self::StandardAtmosphere1962 => {
                 // T = T_B + L_B * (H_g - H_B)
@@ -23,7 +23,7 @@ impl Atmosphere {
         }
     }
 
-    fn pressure(&self, alt: f64) -> f64 {
+    pub fn pressure(&self, alt: f64) -> f64 {
         match self {
             Self::StandardAtmosphere1962 => {
                 // See [1] p. IV-6
@@ -53,14 +53,14 @@ impl Atmosphere {
         }
     }
 
-    fn density(&self, alt: f64) -> f64 {
+    pub fn density(&self, alt: f64) -> f64 {
         // rho = (M_0/R*) * P / T
         let temperature = self.temperature(alt);
         let pressure = self.pressure(alt);
         pressure / (temperature * AIR_GAS_CONSTANT)
     }
 
-    fn speed_of_sound(&self, alt: f64) -> f64 {
+    pub fn speed_of_sound(&self, alt: f64) -> f64 {
         // C_s = (gamma*R*/M_0)^0.5 * T^0.5
         let temperature = self.temperature(alt);
         f64::sqrt(AIR_KAPPA * AIR_GAS_CONSTANT * temperature)
@@ -72,6 +72,7 @@ mod tests {
     mod standard_atmosphere_1962 {
         use super::super::*;
         use crate::{assert_almost_eq_rel, Planet};
+        use nalgebra::vector;
 
         const ATMOSPHERIC_DATA_1967_MODEL: [[f64; 5]; 4] = [
             // [ altitude [m], temperature [K], pressure [Pa], density [kg/m^2], speed of sound [m/s] ]
@@ -116,18 +117,16 @@ mod tests {
             index: usize,
             epsilon: f64,
         ) {
-            let atmos = Atmosphere::StandardAtmosphere1962;
-            let planet = Planet::earth_fisher_1960(None);
+            let planet = Planet::earth_fisher_1960(Some(Atmosphere::StandardAtmosphere1962));
 
             for data_point in table.iter() {
-                let geopotential_alt = planet.geopotational_altitude(data_point[0]);
-
                 print!("Testing {} km altitude ... ", data_point[0]);
+                let position = vector![data_point[0], 0., 0.];
                 let res = match index {
-                    1 => atmos.temperature(geopotential_alt),
-                    2 => atmos.pressure(geopotential_alt),
-                    3 => atmos.density(geopotential_alt),
-                    4 => atmos.speed_of_sound(geopotential_alt),
+                    1 => planet.temperature(position),
+                    2 => planet.pressure(position),
+                    3 => planet.density(position),
+                    4 => planet.speed_of_sound(position),
                     _ => panic!(),
                 };
                 assert_almost_eq_rel!(res, data_point[index], epsilon);
