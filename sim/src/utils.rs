@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 28.11.23
+// Last modified by Tibor Völcker on 09.12.23
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 pub const METER_PER_FOOT: f64 = 12. * 25.4 / 1000.;
@@ -35,5 +35,15 @@ macro_rules! assert_almost_eq {
     };
     ($left: expr, $right: expr, $eps: expr, $($arg:tt)+) => {
         assert!(($left - $right as f64).abs() < $eps, $($arg)*);
+    };
+}
+
+#[macro_export]
+macro_rules! assert_almost_eq_rel {
+    ($left: expr, $right: expr, $eps: expr) => {
+        assert!((1. - ($left/$right)).abs() < $eps, "assertion `left ≈ right` failed\n    left: {}\n   right: {}\n epsilon: {}%", $left, $right, $eps * 100.);
+    };
+    ($left: expr, $right: expr, $eps: expr, $($arg:tt)+) => {
+        assert!((1 - ($left/$right)).abs() < $eps, $($arg)*);
     };
 }
