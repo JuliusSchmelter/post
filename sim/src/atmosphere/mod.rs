@@ -73,7 +73,7 @@ mod tests {
         use super::super::*;
         use crate::{assert_almost_eq_rel, Planet};
 
-        const ATMOSPHERIC_DATA: [[f64; 5]; 4] = [
+        const ATMOSPHERIC_DATA_1967_MODEL: [[f64; 5]; 4] = [
             // [ altitude [m], temperature [K], pressure [Pa], density [kg/m^2], speed of sound [m/s] ]
             // values from https://www.pdas.com/atmoscalculator.html
             [00e3, 288.15, 1.0133e5, 1.22500e-0, 340.294],
@@ -81,6 +81,34 @@ mod tests {
             [20e3, 216.65, 5.5292e3, 8.89083e-2, 295.070],
             [40e3, 250.35, 2.8713e2, 3.99540e-3, 317.190],
             // 1967 atmosphere model differs from 1962 version above 50 km
+        ];
+
+        const ATMOSPHERIC_DATA_SS_EXAMPLE: [[f64; 4]; 4] = [
+            // values from SS example: [2] p. 277
+            [
+                -4.76837158e-7 * METER_PER_FOOT,
+                5.18670000e2 * KELVIN_PER_RANKIN,
+                2.11621660e3 * PASCAL_PER_PSF,
+                2.37690697e-3 * KILOGRAM_PER_SLUG / CUBIC_METER_PER_CUBIC_FOOT,
+            ],
+            [
+                9.33310129e2 * METER_PER_FOOT,
+                5.15341815e2 * KELVIN_PER_RANKIN,
+                2.04581341e3 * PASCAL_PER_PSF,
+                2.31267089e-3 * KILOGRAM_PER_SLUG / CUBIC_METER_PER_CUBIC_FOOT,
+            ],
+            [
+                3.04960868e5 * METER_PER_FOOT,
+                3.41188380e2 * KELVIN_PER_RANKIN,
+                2.01763300e-3 * PASCAL_PER_PSF,
+                3.44501515e-9 * KILOGRAM_PER_SLUG / CUBIC_METER_PER_CUBIC_FOOT,
+            ],
+            [
+                3.03804044e5 * METER_PER_FOOT,
+                3.39250012e2 * KELVIN_PER_RANKIN,
+                2.14880703e-3 * PASCAL_PER_PSF,
+                3.68995220e-9 * KILOGRAM_PER_SLUG / CUBIC_METER_PER_CUBIC_FOOT,
+            ],
         ];
 
         fn test_with_data<const N1: usize, const N2: usize>(
@@ -110,25 +138,28 @@ mod tests {
         #[test]
         fn test_temperature() {
             let index = 1;
-            test_with_data(ATMOSPHERIC_DATA, index, 0.005);
+            test_with_data(ATMOSPHERIC_DATA_1967_MODEL, index, 0.002);
+            test_with_data(ATMOSPHERIC_DATA_SS_EXAMPLE, index, 0.002);
         }
 
         #[test]
         fn test_pressure() {
             let index = 2;
-            test_with_data(ATMOSPHERIC_DATA, index, 0.005);
+            test_with_data(ATMOSPHERIC_DATA_1967_MODEL, index, 0.002);
+            test_with_data(ATMOSPHERIC_DATA_SS_EXAMPLE, index, 0.002);
         }
 
         #[test]
         fn test_density() {
             let index = 3;
-            test_with_data(ATMOSPHERIC_DATA, index, 0.005);
+            test_with_data(ATMOSPHERIC_DATA_1967_MODEL, index, 0.002);
+            test_with_data(ATMOSPHERIC_DATA_SS_EXAMPLE, index, 0.002);
         }
 
         #[test]
         fn test_speed_of_sound() {
             let index = 4;
-            test_with_data(ATMOSPHERIC_DATA, index, 0.005);
+            test_with_data(ATMOSPHERIC_DATA_1967_MODEL, index, 0.002);
         }
     }
 }

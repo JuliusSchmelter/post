@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 09.12.23
+// Last modified by Tibor Völcker on 13.12.23
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 pub const METER_PER_FOOT: f64 = 12. * 25.4 / 1000.;
@@ -10,6 +10,7 @@ pub const CUBIC_METER_PER_CUBIC_FOOT: f64 = METER_PER_FOOT * METER_PER_FOOT * ME
 
 pub const KELVIN_PER_RANKIN: f64 = 5. / 9.;
 pub const KILOGRAM_PER_POUND: f64 = 4.5359237e-1;
+pub const KILOGRAM_PER_SLUG: f64 = 14.59390;
 pub const PASCAL_PER_PSF: f64 = KILOGRAM_PER_POUND * STD_GRAVITY / SQUARE_METER_PER_SQUARE_FOOT;
 
 pub const STD_GRAVITY: f64 = 9.80665;
