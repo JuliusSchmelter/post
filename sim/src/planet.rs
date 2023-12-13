@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.11.23
-// Last modified by Tibor Völcker on 06.12.23
+// Last modified by Tibor Völcker on 09.12.23
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use crate::utils::*;
@@ -82,6 +82,11 @@ impl Planet {
                             - 3. / 5. * r.powi(2))
                     + D * R.powi(4) * (15. / 7. - 10. * Z.powi(2) + 9. * Z.powi(4)) * position.z)
         ]
+    }
+
+    pub fn geopotational_altitude(&self, altitude: f64) -> f64 {
+        let avg_altitude = 0.5 * (self.equatorial_radius + self.polar_radius);
+        avg_altitude * altitude / (avg_altitude + altitude)
     }
 
     pub fn mu(&self) -> f64 {
