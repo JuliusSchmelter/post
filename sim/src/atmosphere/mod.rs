@@ -117,7 +117,7 @@ mod tests {
             index: usize,
             epsilon: f64,
         ) {
-            let planet = Planet::earth_fisher_1960(Some(Atmosphere::StandardAtmosphere1962));
+            let planet = Planet::earth_spherical(Some(Atmosphere::StandardAtmosphere1962));
 
             for data_point in table.iter() {
                 print!("Testing {} km altitude ... ", data_point[0]);
