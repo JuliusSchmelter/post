@@ -26,16 +26,22 @@ impl Atmosphere {
     fn pressure(&self, alt: f64) -> f64 {
         match self {
             Self::StandardAtmosphere1962 => {
-                // P = P_B * (T_B / T) exp[(g_0*M_0/R*) / L_B] if L_B != 0
+                // See [1] p. IV-6
+                // P = P_B * (T_B / T)^[(g_0*M_0/R*) / L_B] if L_B != 0
                 // P = P_B exp[-(g_0*M_0/R*) * (H - H_B) / T_B] if L_B = 0
+
+                // Watch out: first equation is given as (T_B / T)exp[(g_0*M_0/R*) / L_B],
+                // which is supposed to be (T_B / T)^[(g_0*M_0/R*) / L_B]
                 let (base_altitude, base_pressure, base_temperature, base_temp_gradient) =
                     standard_atmosphere_1962::get_table_row(alt);
                 let temperature = self.temperature(alt);
 
                 if base_temp_gradient != 0. {
+                    // Watch out: in this equation in [1], (T_B / T)exp[(g_0*M_0/R*) / L_B] means (T_B / T)^[(g_0*M_0/R*) / L_B]
+                    // See https://ntrs.nasa.gov/api/citations/19630003300/downloads/19630003300.pdf p. 10
                     base_pressure
                         * (base_temperature / temperature)
-                        * f64::exp((STD_GRAVITY / AIR_GAS_CONSTANT) / base_temp_gradient)
+                            .powf((STD_GRAVITY / AIR_GAS_CONSTANT) / base_temp_gradient)
                 } else {
                     base_pressure
                         * f64::exp(
