@@ -69,96 +69,66 @@ impl Atmosphere {
 
 #[cfg(test)]
 mod tests {
-    const ATMOSPHERIC_DATA: [[f64; 5]; 6] = [
-        // [ altitude [m], temperature [K], pressure [Pa], density [kg/m^2], speed of sound [m/s] ]
-        // values from https://www.pdas.com/atmoscalculator.html
-        [00e3, 288.15, 1.0133e5, 1.22500e-0, 340.294],
-        [10e3, 223.25, 2.6500e4, 4.13509e-1, 299.532],
-        [20e3, 216.65, 5.5292e3, 8.89083e-2, 295.070],
-        [40e3, 250.35, 2.8713e2, 3.99540e-3, 317.190],
-        [60e3, 247.02, 2.1955e1, 3.09636e-4, 315.072],
-        [80e3, 198.63, 1.0521e0, 1.84524e-5, 282.535],
-    ];
-
     mod standard_atmosphere_1962 {
         use super::super::*;
-        use super::*;
         use crate::{assert_almost_eq_rel, Planet};
 
-        #[test]
-        fn test_temperature() {
+        const ATMOSPHERIC_DATA: [[f64; 5]; 4] = [
+            // [ altitude [m], temperature [K], pressure [Pa], density [kg/m^2], speed of sound [m/s] ]
+            // values from https://www.pdas.com/atmoscalculator.html
+            [00e3, 288.15, 1.0133e5, 1.22500e-0, 340.294],
+            [10e3, 223.25, 2.6500e4, 4.13509e-1, 299.532],
+            [20e3, 216.65, 5.5292e3, 8.89083e-2, 295.070],
+            [40e3, 250.35, 2.8713e2, 3.99540e-3, 317.190],
+            // 1967 atmosphere model differs from 1962 version above 50 km
+        ];
+
+        fn test_with_data<const N1: usize, const N2: usize>(
+            table: [[f64; N1]; N2],
+            index: usize,
+            epsilon: f64,
+        ) {
             let atmos = Atmosphere::StandardAtmosphere1962;
             let planet = Planet::earth_fisher_1960(None);
 
-            for data_point in ATMOSPHERIC_DATA.iter() {
+            for data_point in table.iter() {
                 let geopotential_alt = planet.geopotational_altitude(data_point[0]);
-                let mut epsilon = 0.005;
-                if data_point[0] > 50e3 {
-                    // Data points are from 1967 atmosphere model, which is a bit different from 1962 version above 50 km
-                    epsilon = 0.1;
-                }
+
                 print!("Testing {} km altitude ... ", data_point[0]);
-                assert_almost_eq_rel!(atmos.temperature(geopotential_alt), data_point[1], epsilon);
+                let res = match index {
+                    1 => atmos.temperature(geopotential_alt),
+                    2 => atmos.pressure(geopotential_alt),
+                    3 => atmos.density(geopotential_alt),
+                    4 => atmos.speed_of_sound(geopotential_alt),
+                    _ => panic!(),
+                };
+                assert_almost_eq_rel!(res, data_point[index], epsilon);
                 println!("ok");
             }
+        }
+
+        #[test]
+        fn test_temperature() {
+            let index = 1;
+            test_with_data(ATMOSPHERIC_DATA, index, 0.005);
         }
 
         #[test]
         fn test_pressure() {
-            let atmos = Atmosphere::StandardAtmosphere1962;
-            let planet = Planet::earth_fisher_1960(None);
-
-            for data_point in ATMOSPHERIC_DATA.iter() {
-                let geopotential_alt = planet.geopotational_altitude(data_point[0]);
-                let mut epsilon = 0.005;
-                if data_point[0] > 50e3 {
-                    // Data points are from 1967 atmosphere model, which is a bit different from 1962 version above 50 km
-                    epsilon = 0.03;
-                }
-                print!("Testing {} km altitude ... ", data_point[0]);
-                assert_almost_eq_rel!(atmos.pressure(geopotential_alt), data_point[2], epsilon);
-                println!("ok");
-            }
+            let index = 2;
+            test_with_data(ATMOSPHERIC_DATA, index, 0.005);
         }
 
         #[test]
         fn test_density() {
-            let atmos = Atmosphere::StandardAtmosphere1962;
-            let planet = Planet::earth_fisher_1960(None);
-
-            for data_point in ATMOSPHERIC_DATA.iter() {
-                let geopotential_alt = planet.geopotational_altitude(data_point[0]);
-                let mut epsilon = 0.005;
-                if data_point[0] > 50e3 {
-                    // Data points are from 1967 atmosphere model, which is a bit different from 1962 version above 50 km
-                    epsilon = 0.1;
-                }
-                print!("Testing {} km altitude ... ", data_point[0]);
-                assert_almost_eq_rel!(atmos.density(geopotential_alt), data_point[3], epsilon);
-                println!("ok");
-            }
+            let index = 3;
+            test_with_data(ATMOSPHERIC_DATA, index, 0.005);
         }
 
         #[test]
         fn test_speed_of_sound() {
-            let atmos = Atmosphere::StandardAtmosphere1962;
-            let planet = Planet::earth_fisher_1960(None);
-
-            for data_point in ATMOSPHERIC_DATA.iter() {
-                let geopotential_alt = planet.geopotational_altitude(data_point[0]);
-                let mut epsilon = 0.005;
-                if data_point[0] > 50e3 {
-                    // Data points are from 1967 atmosphere model, which is a bit different from 1962 version above 50 km
-                    epsilon = 0.05;
-                }
-                print!("Testing {} km altitude ... ", data_point[0]);
-                assert_almost_eq_rel!(
-                    atmos.speed_of_sound(geopotential_alt),
-                    data_point[4],
-                    epsilon
-                );
-                println!("ok");
-            }
+            let index = 4;
+            test_with_data(ATMOSPHERIC_DATA, index, 0.005);
         }
     }
 }
