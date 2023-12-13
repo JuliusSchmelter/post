@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 06.12.23
+// Last modified by Tibor Völcker on 13.12.23
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{vector, Vector3};
@@ -13,11 +13,11 @@ pub struct Vehicle {
     pub velocity: Vector3<f64>,
     mass: f64,
     engines: Vec<Engine>,
-    steering: Steering,
+    steering: Option<Steering>,
 }
 
 impl Vehicle {
-    pub fn new(mass: f64, engines: Vec<Engine>, steering: Steering) -> Self {
+    pub fn new(mass: f64, engines: Vec<Engine>, steering: Option<Steering>) -> Self {
         Self {
             attitude: vector![0., 0., 0.],
             position: vector![0., 0., 0.],

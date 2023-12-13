@@ -1,21 +1,16 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 06.12.23
-// Last modified by Tibor Völcker on 06.12.23
+// Last modified by Tibor Völcker on 13.12.23
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::vector;
 use sim::integration::RK4;
-use sim::vehicle::{Angular, Steering};
 use sim::*;
 use std::f64::consts::PI;
 
 #[test]
 fn circular_orbit() {
     let planet = Planet::earth_spherical(None);
-    let vehicle = Vehicle::new(
-        10e3,
-        vec![],
-        Steering::Angular(Angular::Polynomials(vector![0., 0., 0., 0.])),
-    );
+    let vehicle = Vehicle::new(10e3, vec![], None);
     let r: f64 = 7000e3;
     // v^2 = mu / r
     let v = f64::sqrt(planet.mu() / r);
