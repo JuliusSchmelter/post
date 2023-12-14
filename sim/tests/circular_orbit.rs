@@ -9,7 +9,7 @@ use std::f64::consts::PI;
 
 #[test]
 fn circular_orbit() {
-    let planet = Planet::earth_spherical(None);
+    let planet = Planet::earth_spherical(None, None);
     let vehicle = Vehicle::new(10e3, vec![], None);
     let r: f64 = 7000e3;
     // v^2 = mu / r

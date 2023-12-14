@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 13.12.23
+// Last modified by Tibor Völcker on 14.12.23
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{vector, Vector3};
@@ -105,7 +105,7 @@ mod tests {
 
     #[test]
     fn test_thrust() {
-        let planet = Planet::earth_spherical(Some(Atmosphere::StandardAtmosphere1962));
+        let planet = Planet::earth_spherical(Some(Atmosphere::StandardAtmosphere1962), None);
         let engine = Engine::new(
             [0., 0.],
             5472000.0 * NEWTON_PER_POUND_FORCE,
