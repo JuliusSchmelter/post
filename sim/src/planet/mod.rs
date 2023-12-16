@@ -2,9 +2,13 @@
 // Last modified by Tibor Völcker on 16.12.23
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
+mod atmosphere;
+
 use crate::utils::*;
-use crate::Atmosphere;
+pub use atmosphere::Atmosphere;
 use nalgebra::{vector, Vector3};
+
+use self::atmosphere::standard_atmosphere_1962;
 
 pub struct Planet {
     equatorial_radius: f64,
@@ -115,7 +119,7 @@ impl Planet {
             match atmos {
                 Atmosphere::StandardAtmosphere1962 => {
                     let geopotential_alt = self.geopotational_altitude(position.norm());
-                    atmos.temperature(geopotential_alt)
+                    standard_atmosphere_1962::temperature(geopotential_alt)
                 }
             }
         } else {
@@ -128,7 +132,7 @@ impl Planet {
             match atmos {
                 Atmosphere::StandardAtmosphere1962 => {
                     let geopotential_alt = self.geopotational_altitude(position.norm());
-                    atmos.pressure(geopotential_alt)
+                    standard_atmosphere_1962::pressure(geopotential_alt)
                 }
             }
         } else {
@@ -141,7 +145,7 @@ impl Planet {
             match atmos {
                 Atmosphere::StandardAtmosphere1962 => {
                     let geopotential_alt = self.geopotational_altitude(position.norm());
-                    atmos.density(geopotential_alt)
+                    standard_atmosphere_1962::density(geopotential_alt)
                 }
             }
         } else {
@@ -154,7 +158,7 @@ impl Planet {
             match atmos {
                 Atmosphere::StandardAtmosphere1962 => {
                     let geopotential_alt = self.geopotational_altitude(position.norm());
-                    atmos.speed_of_sound(geopotential_alt)
+                    standard_atmosphere_1962::speed_of_sound(geopotential_alt)
                 }
             }
         } else {

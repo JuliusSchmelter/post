@@ -7,15 +7,13 @@
 
 use nalgebra::{Vector3, Vector6};
 
-mod atmosphere;
 pub mod integration;
 mod planet;
 mod utils;
 pub mod vehicle;
 
-pub use atmosphere::Atmosphere;
 pub use integration::Integrator;
-pub use planet::{Planet, EARTH_FISHER_1960, EARTH_SMITHSONIAN, EARTH_SPHERICAL};
+pub use planet::{Atmosphere, Planet, EARTH_FISHER_1960, EARTH_SMITHSONIAN, EARTH_SPHERICAL};
 pub use vehicle::Vehicle;
 
 pub struct Simulation {
