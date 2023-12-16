@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 13.12.23
+// Last modified by Tibor Völcker on 16.12.23
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use crate::utils::*;
@@ -71,7 +71,7 @@ impl Atmosphere {
 mod tests {
     mod standard_atmosphere_1962 {
         use super::super::*;
-        use crate::{assert_almost_eq_rel, Planet};
+        use crate::{assert_almost_eq_rel, EARTH_SPHERICAL};
         use nalgebra::vector;
 
         const ATMOSPHERIC_DATA_1967_MODEL: [[f64; 5]; 4] = [
@@ -117,7 +117,8 @@ mod tests {
             index: usize,
             epsilon: f64,
         ) {
-            let planet = Planet::earth_spherical(Some(Atmosphere::StandardAtmosphere1962), None);
+            let mut planet = EARTH_SPHERICAL;
+            planet.add_atmosphere(Atmosphere::StandardAtmosphere1962);
 
             for data_point in table.iter() {
                 print!("Testing {} km altitude ... ", data_point[0]);

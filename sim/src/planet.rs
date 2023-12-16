@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.11.23
-// Last modified by Tibor Völcker on 13.12.23
+// Last modified by Tibor Völcker on 16.12.23
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use crate::utils::*;
@@ -15,53 +15,52 @@ pub struct Planet {
     wind: Option<Vector3<f64>>,
 }
 
+pub const EARTH_SPHERICAL: Planet = Planet {
+    equatorial_radius: 2.0925741e7 * METER_PER_FOOT,
+    polar_radius: 2.0925741e7 * METER_PER_FOOT,
+    // [mu, J_2, J_3, J_4]
+    gravitational_parameters: [1.4076539e16 * CUBIC_METER_PER_CUBIC_FOOT, 0., 0., 0.],
+    rotation_rate: 7.29211e-5,
+    atmosphere: None,
+    wind: None,
+};
+
+pub const EARTH_FISHER_1960: Planet = Planet {
+    equatorial_radius: 2.0925741e7 * METER_PER_FOOT,
+    polar_radius: 2.0855590e7 * METER_PER_FOOT,
+    // [mu, J_2, J_3, J_4]
+    gravitational_parameters: [1.4076539e16 * CUBIC_METER_PER_CUBIC_FOOT, 1.0823e-3, 0., 0.],
+    rotation_rate: 7.29211e-5,
+    atmosphere: None,
+    wind: None,
+};
+
+pub const EARTH_SMITHSONIAN: Planet = Planet {
+    equatorial_radius: 2.0925741e7 * METER_PER_FOOT,
+    polar_radius: 2.0855590e7 * METER_PER_FOOT,
+    // [mu, J_2, J_3, J_4]
+    gravitational_parameters: [
+        1.407645794e16 * CUBIC_METER_PER_CUBIC_FOOT,
+        1.082639e-3,
+        -2.565e-6,
+        -1.608e-6,
+    ],
+    rotation_rate: 7.29211e-5,
+    atmosphere: None,
+    wind: None,
+};
+
 impl Planet {
-    pub fn earth_spherical(atmosphere: Option<Atmosphere>, wind: Option<Vector3<f64>>) -> Self {
-        Self {
-            equatorial_radius: 2.0925741e7 * METER_PER_FOOT,
-            polar_radius: 2.0925741e7 * METER_PER_FOOT,
-            // [mu, J_2, J_3, J_4]
-            gravitational_parameters: [1.4076539e16 * CUBIC_METER_PER_CUBIC_FOOT, 0., 0., 0.],
-            rotation_rate: 7.29211e-5,
-            atmosphere,
-            wind,
-        }
+    pub fn add_atmosphere(&mut self, atmosphere: Atmosphere) {
+        self.atmosphere = Some(atmosphere);
     }
 
-    pub fn earth_fisher_1960(atmosphere: Option<Atmosphere>, wind: Option<Vector3<f64>>) -> Self {
-        Self {
-            equatorial_radius: 2.0925741e7 * METER_PER_FOOT,
-            polar_radius: 2.0855590e7 * METER_PER_FOOT,
-            // [mu, J_2, J_3, J_4]
-            gravitational_parameters: [
-                1.4076539e16 * CUBIC_METER_PER_CUBIC_FOOT,
-                1.0823e-3,
-                0.,
-                0.,
-            ],
-            rotation_rate: 7.29211e-5,
-            atmosphere,
-            wind,
-        }
+    pub fn add_wind(&mut self, wind: Vector3<f64>) {
+        self.wind = Some(wind);
     }
+}
 
-    pub fn earth_smithsonian(atmosphere: Option<Atmosphere>, wind: Option<Vector3<f64>>) -> Self {
-        Self {
-            equatorial_radius: 2.0925741e7 * METER_PER_FOOT,
-            polar_radius: 2.0855590e7 * METER_PER_FOOT,
-            // [mu, J_2, J_3, J_4]
-            gravitational_parameters: [
-                1.407645794e16 * CUBIC_METER_PER_CUBIC_FOOT,
-                1.082639e-3,
-                -2.565e-6,
-                -1.608e-6,
-            ],
-            rotation_rate: 7.29211e-5,
-            atmosphere,
-            wind,
-        }
-    }
-
+impl Planet {
     #[allow(non_snake_case)]
     pub fn gravity(&self, position: Vector3<f64>) -> Vector3<f64> {
         let r: f64 = position.norm();
@@ -88,6 +87,10 @@ impl Planet {
         ]
     }
 
+    pub fn mu(&self) -> f64 {
+        self.gravitational_parameters[0]
+    }
+
     pub fn geopotational_altitude(&self, altitude: f64) -> f64 {
         let avg_altitude = 0.5 * (self.equatorial_radius + self.polar_radius);
         avg_altitude * altitude / (avg_altitude + altitude)
@@ -104,7 +107,9 @@ impl Planet {
     ) -> Vector3<f64> {
         self.rel_velocity(position, velocity) + self.wind.unwrap_or(Vector3::zeros())
     }
+}
 
+impl Planet {
     pub fn temperature(&self, position: Vector3<f64>) -> f64 {
         if let Some(atmos) = &self.atmosphere {
             match atmos {
@@ -156,10 +161,6 @@ impl Planet {
             0.
         }
     }
-
-    pub fn mu(&self) -> f64 {
-        self.gravitational_parameters[0]
-    }
 }
 
 #[cfg(test)]
@@ -172,17 +173,15 @@ mod tests {
 
         #[test]
         fn equatorial_x() {
-            let planet = Planet::earth_spherical(None, None);
-            let vec = vector![planet.equatorial_radius, 0., 0.];
-            assert_almost_eq!(planet.gravity(vec).norm(), 9.798, 0.0005);
+            let vec = vector![EARTH_SPHERICAL.equatorial_radius, 0., 0.];
+            assert_almost_eq!(EARTH_SPHERICAL.gravity(vec).norm(), 9.798, 0.0005);
         }
 
         #[test]
         fn equatorial_xy() {
-            let planet = Planet::earth_spherical(None, None);
-            let r = f64::sqrt(planet.equatorial_radius.powi(2) / 2.);
+            let r = f64::sqrt(EARTH_SPHERICAL.equatorial_radius.powi(2) / 2.);
             let vec = vector![r, r, 0.];
-            let acc = planet.gravity(vec);
+            let acc = EARTH_SPHERICAL.gravity(vec);
             assert_almost_eq!(acc[0], -f64::sqrt(9.798_f64.powi(2) / 2.), 0.0005);
             assert_almost_eq!(acc[1], -f64::sqrt(9.798_f64.powi(2) / 2.), 0.0005);
             assert_eq!(acc[2], 0.);
@@ -190,15 +189,13 @@ mod tests {
 
         #[test]
         fn polar() {
-            let planet = Planet::earth_spherical(None, None);
-            let vec = vector![0., 0., planet.polar_radius];
-            assert_almost_eq!(planet.gravity(vec).norm(), 9.798, 0.0005);
+            let vec = vector![0., 0., EARTH_SPHERICAL.polar_radius];
+            assert_almost_eq!(EARTH_SPHERICAL.gravity(vec).norm(), 9.798, 0.0005);
         }
 
         #[test]
         fn sidereal_day() {
-            let planet = Planet::earth_fisher_1960(None, None);
-            assert_almost_eq!(2. * PI / planet.rotation_rate, 86164., 0.5);
+            assert_almost_eq!(2. * PI / EARTH_SPHERICAL.rotation_rate, 86164., 0.5);
         }
     }
 
@@ -210,17 +207,15 @@ mod tests {
 
         #[test]
         fn equatorial_x() {
-            let planet = Planet::earth_fisher_1960(None, None);
-            let vec = vector![planet.equatorial_radius, 0., 0.];
-            assert_almost_eq!(planet.gravity(vec).norm(), 9.814, 0.0005);
+            let vec = vector![EARTH_FISHER_1960.equatorial_radius, 0., 0.];
+            assert_almost_eq!(EARTH_FISHER_1960.gravity(vec).norm(), 9.814, 0.0005);
         }
 
         #[test]
         fn equatorial_xy() {
-            let planet = Planet::earth_fisher_1960(None, None);
-            let r = f64::sqrt(planet.equatorial_radius.powi(2) / 2.);
+            let r = f64::sqrt(EARTH_FISHER_1960.equatorial_radius.powi(2) / 2.);
             let vec = vector![r, r, 0.];
-            let acc = planet.gravity(vec);
+            let acc = EARTH_FISHER_1960.gravity(vec);
             assert_almost_eq!(acc[0], -f64::sqrt(9.814_f64.powi(2) / 2.), 0.0005);
             assert_almost_eq!(acc[1], -f64::sqrt(9.814_f64.powi(2) / 2.), 0.0005);
             assert_eq!(acc[2], 0.);
@@ -228,15 +223,13 @@ mod tests {
 
         #[test]
         fn polar() {
-            let planet = Planet::earth_fisher_1960(None, None);
-            let vec = vector![0., 0., planet.polar_radius];
-            assert_almost_eq!(planet.gravity(vec).norm(), 9.832, 0.0005);
+            let vec = vector![0., 0., EARTH_FISHER_1960.polar_radius];
+            assert_almost_eq!(EARTH_FISHER_1960.gravity(vec).norm(), 9.832, 0.0005);
         }
 
         #[test]
         fn sidereal_day() {
-            let planet = Planet::earth_fisher_1960(None, None);
-            assert_almost_eq!(2. * PI / planet.rotation_rate, 86164., 0.5);
+            assert_almost_eq!(2. * PI / EARTH_FISHER_1960.rotation_rate, 86164., 0.5);
         }
     }
 
@@ -248,17 +241,15 @@ mod tests {
 
         #[test]
         fn equatorial_x() {
-            let planet = Planet::earth_smithsonian(None, None);
-            let vec = vector![planet.equatorial_radius, 0., 0.];
-            assert_almost_eq!(planet.gravity(vec).norm(), 9.814, 0.0005);
+            let vec = vector![EARTH_SMITHSONIAN.equatorial_radius, 0., 0.];
+            assert_almost_eq!(EARTH_SMITHSONIAN.gravity(vec).norm(), 9.814, 0.0005);
         }
 
         #[test]
         fn equatorial_xy() {
-            let planet = Planet::earth_smithsonian(None, None);
-            let r = f64::sqrt(planet.equatorial_radius.powi(2) / 2.);
+            let r = f64::sqrt(EARTH_SMITHSONIAN.equatorial_radius.powi(2) / 2.);
             let vec = vector![r, r, 0.];
-            let acc = planet.gravity(vec);
+            let acc = EARTH_SMITHSONIAN.gravity(vec);
             assert_almost_eq!(acc[0], -f64::sqrt(9.814_f64.powi(2) / 2.), 0.0005);
             assert_almost_eq!(acc[1], -f64::sqrt(9.814_f64.powi(2) / 2.), 0.0005);
             assert_ne!(acc[2], 0.);
@@ -266,15 +257,13 @@ mod tests {
 
         #[test]
         fn polar() {
-            let planet = Planet::earth_smithsonian(None, None);
-            let vec = vector![0., 0., planet.polar_radius];
-            assert_almost_eq!(planet.gravity(vec).norm(), 9.832, 0.0005);
+            let vec = vector![0., 0., EARTH_SMITHSONIAN.polar_radius];
+            assert_almost_eq!(EARTH_SMITHSONIAN.gravity(vec).norm(), 9.832, 0.0005);
         }
 
         #[test]
         fn sidereal_day() {
-            let planet = Planet::earth_smithsonian(None, None);
-            assert_almost_eq!(2. * PI / planet.rotation_rate, 86164., 0.5);
+            assert_almost_eq!(2. * PI / EARTH_SMITHSONIAN.rotation_rate, 86164., 0.5);
         }
     }
 }

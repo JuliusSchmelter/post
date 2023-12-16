@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 14.12.23
+// Last modified by Tibor Völcker on 16.12.23
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{vector, Vector3};
@@ -29,12 +29,11 @@ impl Vehicle {
     }
 
     pub fn thrust(&self, pressure_atmos: f64) -> Vector3<f64> {
-        return self
-            .engines
+        self.engines
             .iter()
             .map(|eng| eng.thrust(pressure_atmos))
             .sum::<Vector3<f64>>()
-            / self.mass;
+            / self.mass
     }
 }
 
@@ -70,7 +69,8 @@ mod tests {
     use super::*;
     use crate::utils::*;
     use crate::Atmosphere;
-    use crate::{assert_almost_eq_rel, utils::NEWTON_PER_POUND_FORCE, Planet};
+    use crate::EARTH_SPHERICAL;
+    use crate::{assert_almost_eq_rel, utils::NEWTON_PER_POUND_FORCE};
     use nalgebra::vector;
 
     const THRUST_DATA_SS_EXAMPLE1: [[f64; 3]; 2] = [
@@ -105,7 +105,8 @@ mod tests {
 
     #[test]
     fn test_thrust() {
-        let planet = Planet::earth_spherical(Some(Atmosphere::StandardAtmosphere1962), None);
+        let mut planet = EARTH_SPHERICAL;
+        planet.add_atmosphere(Atmosphere::StandardAtmosphere1962);
         let engine = Engine::new(
             [0., 0.],
             5472000.0 * NEWTON_PER_POUND_FORCE,

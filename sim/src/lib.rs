@@ -15,7 +15,7 @@ pub mod vehicle;
 
 pub use atmosphere::Atmosphere;
 pub use integration::Integrator;
-pub use planet::Planet;
+pub use planet::{Planet, EARTH_FISHER_1960, EARTH_SMITHSONIAN, EARTH_SPHERICAL};
 pub use vehicle::Vehicle;
 
 pub struct Simulation {
