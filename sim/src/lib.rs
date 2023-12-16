@@ -5,7 +5,7 @@
 // allow dead code for now, as it's still WIP
 #![allow(dead_code)]
 
-use nalgebra::Vector6;
+use nalgebra::{Vector3, Vector6};
 
 mod atmosphere;
 pub mod integration;
@@ -20,8 +20,9 @@ pub use vehicle::Vehicle;
 
 pub struct Simulation {
     pub time: f64,
-    pub vehicle: Vehicle,
-    pub planet: Planet,
+    state: Vector6<f64>,
+    vehicle: Vehicle,
+    planet: Planet,
     integrator: Integrator,
     stepsize: f64,
 }
@@ -30,6 +31,7 @@ impl Simulation {
     pub fn new(vehicle: Vehicle, planet: Planet, stepsize: f64) -> Self {
         Simulation {
             time: 0.,
+            state: Vector6::zeros(),
             vehicle,
             planet,
             integrator: Integrator::RK4,
@@ -43,32 +45,34 @@ impl Simulation {
 
         let gravity = self.planet.gravity(state.fixed_rows::<3>(0).into());
 
-        return Vector6::from_row_slice(
-            &[state.fixed_rows::<3>(3).as_slice(), gravity.as_slice()].concat(),
-        );
+        Vector6::from_row_slice(&[state.fixed_rows::<3>(3).as_slice(), gravity.as_slice()].concat())
     }
 
     pub fn step(&mut self) {
-        // assemble old state
-        let mut state = Vector6::from_row_slice(
-            &[
-                self.vehicle.position.as_slice(),
-                self.vehicle.velocity.as_slice(),
-            ]
-            .concat(),
-        );
-
-        // integrate system
-        state = self.integrator.step(
+        self.state = self.integrator.step(
             |time, state| self.system(time, state),
             self.time,
-            state,
+            self.state,
             self.stepsize,
         );
-
-        // set new state
-        self.vehicle.position = state.fixed_rows::<3>(0).into();
-        self.vehicle.velocity = state.fixed_rows::<3>(3).into();
         self.time += self.stepsize;
+    }
+}
+
+impl Simulation {
+    pub fn position(&self) -> Vector3<f64> {
+        self.state.fixed_rows::<3>(0).into()
+    }
+
+    pub fn set_position(&mut self, position: &[f64]) {
+        self.state.fixed_rows_mut::<3>(0).copy_from_slice(position);
+    }
+
+    pub fn velocity(&self) -> Vector3<f64> {
+        self.state.fixed_rows::<3>(3).into()
+    }
+
+    pub fn set_velocity(&mut self, velocity: &[f64]) {
+        self.state.fixed_rows_mut::<3>(3).copy_from_slice(velocity);
     }
 }

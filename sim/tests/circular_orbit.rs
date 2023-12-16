@@ -2,7 +2,6 @@
 // Last modified by Tibor Völcker on 16.12.23
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
-use nalgebra::vector;
 use sim::*;
 use std::f64::consts::PI;
 
@@ -17,22 +16,24 @@ fn circular_orbit() {
     let period = 2. * PI * f64::sqrt(r.powi(3) / planet.mu());
 
     let mut sim = Simulation::new(vehicle, planet, 10.);
-    sim.vehicle.position = vector![r, 0., 0.];
-    sim.vehicle.velocity = vector![0., v, 0.];
+    sim.set_position(&[r, 0., 0.]);
+    sim.set_velocity(&[0., v, 0.]);
 
     while sim.time < period {
         sim.step();
         println!(
             "Time: {:.0}\nPosition: {:.0}\nVelocity: {:.0}",
-            sim.time, sim.vehicle.position, sim.vehicle.velocity
+            sim.time,
+            sim.position(),
+            sim.velocity()
         );
-        assert_almost_eq!(sim.vehicle.position.norm(), 7000e3, 10e3);
-        assert_eq!(sim.vehicle.position[2], 0.);
-        assert_eq!(sim.vehicle.velocity[2], 0.);
+        assert_almost_eq!(sim.position().norm(), 7000e3, 10e3);
+        assert_eq!(sim.position()[2], 0.);
+        assert_eq!(sim.velocity()[2], 0.);
     }
 
-    assert_almost_eq!(sim.vehicle.position[0], 7000e3, 10e3);
-    assert_almost_eq!(sim.vehicle.position[1].abs(), 0., 50e3);
-    assert_almost_eq!(sim.vehicle.velocity[0].abs(), 0., 10e3);
-    assert_almost_eq!(sim.vehicle.velocity[1], v, 10.);
+    assert_almost_eq!(sim.position()[0], 7000e3, 10e3);
+    assert_almost_eq!(sim.position()[1].abs(), 0., 50e3);
+    assert_almost_eq!(sim.velocity()[0].abs(), 0., 10e3);
+    assert_almost_eq!(sim.velocity()[1], v, 10.);
 }

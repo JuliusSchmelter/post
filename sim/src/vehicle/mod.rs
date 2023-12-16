@@ -8,9 +8,6 @@ pub use steering::{Angular, Steering};
 mod steering;
 
 pub struct Vehicle {
-    pub attitude: Vector3<f64>,
-    pub position: Vector3<f64>,
-    pub velocity: Vector3<f64>,
     mass: f64,
     engines: Vec<Engine>,
     steering: Option<Steering>,
@@ -19,9 +16,6 @@ pub struct Vehicle {
 impl Vehicle {
     pub fn new(mass: f64, engines: Vec<Engine>, steering: Option<Steering>) -> Self {
         Self {
-            attitude: vector![0., 0., 0.],
-            position: vector![0., 0., 0.],
-            velocity: vector![0., 0., 0.],
             mass,
             engines,
             steering,
@@ -116,9 +110,8 @@ mod tests {
 
         for data_point in THRUST_DATA_SS_EXAMPLE1.iter() {
             print!("Testing {} km altitude ... ", data_point[0]);
-            vehicle.position = vector![data_point[0], 0., 0.];
             vehicle.engines[0].throttle = data_point[1];
-            let res = vehicle.thrust(planet.pressure(vehicle.position));
+            let res = vehicle.thrust(planet.pressure(vector![data_point[0], 0., 0.]));
             assert_almost_eq_rel!(res.norm(), data_point[2], 0.05);
             println!("ok");
         }
@@ -127,9 +120,8 @@ mod tests {
         vehicle.engines[0].exit_area = 154.54 * SQUARE_METER_PER_SQUARE_FOOT;
         for data_point in THRUST_DATA_SS_EXAMPLE2.iter() {
             print!("Testing {} km altitude ... ", data_point[0]);
-            vehicle.position = vector![data_point[0], 0., 0.];
             vehicle.engines[0].throttle = data_point[1];
-            let res = vehicle.thrust(planet.pressure(vehicle.position));
+            let res = vehicle.thrust(planet.pressure(vector![data_point[0], 0., 0.]));
             assert_almost_eq_rel!(res.norm(), data_point[2], 0.05);
             println!("ok");
         }
