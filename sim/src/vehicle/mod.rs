@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 16.12.23
+// Last modified by Tibor Völcker on 22.12.23
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{vector, Vector3};
@@ -10,11 +10,11 @@ mod steering;
 pub struct Vehicle {
     mass: f64,
     engines: Vec<Engine>,
-    steering: Option<Steering>,
+    steering: [Option<Steering>; 3],
 }
 
 impl Vehicle {
-    pub fn new(mass: f64, engines: Vec<Engine>, steering: Option<Steering>) -> Self {
+    pub fn new(mass: f64, engines: Vec<Engine>, steering: [Option<Steering>; 3]) -> Self {
         Self {
             mass,
             engines,
@@ -28,6 +28,16 @@ impl Vehicle {
             .map(|eng| eng.thrust(pressure_atmos))
             .sum::<Vector3<f64>>()
             / self.mass
+    }
+
+    pub fn steer(&mut self, variable: f64) -> Vector3<f64> {
+        Vector3::from_iterator(self.steering.iter().map(|steer_opt| {
+            if let Some(steer) = steer_opt {
+                steer.update(variable)
+            } else {
+                0.
+            }
+        }))
     }
 }
 
@@ -106,7 +116,7 @@ mod tests {
             5472000.0 * NEWTON_PER_POUND_FORCE,
             232.5 * SQUARE_METER_PER_SQUARE_FOOT,
         );
-        let mut vehicle = Vehicle::new(1., vec![engine], None);
+        let mut vehicle = Vehicle::new(1., vec![engine], [None, None, None]);
 
         for data_point in THRUST_DATA_SS_EXAMPLE1.iter() {
             print!("Testing {} km altitude ... ", data_point[0]);

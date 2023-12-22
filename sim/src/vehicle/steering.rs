@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 06.12.23
-// Last modified by Tibor Völcker on 06.12.23
+// Last modified by Tibor Völcker on 22.12.23
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::Vector4;
@@ -17,7 +17,7 @@ pub enum Angular {
 }
 
 impl Steering {
-    fn update(&self, variable: f64) -> f64 {
+    pub fn update(&self, variable: f64) -> f64 {
         match self {
             Steering::Angular(steering_type) => match steering_type {
                 Angular::Polynomials(coeffs) => {

@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 06.12.23
-// Last modified by Tibor Völcker on 16.12.23
+// Last modified by Tibor Völcker on 22.12.23
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use sim::*;
@@ -8,7 +8,7 @@ use std::f64::consts::PI;
 #[test]
 fn circular_orbit() {
     let planet = EARTH_SPHERICAL;
-    let vehicle = Vehicle::new(10e3, vec![], None);
+    let vehicle = Vehicle::new(10e3, vec![], [None, None, None]);
     let r: f64 = 7000e3;
     // v^2 = mu / r
     let v = f64::sqrt(planet.mu() / r);
