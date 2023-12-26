@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.11.23
-// Last modified by Tibor Völcker on 16.12.23
+// Last modified by Tibor Völcker on 22.12.23
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 mod atmosphere;
@@ -11,10 +11,10 @@ use nalgebra::{vector, Vector3};
 use self::atmosphere::standard_atmosphere_1962;
 
 pub struct Planet {
-    equatorial_radius: f64,
-    polar_radius: f64,
+    pub equatorial_radius: f64,
+    pub polar_radius: f64,
     gravitational_parameters: [f64; 4],
-    rotation_rate: f64,
+    pub rotation_rate: f64,
     atmosphere: Option<Atmosphere>,
     wind: Option<Vector3<f64>>,
 }
