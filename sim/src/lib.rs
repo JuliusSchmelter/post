@@ -22,6 +22,7 @@ use transformations::Transformations;
 pub struct Simulation {
     pub time: f64,
     state: Vector6<f64>,
+    attitude: Vector3<f64>,
     vehicle: Vehicle,
     planet: Planet,
     transformations: Transformations,
@@ -34,6 +35,7 @@ impl Simulation {
         Simulation {
             time: 0.,
             state: Vector6::zeros(),
+            attitude: Vector3::zeros(),
             vehicle,
             planet,
             transformations: Transformations::new(launch),
@@ -59,6 +61,7 @@ impl Simulation {
             self.stepsize,
         );
         self.time += self.stepsize;
+        self.attitude = self.vehicle.steer(self.time);
     }
 }
 
