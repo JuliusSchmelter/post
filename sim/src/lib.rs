@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 16.12.23
+// Last modified by Tibor Völcker on 27.12.23
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 // allow dead code for now, as it's still WIP
@@ -9,6 +9,7 @@ use nalgebra::{Vector3, Vector6};
 
 pub mod integration;
 mod planet;
+mod transformations;
 mod utils;
 pub mod vehicle;
 
@@ -16,22 +17,26 @@ pub use integration::Integrator;
 pub use planet::{Atmosphere, Planet, EARTH_FISHER_1960, EARTH_SMITHSONIAN, EARTH_SPHERICAL};
 pub use vehicle::Vehicle;
 
+use transformations::Transformations;
+
 pub struct Simulation {
     pub time: f64,
     state: Vector6<f64>,
     vehicle: Vehicle,
     planet: Planet,
+    transformations: Transformations,
     integrator: Integrator,
     stepsize: f64,
 }
 
 impl Simulation {
-    pub fn new(vehicle: Vehicle, planet: Planet, stepsize: f64) -> Self {
+    pub fn new(vehicle: Vehicle, planet: Planet, stepsize: f64, launch: [f64; 3]) -> Self {
         Simulation {
             time: 0.,
             state: Vector6::zeros(),
             vehicle,
             planet,
+            transformations: Transformations::new(launch),
             integrator: Integrator::RK4,
             stepsize,
         }

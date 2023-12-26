@@ -15,7 +15,7 @@ fn circular_orbit() {
     // T = 2 PI * sqrt(r^3 / mu)
     let period = 2. * PI * f64::sqrt(r.powi(3) / planet.mu());
 
-    let mut sim = Simulation::new(vehicle, planet, 10.);
+    let mut sim = Simulation::new(vehicle, planet, 10., [0., 0., 0.]);
     sim.set_position(&[r, 0., 0.]);
     sim.set_velocity(&[0., v, 0.]);
 
