@@ -47,10 +47,17 @@ impl Simulation {
     fn system(&self, _time: f64, state: &Vector6<f64>) -> Vector6<f64> {
         // r_dot_I = V_I
         // V_dot_I = [IB]^-1 [A_TB + A_AB] + G_I
+        let (pos, vel) = Self::split_state(*state);
+        let pressure = self.planet.pressure(pos);
+        let mut thrust = self.vehicle.thrust(pressure);
+        thrust = self
+            .transformations
+            .inertial_to_body(self.attitude.x, self.attitude.y, self.attitude.z)
+            .transpose()
+            .transform_vector(&thrust);
 
         let gravity = self.planet.gravity(state.fixed_rows::<3>(0).into());
-
-        Vector6::from_row_slice(&[state.fixed_rows::<3>(3).as_slice(), gravity.as_slice()].concat())
+        Vector6::from_row_slice(&[vel.as_slice(), (gravity + thrust).as_slice()].concat())
     }
 
     pub fn step(&mut self) {
@@ -80,5 +87,12 @@ impl Simulation {
 
     pub fn set_velocity(&mut self, velocity: &[f64]) {
         self.state.fixed_rows_mut::<3>(3).copy_from_slice(velocity);
+    }
+
+    fn split_state(state: Vector6<f64>) -> (Vector3<f64>, Vector3<f64>) {
+        (
+            state.fixed_rows::<3>(0).into(),
+            state.fixed_rows::<3>(3).into(),
+        )
     }
 }
