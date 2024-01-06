@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.11.23
-// Last modified by Tibor Völcker on 22.12.23
+// Last modified by Tibor Völcker on 06.01.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 mod atmosphere;
@@ -171,9 +171,9 @@ impl Planet {
 mod tests {
     mod spherical {
         use super::super::*;
-        use crate::assert_almost_eq;
         use nalgebra::vector;
         use std::f64::consts::PI;
+        use test_utils::assert_almost_eq;
 
         #[test]
         fn equatorial_x() {
@@ -205,9 +205,9 @@ mod tests {
 
     mod oblate {
         use super::super::*;
-        use crate::assert_almost_eq;
         use nalgebra::vector;
         use std::f64::consts::PI;
+        use test_utils::assert_almost_eq;
 
         #[test]
         fn equatorial_x() {
@@ -239,9 +239,9 @@ mod tests {
 
     mod smithsonian {
         use super::super::*;
-        use crate::assert_almost_eq;
         use nalgebra::vector;
         use std::f64::consts::PI;
+        use test_utils::assert_almost_eq;
 
         #[test]
         fn equatorial_x() {

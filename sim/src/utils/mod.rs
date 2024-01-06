@@ -1,8 +1,6 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 14.12.23
+// Last modified by Tibor Völcker on 06.01.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
-
-mod macros;
 
 // CONVERSIONS from https://physics.nist.gov/cuu/pdf/sp811.pdf pp. 57-69
 pub const METER_PER_FOOT: f64 = 3.048e-01;

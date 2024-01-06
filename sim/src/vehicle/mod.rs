@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 22.12.23
+// Last modified by Tibor Völcker on 06.01.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{vector, Vector3};
@@ -74,8 +74,8 @@ mod tests {
     use crate::utils::*;
     use crate::Atmosphere;
     use crate::EARTH_SPHERICAL;
-    use crate::{assert_almost_eq_rel, utils::NEWTON_PER_POUND_FORCE};
     use nalgebra::vector;
+    use test_utils::assert_almost_eq_rel;
 
     const THRUST_DATA_SS_EXAMPLE1: [[f64; 3]; 2] = [
         // values from SS example: [2] p. 277

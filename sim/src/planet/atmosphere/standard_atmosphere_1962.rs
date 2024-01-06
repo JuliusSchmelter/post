@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 16.12.23
+// Last modified by Tibor Völcker on 06.01.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use crate::utils::*;
@@ -196,8 +196,9 @@ const STD_ATMOS_TABLE: [(f64, f64, f64, f64); 22] = [
 mod tests {
     use super::super::Atmosphere;
     use super::*;
-    use crate::{assert_almost_eq_rel, EARTH_SPHERICAL};
+    use crate::EARTH_SPHERICAL;
     use nalgebra::vector;
+    use test_utils::assert_almost_eq_rel;
 
     const ATMOSPHERIC_DATA_1967_MODEL: [[f64; 5]; 4] = [
         // [ altitude [m], temperature [K], pressure [Pa], density [kg/m^2], speed of sound [m/s] ]
