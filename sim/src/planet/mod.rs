@@ -1,8 +1,10 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.11.23
-// Last modified by Tibor Völcker on 06.01.24
+// Last modified by Tibor Völcker on 12.01.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 mod atmosphere;
+
+use std::f64::consts::PI;
 
 use crate::utils::*;
 pub use atmosphere::Atmosphere;
@@ -164,6 +166,28 @@ impl Planet {
         } else {
             0.
         }
+    }
+
+    pub fn alpha(&self, velocity: Vector3<f64>) -> f64 {
+        if velocity.x == 0. {
+            return velocity.z.signum() * PI / 2.;
+        }
+        // From [1]: sin(alpha) = z / sqrt(x^2 + z^2)
+        //           cos(alpha) = x / sqrt(x^2 + z^2)
+        //               alpha = atan(sin(alpha) / cos(alpha))
+        // As far as I can see, is the 'sqrt(x^2 + z^2) term useless
+        f64::atan(velocity.z / velocity.x)
+    }
+
+    pub fn mach_number(&self, position: Vector3<f64>, velocity: Vector3<f64>) -> f64 {
+        if self.speed_of_sound(position) == 0. {
+            return 0.;
+        }
+        self.atmos_rel_velocity(position, velocity).norm() / self.speed_of_sound(position)
+    }
+
+    pub fn dynamic_pressure(&self, position: Vector3<f64>, velocity: Vector3<f64>) -> f64 {
+        0.5 * self.density(position) * self.atmos_rel_velocity(position, velocity).norm().powi(2)
     }
 }
 

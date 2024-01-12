@@ -1,11 +1,12 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 20.12.23
-// Last modified by Tibor Völcker on 24.12.23
+// Last modified by Tibor Völcker on 12.01.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::vector;
 use sim::vehicle::{Engine, Steering};
 use sim::*;
 use std::f64::consts::PI;
+use tables::linear_interpolation::Table2D;
 
 #[test]
 fn powered_flight() {
@@ -19,7 +20,15 @@ fn powered_flight() {
         0.,
         0.
     ]));
-    let vehicle = Vehicle::new(1e3, vec![engine], [None, Some(steering), None]);
+    let vehicle = Vehicle::new(
+        1e3,
+        0.,
+        Table2D::zeros(),
+        Table2D::zeros(),
+        Table2D::zeros(),
+        vec![engine],
+        [None, Some(steering), None],
+    );
     let r = planet.equatorial_radius;
     let mut sim = Simulation::new(vehicle, planet, 10., [0., 0., PI / 2.]);
     sim.set_position(&[r, 0., 0.]);

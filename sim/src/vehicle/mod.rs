@@ -4,19 +4,36 @@
 
 use nalgebra::{vector, Vector3};
 pub use steering::{Angular, Steering};
+use tables::linear_interpolation::Table2D;
 
 mod steering;
 
 pub struct Vehicle {
     mass: f64,
+    reference_area: f64,
+    drag_coeff: Table2D,
+    lift_coeff: Table2D,
+    side_force_coeff: Table2D,
     engines: Vec<Engine>,
     steering: [Option<Steering>; 3],
 }
 
 impl Vehicle {
-    pub fn new(mass: f64, engines: Vec<Engine>, steering: [Option<Steering>; 3]) -> Self {
+    pub fn new(
+        mass: f64,
+        reference_area: f64,
+        drag_coeff: Table2D,
+        lift_coeff: Table2D,
+        side_force_coeff: Table2D,
+        engines: Vec<Engine>,
+        steering: [Option<Steering>; 3],
+    ) -> Self {
         Self {
             mass,
+            reference_area,
+            drag_coeff,
+            lift_coeff,
+            side_force_coeff,
             engines,
             steering,
         }
@@ -28,6 +45,17 @@ impl Vehicle {
             .map(|eng| eng.thrust(pressure_atmos))
             .sum::<Vector3<f64>>()
             / self.mass
+    }
+
+    pub fn aero(&self, alpha: f64, mach: f64, dynamic_pressure: f64) -> Vector3<f64> {
+        let cd = self.drag_coeff.at(alpha, mach);
+        let cl = self.lift_coeff.at(alpha, mach);
+        let cy = self.side_force_coeff.at(alpha, mach);
+
+        let ca = alpha.cos() * cd - alpha.sin() * cl;
+        let cn = alpha.sin() * cd + alpha.cos() * cl;
+
+        dynamic_pressure * self.reference_area * vector![-ca, cy, -cn] / self.mass
     }
 
     pub fn steer(&self, variable: f64) -> Vector3<f64> {
@@ -116,7 +144,15 @@ mod tests {
             5472000.0 * NEWTON_PER_POUND_FORCE,
             232.5 * SQUARE_METER_PER_SQUARE_FOOT,
         );
-        let mut vehicle = Vehicle::new(1., vec![engine], [None, None, None]);
+        let mut vehicle = Vehicle::new(
+            1.,
+            0.,
+            Table2D::zeros(),
+            Table2D::zeros(),
+            Table2D::zeros(),
+            vec![engine],
+            [None, None, None],
+        );
 
         for data_point in THRUST_DATA_SS_EXAMPLE1.iter() {
             print!("Testing {} km altitude ... ", data_point[0]);

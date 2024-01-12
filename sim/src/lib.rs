@@ -46,20 +46,25 @@ impl Simulation {
         let (pos, vel) = Self::split_state(*state);
         let attitude = self.vehicle.steer(time);
 
-        let bi = self
+        let ib = self
             .transformations
-            .inertial_to_body(attitude.x, attitude.y, attitude.z)
-            .transpose();
+            .inertial_to_body(attitude.x, attitude.y, attitude.z);
+        let bi = ib.transpose();
 
         let pressure = self.planet.pressure(pos);
         let thrust = self.vehicle.thrust(pressure);
+
+        let alpha = self.planet.alpha(ib.transform_vector(&vel));
+        let mach = self.planet.mach_number(pos, vel);
+        let dynamic_pressure = self.planet.dynamic_pressure(pos, vel);
+        let aero = self.vehicle.aero(alpha, mach, dynamic_pressure);
 
         let gravity = self.planet.gravity(state.fixed_rows::<3>(0).into());
 
         // r_dot_I = V_I
         let r_dot = vel;
         // V_dot_I = [IB]^-1 [A_TB + A_AB] + G_I
-        let v_dot = bi.transform_vector(&thrust) + gravity;
+        let v_dot = bi.transform_vector(&(thrust + aero)) + gravity;
 
         Vector6::from_row_slice(&[r_dot.as_slice(), (v_dot).as_slice()].concat())
     }
