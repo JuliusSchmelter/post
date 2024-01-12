@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 06.01.24
-// Last modified by Tibor Völcker on 06.01.24
+// Last modified by Tibor Völcker on 12.01.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use super::*;
@@ -7,11 +7,11 @@ use super::*;
 pub struct Linear;
 impl Interpolator for Linear {}
 
-pub type Table1D<const X: usize> = super::Table1D<X, Linear>;
-pub type Table2D<const X: usize, const Y: usize> = super::Table2D<X, Y, Linear>;
-pub type Table3D<const X: usize, const Y: usize, const Z: usize> = super::Table3D<X, Y, Z, Linear>;
+pub type Table1D = super::Table1D<Linear>;
+pub type Table2D = super::Table2D<Linear>;
+pub type Table3D = super::Table3D<Linear>;
 
-impl<const X: usize> Table1D<X> {
+impl Table1D {
     pub fn at(&self, x: f64) -> f64 {
         let idx1 = {
             let mut idx1 = self.x.partition_point(|val| val < &x);
@@ -31,7 +31,7 @@ impl<const X: usize> Table1D<X> {
     }
 }
 
-impl<const X: usize, const Y: usize> Table2D<X, Y> {
+impl Table2D {
     pub fn at(&self, x: f64, y: f64) -> f64 {
         let idx1 = {
             let mut idx1 = self.x.partition_point(|val| val < &x);
@@ -51,7 +51,7 @@ impl<const X: usize, const Y: usize> Table2D<X, Y> {
     }
 }
 
-impl<const X: usize, const Y: usize, const Z: usize> Table3D<X, Y, Z> {
+impl Table3D {
     pub fn at(&self, x: f64, y: f64, z: f64) -> f64 {
         let idx1 = {
             let mut idx1 = self.x.partition_point(|val| val < &x);
