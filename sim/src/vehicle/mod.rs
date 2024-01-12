@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 06.01.24
+// Last modified by Tibor Völcker on 12.01.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{vector, Vector3};
@@ -30,7 +30,7 @@ impl Vehicle {
             / self.mass
     }
 
-    pub fn steer(&mut self, variable: f64) -> Vector3<f64> {
+    pub fn steer(&self, variable: f64) -> Vector3<f64> {
         Vector3::from_iterator(self.steering.iter().map(|steer_opt| {
             if let Some(steer) = steer_opt {
                 steer.update(variable)

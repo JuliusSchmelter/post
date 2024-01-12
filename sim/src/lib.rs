@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 27.12.23
+// Last modified by Tibor Völcker on 12.01.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 // allow dead code for now, as it's still WIP
@@ -22,7 +22,6 @@ use transformations::Transformations;
 pub struct Simulation {
     pub time: f64,
     state: Vector6<f64>,
-    attitude: Vector3<f64>,
     vehicle: Vehicle,
     planet: Planet,
     transformations: Transformations,
@@ -35,7 +34,6 @@ impl Simulation {
         Simulation {
             time: 0.,
             state: Vector6::zeros(),
-            attitude: Vector3::zeros(),
             vehicle,
             planet,
             transformations: Transformations::new(launch),
@@ -44,20 +42,26 @@ impl Simulation {
         }
     }
 
-    fn system(&self, _time: f64, state: &Vector6<f64>) -> Vector6<f64> {
-        // r_dot_I = V_I
-        // V_dot_I = [IB]^-1 [A_TB + A_AB] + G_I
+    fn system(&self, time: f64, state: &Vector6<f64>) -> Vector6<f64> {
         let (pos, vel) = Self::split_state(*state);
-        let pressure = self.planet.pressure(pos);
-        let mut thrust = self.vehicle.thrust(pressure);
-        thrust = self
+        let attitude = self.vehicle.steer(time);
+
+        let bi = self
             .transformations
-            .inertial_to_body(self.attitude.x, self.attitude.y, self.attitude.z)
-            .transpose()
-            .transform_vector(&thrust);
+            .inertial_to_body(attitude.x, attitude.y, attitude.z)
+            .transpose();
+
+        let pressure = self.planet.pressure(pos);
+        let thrust = self.vehicle.thrust(pressure);
 
         let gravity = self.planet.gravity(state.fixed_rows::<3>(0).into());
-        Vector6::from_row_slice(&[vel.as_slice(), (gravity + thrust).as_slice()].concat())
+
+        // r_dot_I = V_I
+        let r_dot = vel;
+        // V_dot_I = [IB]^-1 [A_TB + A_AB] + G_I
+        let v_dot = bi.transform_vector(&thrust) + gravity;
+
+        Vector6::from_row_slice(&[r_dot.as_slice(), (v_dot).as_slice()].concat())
     }
 
     pub fn step(&mut self) {
@@ -68,7 +72,6 @@ impl Simulation {
             self.stepsize,
         );
         self.time += self.stepsize;
-        self.attitude = self.vehicle.steer(self.time);
     }
 }
 
