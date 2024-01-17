@@ -53,8 +53,8 @@ impl Vehicle {
         let cl = self.lift_coeff.at(alpha, mach);
         let cy = self.side_force_coeff.at(alpha, mach);
 
-        let ca = alpha.cos() * cd - alpha.sin() * cl;
-        let cn = alpha.sin() * cd + alpha.cos() * cl;
+        let ca = alpha.to_radians().cos() * cd - alpha.to_radians().sin() * cl;
+        let cn = alpha.to_radians().sin() * cd + alpha.to_radians().cos() * cl;
 
         dynamic_pressure * self.reference_area * vector![-ca, cy, -cn] / self.mass
     }
