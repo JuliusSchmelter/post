@@ -168,8 +168,8 @@ pub fn example_data() -> [DataPoint; 4] {
             cl: 1.5e-2,
             throttle: 1.,
             thrust: 4.97997964e6 * NEWTON_PER_POUND_FORCE,
-            dynamic_pressure: 0.,
-            aero_force: Vector3::new(-0., 0., -0.),
+            dynamic_pressure: 0. * PASCAL_PER_PSF,
+            aero_force: Vector3::new(-0., 0., -0.) * NEWTON_PER_POUND_FORCE,
             vehicle: vehicle1.clone(),
         },
         DataPoint {
@@ -185,7 +185,7 @@ pub fn example_data() -> [DataPoint; 4] {
             throttle: 1.,
             thrust: 4.99634838e6 * NEWTON_PER_POUND_FORCE,
             dynamic_pressure: 1.93297185e1 * PASCAL_PER_PSF,
-            aero_force: Vector3::new(-1.59202357e4, 0., -1.09857008e3),
+            aero_force: Vector3::new(-1.59202357e4, 0., -1.09857008e3) * NEWTON_PER_POUND_FORCE,
             vehicle: vehicle1,
         },
         DataPoint {
@@ -200,8 +200,8 @@ pub fn example_data() -> [DataPoint; 4] {
             cl: 1.46609433e-1,
             throttle: 7.50268212e-1,
             thrust: 1.07363350e6 * NEWTON_PER_POUND_FORCE,
-            dynamic_pressure: 8.63665574e-1,
-            aero_force: Vector3::new(-1.66106776e2, 0., -6.28680574e2),
+            dynamic_pressure: 8.63665574e-1 * PASCAL_PER_PSF,
+            aero_force: Vector3::new(-1.66106776e2, 0., -6.28680574e2) * NEWTON_PER_POUND_FORCE,
             vehicle: vehicle2.clone(),
         },
         DataPoint {
@@ -216,8 +216,8 @@ pub fn example_data() -> [DataPoint; 4] {
             cl: 1.12746181e-1,
             throttle: 6.50633622e-1,
             thrust: 9.31056380e5 * NEWTON_PER_POUND_FORCE,
-            dynamic_pressure: 1.10682128e0,
-            aero_force: Vector3::new(-2.13216514e2, 0., -6.17695942e2),
+            dynamic_pressure: 1.10682128e0 * PASCAL_PER_PSF,
+            aero_force: Vector3::new(-2.13216514e2, 0., -6.17695942e2) * NEWTON_PER_POUND_FORCE,
             vehicle: vehicle2,
         },
     ]
