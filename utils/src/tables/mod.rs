@@ -16,6 +16,7 @@ where
 
 pub trait Interpolator {}
 
+#[derive(Clone)]
 pub struct Table<T, I: Interpolator> {
     data: Box<[T]>,
     x: Box<[f64]>,

@@ -1,10 +1,11 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 06.01.24
-// Last modified by Tibor Völcker on 12.01.24
+// Last modified by Tibor Völcker on 17.01.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 #![allow(unused_variables)]
 use super::*;
 
+#[derive(Clone)]
 pub struct Cubic;
 impl Interpolator for Cubic {}
 

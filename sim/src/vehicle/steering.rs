@@ -1,14 +1,16 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 06.12.23
-// Last modified by Tibor Völcker on 22.12.23
+// Last modified by Tibor Völcker on 17.01.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::Vector4;
 
+#[derive(Clone)]
 pub enum Steering {
     // Rate,
     Angular(Angular),
 }
 
+#[derive(Clone)]
 pub enum Angular {
     Polynomials(Vector4<f64>),
     // Tables,

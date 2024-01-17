@@ -8,6 +8,7 @@ use utils::tables::linear_interpolation::Table2D;
 
 mod steering;
 
+#[derive(Clone)]
 pub struct Vehicle {
     mass: f64,
     reference_area: f64,
@@ -69,6 +70,7 @@ impl Vehicle {
     }
 }
 
+#[derive(Clone)]
 pub struct Engine {
     // [pitch, yaw]
     incidence: [f64; 2],
