@@ -1,11 +1,11 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 06.12.23
-// Last modified by Tibor Völcker on 12.01.24
+// Last modified by Tibor Völcker on 17.01.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use sim::*;
 use std::f64::consts::PI;
-use tables::linear_interpolation::Table2D;
-use test_utils::assert_almost_eq;
+use utils::assert_almost_eq;
+use utils::tables::linear_interpolation::Table2D;
 
 #[test]
 fn circular_orbit() {

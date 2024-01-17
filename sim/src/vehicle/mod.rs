@@ -1,10 +1,10 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 12.01.24
+// Last modified by Tibor Völcker on 17.01.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{vector, Vector3};
 pub use steering::{Angular, Steering};
-use tables::linear_interpolation::Table2D;
+use utils::tables::linear_interpolation::Table2D;
 
 mod steering;
 
@@ -99,11 +99,11 @@ impl Engine {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::utils::*;
     use crate::Atmosphere;
     use crate::EARTH_SPHERICAL;
     use nalgebra::vector;
-    use test_utils::assert_almost_eq_rel;
+    use utils::assert_almost_eq_rel;
+    use utils::constants::*;
 
     const THRUST_DATA_SS_EXAMPLE1: [[f64; 3]; 2] = [
         // values from SS example: [2] p. 277

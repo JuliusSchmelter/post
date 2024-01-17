@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 06.01.24
+// Last modified by Tibor Völcker on 17.01.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{matrix, vector, SMatrix, SVector};
@@ -55,7 +55,7 @@ pub const RK4: RungeKutta<4> = RungeKutta {
 mod tests {
     use super::*;
     use nalgebra::Vector2;
-    use test_utils::assert_lt;
+    use utils::assert_lt;
 
     pub struct Example {
         time: f64,

@@ -1,14 +1,14 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.11.23
-// Last modified by Tibor Völcker on 12.01.24
+// Last modified by Tibor Völcker on 17.01.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 mod atmosphere;
 
 use std::f64::consts::PI;
 
-use crate::utils::*;
 pub use atmosphere::Atmosphere;
 use nalgebra::{vector, Vector3};
+use utils::constants::*;
 
 use self::atmosphere::standard_atmosphere_1962;
 
@@ -197,7 +197,7 @@ mod tests {
         use super::super::*;
         use nalgebra::vector;
         use std::f64::consts::PI;
-        use test_utils::assert_almost_eq;
+        use utils::assert_almost_eq;
 
         #[test]
         fn equatorial_x() {
@@ -231,7 +231,7 @@ mod tests {
         use super::super::*;
         use nalgebra::vector;
         use std::f64::consts::PI;
-        use test_utils::assert_almost_eq;
+        use utils::assert_almost_eq;
 
         #[test]
         fn equatorial_x() {
@@ -265,7 +265,7 @@ mod tests {
         use super::super::*;
         use nalgebra::vector;
         use std::f64::consts::PI;
-        use test_utils::assert_almost_eq;
+        use utils::assert_almost_eq;
 
         #[test]
         fn equatorial_x() {

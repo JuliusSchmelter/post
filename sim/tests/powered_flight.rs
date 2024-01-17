@@ -1,12 +1,12 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 20.12.23
-// Last modified by Tibor Völcker on 12.01.24
+// Last modified by Tibor Völcker on 17.01.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::vector;
 use sim::vehicle::{Engine, Steering};
 use sim::*;
 use std::f64::consts::PI;
-use tables::linear_interpolation::Table2D;
+use utils::tables::linear_interpolation::Table2D;
 
 #[test]
 fn powered_flight() {

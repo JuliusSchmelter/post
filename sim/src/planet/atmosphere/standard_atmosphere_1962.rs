@@ -1,8 +1,8 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 06.01.24
+// Last modified by Tibor Völcker on 17.01.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
-use crate::utils::*;
+use utils::constants::*;
 
 pub fn temperature(alt: f64) -> f64 {
     // T = T_B + L_B * (H_g - H_B)
@@ -195,10 +195,10 @@ const STD_ATMOS_TABLE: [(f64, f64, f64, f64); 22] = [
 #[cfg(test)]
 mod tests {
     use super::super::Atmosphere;
-    use super::*;
     use crate::EARTH_SPHERICAL;
     use nalgebra::vector;
-    use test_utils::assert_almost_eq_rel;
+    use utils::assert_almost_eq_rel;
+    use utils::constants::*;
 
     const ATMOSPHERIC_DATA_1967_MODEL: [[f64; 5]; 4] = [
         // [ altitude [m], temperature [K], pressure [Pa], density [kg/m^2], speed of sound [m/s] ]

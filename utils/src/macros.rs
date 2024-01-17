@@ -1,3 +1,6 @@
+// Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.01.24
+// Last modified by Tibor Völcker on 17.01.24
+// Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 #[macro_export]
 macro_rules! assert_lt {
     ($left: expr, $right: expr) => {

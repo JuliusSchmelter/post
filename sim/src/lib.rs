@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 12.01.24
+// Last modified by Tibor Völcker on 17.01.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 // allow dead code for now, as it's still WIP
@@ -10,7 +10,6 @@ use nalgebra::{Vector3, Vector6};
 pub mod integration;
 mod planet;
 mod transformations;
-mod utils;
 pub mod vehicle;
 
 pub use integration::Integrator;
