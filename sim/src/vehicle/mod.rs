@@ -100,77 +100,54 @@ impl Engine {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::Atmosphere;
-    use crate::EARTH_SPHERICAL;
-    use nalgebra::vector;
-    use utils::assert_almost_eq_rel;
-    use utils::constants::*;
-
-    const THRUST_DATA_SS_EXAMPLE1: [[f64; 3]; 2] = [
-        // values from SS example: [2] p. 277
-        // [altitude, throttle, thrust]
-        [
-            -4.76837158e-7 * METER_PER_FOOT,
-            1.,
-            4.97997964e6 * NEWTON_PER_POUND_FORCE,
-        ],
-        [
-            9.33310129e2 * METER_PER_FOOT,
-            1.,
-            4.99634838e6 * NEWTON_PER_POUND_FORCE,
-        ],
-    ];
-
-    const THRUST_DATA_SS_EXAMPLE2: [[f64; 3]; 2] = [
-        // values from SS example: [2] p. 277
-        // [altitude, throttle, thrust]
-        [
-            3.04960868e5 * METER_PER_FOOT,
-            7.50268212e-1,
-            1.07363350e6 * NEWTON_PER_POUND_FORCE,
-        ],
-        [
-            3.03804044e5 * METER_PER_FOOT,
-            6.50633622e-1,
-            9.31056380e5 * NEWTON_PER_POUND_FORCE,
-        ],
-    ];
+    use crate::example_data::example_data;
+    use utils::{assert_almost_eq, assert_almost_eq_rel};
 
     #[test]
     fn test_thrust() {
-        let mut planet = EARTH_SPHERICAL;
-        planet.add_atmosphere(Atmosphere::StandardAtmosphere1962);
-        let engine = Engine::new(
-            [0., 0.],
-            5472000.0 * NEWTON_PER_POUND_FORCE,
-            232.5 * SQUARE_METER_PER_SQUARE_FOOT,
-        );
-        let mut vehicle = Vehicle::new(
-            1.,
-            0.,
-            Table2D::zeros(),
-            Table2D::zeros(),
-            Table2D::zeros(),
-            vec![engine],
-            [None, None, None],
-        );
+        let mut data = example_data();
 
-        for data_point in THRUST_DATA_SS_EXAMPLE1.iter() {
-            print!("Testing {} km altitude ... ", data_point[0]);
-            vehicle.engines[0].throttle = data_point[1];
-            let res = vehicle.thrust(planet.pressure(vector![data_point[0], 0., 0.]));
-            assert_almost_eq_rel!(res.norm(), data_point[2], 0.05);
+        for data_point in data.iter_mut() {
+            print!("Testing {} km altitude ... ", data_point.altitude);
+            data_point.vehicle.engines[0].throttle = data_point.throttle;
+            let res = data_point.vehicle.thrust(data_point.pressure);
+            assert_almost_eq_rel!(res.norm(), data_point.thrust, 0.001);
             println!("ok");
         }
+    }
 
-        vehicle.engines[0].thrust_vac = 1431000.0 * NEWTON_PER_POUND_FORCE;
-        vehicle.engines[0].exit_area = 154.54 * SQUARE_METER_PER_SQUARE_FOOT;
-        for data_point in THRUST_DATA_SS_EXAMPLE2.iter() {
-            print!("Testing {} km altitude ... ", data_point[0]);
-            vehicle.engines[0].throttle = data_point[1];
-            let res = vehicle.thrust(planet.pressure(vector![data_point[0], 0., 0.]));
-            assert_almost_eq_rel!(res.norm(), data_point[2], 0.05);
+    #[test]
+    fn cd() {
+        let data = example_data();
+
+        for data_point in data {
+            print!("Testing {} km altitude ... ", data_point.altitude);
+            assert_almost_eq!(
+                data_point
+                    .vehicle
+                    .drag_coeff
+                    .at(data_point.alpha, data_point.mach),
+                data_point.cd,
+                1e-9
+            );
+            println!("ok");
+        }
+    }
+
+    #[test]
+    fn cl() {
+        let data = example_data();
+
+        for data_point in data {
+            print!("Testing {} km altitude ... ", data_point.altitude);
+            assert_almost_eq!(
+                data_point
+                    .vehicle
+                    .lift_coeff
+                    .at(data_point.alpha, data_point.mach),
+                data_point.cl,
+                1e-9
+            );
             println!("ok");
         }
     }

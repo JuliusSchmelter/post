@@ -7,6 +7,8 @@
 
 use nalgebra::{Vector3, Vector6};
 
+#[cfg(test)]
+mod example_data;
 pub mod integration;
 mod planet;
 mod transformations;
