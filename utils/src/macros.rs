@@ -24,9 +24,17 @@ macro_rules! assert_almost_eq {
 #[macro_export]
 macro_rules! assert_almost_eq_rel {
     ($left: expr, $right: expr, $eps: expr) => {
-        assert!((1. - ($left/$right)).abs() < $eps, "assertion `left ≈ right` failed\n    left: {}\n   right: {}\n epsilon: {}%", $left, $right, $eps * 100.);
+        if $right.abs() == 0. {
+            assert!($left < $eps, "assertion `left < eps` failed (right = 0.)\n    left: {}\n   right: {}\n epsilon: {}%", $left, $right, $eps * 100.);
+        } else {
+            assert!((1. - ($left/$right)).abs() < $eps, "assertion `left ≈ right` failed\n    left: {}\n   right: {}\n epsilon: {}%", $left, $right, $eps * 100.);
+        }
     };
     ($left: expr, $right: expr, $eps: expr, $($arg:tt)+) => {
-        assert!((1 - ($left/$right)).abs() < $eps, $($arg)*);
+        if $right == 0. {
+            assert!($left < $eps, $($arg)*);
+        } else {
+            assert!((1 - ($left/$right)).abs() < $eps, $($arg)*);
+        }
     };
 }
