@@ -151,4 +151,22 @@ mod tests {
             println!("ok");
         }
     }
+
+    #[test]
+    fn test_aero() {
+        let data = example_data();
+
+        for data_point in data.iter() {
+            print!("Testing {} km altitude ... ", data_point.altitude);
+            let res = data_point.vehicle.aero(
+                data_point.alpha,
+                data_point.mach,
+                data_point.dynamic_pressure,
+            );
+            assert_almost_eq_rel!(res[0], data_point.aero_force[0], 0.001);
+            assert_almost_eq_rel!(res[1], data_point.aero_force[1], 0.001);
+            assert_almost_eq_rel!(res[2], data_point.aero_force[2], 0.001);
+            println!("ok");
+        }
+    }
 }
