@@ -1,13 +1,13 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.01.24
-// Last modified by Tibor Völcker on 17.01.24
+// Last modified by Tibor Völcker on 19.01.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 
-use nalgebra::Vector3;
+use nalgebra::{vector, Vector3};
 
 use utils::constants::*;
 use utils::tables::linear_interpolation::Table2D;
 
-use crate::vehicle::Engine;
+use crate::vehicle::{Angular, Engine, Steering};
 use crate::Vehicle;
 
 const DRAG_TABLE1: ([f64; 5], [f64; 12], [[f64; 12]; 5]) = (
@@ -121,40 +121,14 @@ pub struct DataPoint {
     pub mach: f64,
     pub cd: f64,
     pub cl: f64,
-    pub throttle: f64,
+    pub auto_throttle: f64,
     pub thrust: f64,
     pub dynamic_pressure: f64,
-    pub aero_force: Vector3<f64>,
+    pub aero_acc: Vector3<f64>,
     pub vehicle: Vehicle,
 }
 
 pub fn example_data() -> [DataPoint; 4] {
-    let vehicle1 = Vehicle::new(
-        1.,
-        4500. * SQUARE_METER_PER_SQUARE_FOOT,
-        Table2D::new(DRAG_TABLE1.0, DRAG_TABLE1.1, DRAG_TABLE1.2),
-        Table2D::new(LIFT_TABLE1.0, LIFT_TABLE1.1, LIFT_TABLE1.2),
-        Table2D::zeros(),
-        vec![Engine::new(
-            [0., 0.],
-            5472000.0 * NEWTON_PER_POUND_FORCE,
-            232.5 * SQUARE_METER_PER_SQUARE_FOOT,
-        )],
-        [None, None, None],
-    );
-    let vehicle2 = Vehicle::new(
-        1.,
-        4840. * SQUARE_METER_PER_SQUARE_FOOT,
-        Table2D::new(DRAG_TABLE2.0, DRAG_TABLE2.1, DRAG_TABLE2.2),
-        Table2D::new(LIFT_TABLE2.0, LIFT_TABLE2.1, LIFT_TABLE2.2),
-        Table2D::zeros(),
-        vec![Engine::new(
-            [0., 0.],
-            1431000.0 * NEWTON_PER_POUND_FORCE,
-            154.54 * SQUARE_METER_PER_SQUARE_FOOT,
-        )],
-        [None, None, None],
-    );
     [
         DataPoint {
             time: 0.,
@@ -166,14 +140,29 @@ pub fn example_data() -> [DataPoint; 4] {
             mach: 0.,
             cd: 1.8e-1,
             cl: 1.5e-2,
-            throttle: 1.,
+            auto_throttle: 1.,
             thrust: 4.97997964e6 * NEWTON_PER_POUND_FORCE,
             dynamic_pressure: 0. * PASCAL_PER_PSF,
-            aero_force: Vector3::new(-0., 0., -0.) * NEWTON_PER_POUND_FORCE,
-            vehicle: vehicle1.clone(),
+            aero_acc: Vector3::new(-0., 0., -0.) * NEWTON_PER_POUND_FORCE
+                / 4.03328112e6
+                / KILOGRAM_PER_POUND,
+            vehicle: Vehicle::new(
+                4.03328112e6 * KILOGRAM_PER_POUND,
+                4500. * SQUARE_METER_PER_SQUARE_FOOT,
+                Table2D::new(DRAG_TABLE1.0, DRAG_TABLE1.1, DRAG_TABLE1.2),
+                Table2D::new(LIFT_TABLE1.0, LIFT_TABLE1.1, LIFT_TABLE1.2),
+                Table2D::zeros(),
+                vec![Engine::new(
+                    [0., 0.],
+                    5472000.0 * NEWTON_PER_POUND_FORCE,
+                    232.5 * SQUARE_METER_PER_SQUARE_FOOT,
+                )],
+                [None, None, None],
+                3. * STD_GRAVITY,
+            ),
         },
         DataPoint {
-            time: 0.,
+            time: 1.50000000e1,
             altitude: 9.33310129e2 * METER_PER_FOOT,
             temperature: 5.15341815e2 * KELVIN_PER_RANKIN,
             pressure: 2.04581341e3 * PASCAL_PER_PSF,
@@ -182,11 +171,26 @@ pub fn example_data() -> [DataPoint; 4] {
             mach: 1.16179831e-1,
             cd: 1.82991982e-1,
             cl: 1.31054076e-2,
-            throttle: 1.,
+            auto_throttle: 1.,
             thrust: 4.99634838e6 * NEWTON_PER_POUND_FORCE,
             dynamic_pressure: 1.93297185e1 * PASCAL_PER_PSF,
-            aero_force: Vector3::new(-1.59202357e4, 0., -1.09857008e3) * NEWTON_PER_POUND_FORCE,
-            vehicle: vehicle1,
+            aero_acc: Vector3::new(-1.59202357e4, 0., -1.09857008e3) * NEWTON_PER_POUND_FORCE
+                / 3.84631074e6
+                / KILOGRAM_PER_POUND,
+            vehicle: Vehicle::new(
+                3.84631074e6 * KILOGRAM_PER_POUND,
+                4500. * SQUARE_METER_PER_SQUARE_FOOT,
+                Table2D::new(DRAG_TABLE1.0, DRAG_TABLE1.1, DRAG_TABLE1.2),
+                Table2D::new(LIFT_TABLE1.0, LIFT_TABLE1.1, LIFT_TABLE1.2),
+                Table2D::zeros(),
+                vec![Engine::new(
+                    [0., 0.],
+                    5472000.0 * NEWTON_PER_POUND_FORCE,
+                    232.5 * SQUARE_METER_PER_SQUARE_FOOT,
+                )],
+                [None, None, None],
+                3. * STD_GRAVITY,
+            ),
         },
         DataPoint {
             time: 0.,
@@ -198,14 +202,38 @@ pub fn example_data() -> [DataPoint; 4] {
             mach: 2.47287807e1,
             cd: 5.19996124e-2,
             cl: 1.46609433e-1,
-            throttle: 7.50268212e-1,
+            auto_throttle: 7.50268212e-1,
             thrust: 1.07363350e6 * NEWTON_PER_POUND_FORCE,
             dynamic_pressure: 8.63665574e-1 * PASCAL_PER_PSF,
-            aero_force: Vector3::new(-1.66106776e2, 0., -6.28680574e2) * NEWTON_PER_POUND_FORCE,
-            vehicle: vehicle2.clone(),
+            aero_acc: Vector3::new(-1.66106776e2, 0., -6.28680574e2) * NEWTON_PER_POUND_FORCE
+                / 3.57822526e5
+                / KILOGRAM_PER_POUND,
+            vehicle: Vehicle::new(
+                3.57822526e5 * KILOGRAM_PER_POUND,
+                4840. * SQUARE_METER_PER_SQUARE_FOOT,
+                Table2D::new(DRAG_TABLE2.0, DRAG_TABLE2.1, DRAG_TABLE2.2),
+                Table2D::new(LIFT_TABLE2.0, LIFT_TABLE2.1, LIFT_TABLE2.2),
+                Table2D::zeros(),
+                vec![Engine::new(
+                    [0., 0.],
+                    1431000.0 * NEWTON_PER_POUND_FORCE,
+                    154.54 * SQUARE_METER_PER_SQUARE_FOOT,
+                )],
+                [
+                    None,
+                    None,
+                    Some(Steering::Angular(Angular::Polynomials(vector![
+                        -9.66287352e1,
+                        -1.16711775e-1,
+                        0.,
+                        0.
+                    ]))),
+                ],
+                3. * STD_GRAVITY,
+            ),
         },
         DataPoint {
-            time: 0.,
+            time: 2.18072658e1,
             altitude: 3.03804044e5 * METER_PER_FOOT,
             temperature: 3.39250012e2 * KELVIN_PER_RANKIN,
             pressure: 2.14880703e-3 * PASCAL_PER_PSF,
@@ -214,11 +242,35 @@ pub fn example_data() -> [DataPoint; 4] {
             mach: 2.71263292e1,
             cd: 4.65609248e-2,
             cl: 1.12746181e-1,
-            throttle: 6.50633622e-1,
+            auto_throttle: 6.50633622e-1,
             thrust: 9.31056380e5 * NEWTON_PER_POUND_FORCE,
             dynamic_pressure: 1.10682128e0 * PASCAL_PER_PSF,
-            aero_force: Vector3::new(-2.13216514e2, 0., -6.17695942e2) * NEWTON_PER_POUND_FORCE,
-            vehicle: vehicle2,
+            aero_acc: Vector3::new(-2.13216514e2, 0., -6.17695942e2) * NEWTON_PER_POUND_FORCE
+                / 3.10281123e5
+                / KILOGRAM_PER_POUND,
+            vehicle: Vehicle::new(
+                3.10281123e5 * KILOGRAM_PER_POUND,
+                4840. * SQUARE_METER_PER_SQUARE_FOOT,
+                Table2D::new(DRAG_TABLE2.0, DRAG_TABLE2.1, DRAG_TABLE2.2),
+                Table2D::new(LIFT_TABLE2.0, LIFT_TABLE2.1, LIFT_TABLE2.2),
+                Table2D::zeros(),
+                vec![Engine::new(
+                    [0., 0.],
+                    1431000.0 * NEWTON_PER_POUND_FORCE,
+                    154.54 * SQUARE_METER_PER_SQUARE_FOOT,
+                )],
+                [
+                    None,
+                    None,
+                    Some(Steering::Angular(Angular::Polynomials(vector![
+                        -9.66287352e1,
+                        -1.16711775e-1,
+                        0.,
+                        0.
+                    ]))),
+                ],
+                3. * STD_GRAVITY,
+            ),
         },
     ]
 }
