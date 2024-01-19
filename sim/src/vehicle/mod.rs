@@ -151,13 +151,24 @@ mod tests {
 
     #[test]
     fn test_thrust() {
-        let mut data = example_data();
+        let data = example_data();
 
-        for data_point in data.iter_mut() {
+        for data_point in data {
             print!("Testing {} km altitude ... ", data_point.altitude);
-            data_point.vehicle.engines[0].throttle = data_point.throttle;
-            let res = data_point.vehicle.thrust(data_point.pressure);
-            assert_almost_eq_rel!(res.norm(), data_point.thrust, 0.001);
+            let thrust = data_point.vehicle.thrust(data_point.pressure);
+            let throttled_thrust = data_point
+                .vehicle
+                .auto_throttle(thrust, data_point.aero_acc);
+            assert_almost_eq_rel!(
+                throttled_thrust.norm() / thrust.norm(),
+                data_point.auto_throttle,
+                0.0005
+            );
+            assert_almost_eq_rel!(
+                throttled_thrust.norm(),
+                data_point.thrust / data_point.vehicle.mass,
+                0.0005
+            );
             println!("ok");
         }
     }
@@ -202,16 +213,16 @@ mod tests {
     fn test_aero() {
         let data = example_data();
 
-        for data_point in data.iter() {
+        for data_point in data {
             print!("Testing {} km altitude ... ", data_point.altitude);
             let res = data_point.vehicle.aero(
                 data_point.alpha,
                 data_point.mach,
                 data_point.dynamic_pressure,
             );
-            assert_almost_eq_rel!(res[0], data_point.aero_force[0], 0.001);
-            assert_almost_eq_rel!(res[1], data_point.aero_force[1], 0.001);
-            assert_almost_eq_rel!(res[2], data_point.aero_force[2], 0.001);
+            assert_almost_eq_rel!(res[0], data_point.aero_acc[0], 0.001);
+            assert_almost_eq_rel!(res[1], data_point.aero_acc[1], 0.001);
+            assert_almost_eq_rel!(res[2], data_point.aero_acc[2], 0.001);
             println!("ok");
         }
     }
