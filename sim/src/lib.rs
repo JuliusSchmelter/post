@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 17.01.24
+// Last modified by Tibor Völcker on 19.01.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 // allow dead code for now, as it's still WIP
@@ -53,12 +53,14 @@ impl Simulation {
         let bi = ib.transpose();
 
         let pressure = self.planet.pressure(pos);
-        let thrust = self.vehicle.thrust(pressure);
+        let mut thrust = self.vehicle.thrust(pressure);
 
         let alpha = self.planet.alpha(ib.transform_vector(&vel));
         let mach = self.planet.mach_number(pos, vel);
         let dynamic_pressure = self.planet.dynamic_pressure(pos, vel);
         let aero = self.vehicle.aero(alpha, mach, dynamic_pressure);
+
+        thrust = self.vehicle.auto_throttle(thrust, aero);
 
         let gravity = self.planet.gravity(state.fixed_rows::<3>(0).into());
 

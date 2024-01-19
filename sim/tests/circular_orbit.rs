@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 06.12.23
-// Last modified by Tibor Völcker on 17.01.24
+// Last modified by Tibor Völcker on 19.01.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use sim::*;
@@ -18,6 +18,7 @@ fn circular_orbit() {
         Table2D::zeros(),
         vec![],
         [None, None, None],
+        f64::INFINITY,
     );
     let r: f64 = 7000e3;
     // v^2 = mu / r

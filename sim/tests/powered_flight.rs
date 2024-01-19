@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 20.12.23
-// Last modified by Tibor Völcker on 17.01.24
+// Last modified by Tibor Völcker on 19.01.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::vector;
@@ -28,6 +28,7 @@ fn powered_flight() {
         Table2D::zeros(),
         vec![engine],
         [None, Some(steering), None],
+        f64::INFINITY,
     );
     let r = planet.equatorial_radius;
     let mut sim = Simulation::new(vehicle, planet, 10., [0., 0., PI / 2.]);
