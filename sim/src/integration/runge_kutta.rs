@@ -13,34 +13,32 @@ pub struct RungeKutta<const R: usize> {
 impl<const R: usize> RungeKutta<R> {
     pub fn step<const D: usize>(
         &self,
-        func: impl Fn(f64, &SVector<f64, D>) -> SVector<f64, D>,
-        time: f64,
-        state: SVector<f64, D>,
-        stepsize: f64,
+        f: impl Fn(f64, &SVector<f64, D>) -> SVector<f64, D>,
+        x_n: f64,
+        y_n: SVector<f64, D>,
+        h: f64,
     ) -> SVector<f64, D> {
         let mut k = SMatrix::<f64, D, R>::zeros();
 
         for i in 0..R {
             // See [1] p. VI-12
             // k_i = h*f(x_n + c_i*h, y_n + SUM[a_ij * k_j])
-            let ki = stepsize
-                * func(
-                    time + self.c[i] * stepsize,
-                    &(state
-                        + (0..R)
-                            .map(|j| self.a[(i, j)] * k.column(j))
-                            .sum::<SVector<f64, D>>()),
-                );
+            let ki = h * f(
+                x_n + self.c[i] * h,
+                &(y_n
+                    + (0..R)
+                        .map(|j| self.a[(i, j)] * k.column(j))
+                        .sum::<SVector<f64, D>>()),
+            );
             k.set_column(i, &ki);
         }
 
         // See [1] p. VI-12
         // y_n+1 = y_n + SUM[b_i * k_i]
         // This could be done in one loop, but would be less readable
-        state
-            + (0..R)
-                .map(|i| self.b[i] * k.column(i))
-                .sum::<SVector<f64, D>>()
+        y_n + (0..R)
+            .map(|i| self.b[i] * k.column(i))
+            .sum::<SVector<f64, D>>()
     }
 }
 
@@ -59,55 +57,54 @@ mod tests {
     use utils::assert_lt;
 
     pub struct Example {
-        time: f64,
-        // state = [position, velocity]
-        state: Vector2<f64>,
+        x: f64,
+        y: Vector2<f64>,
     }
 
     fn initial() -> (f64, Vector2<f64>) {
         (0., Vector2::new(-0.5, 0.5))
     }
 
-    fn solution(time: f64) -> Vector2<f64> {
-        // x = 1/3*t^3 + t^2 + t - 0.5e^t
-        // y = t^2 + 2t + 1 - 0.5e^t
+    fn solution(x: f64) -> Vector2<f64> {
+        // y_1 = 1/3*x^3 + x^2 + x - 0.5e^x
+        // y_2 = x^2 + 2x + 1 - 0.5e^x
         vector![
-            1. / 3. * time.powi(3) + time.powi(2) + time - 0.5 * time.exp(),
-            time.powi(2) + 2. * time + 1. - 0.5 * time.exp()
+            1. / 3. * x.powi(3) + x.powi(2) + x - 0.5 * x.exp(),
+            x.powi(2) + 2. * x + 1. - 0.5 * x.exp()
         ]
     }
 
-    fn system(time: f64, state: &Vector2<f64>) -> Vector2<f64> {
-        // x' = y
-        // y' = y - t^2 + 1
-        vector![state.y, (state.y - time.powi(2) + 1.)]
+    fn system(x: f64, y: &Vector2<f64>) -> Vector2<f64> {
+        // y_0' = y_1
+        // y_1' = y_1 - x^2 + 1
+        vector![y[1], (y[1] - x.powi(2) + 1.)]
     }
 
     #[test]
     fn rk4_integrate() {
-        let (mut time, mut state) = initial();
-        let stepsize = 0.5;
+        let (mut x, mut y) = initial();
+        let h = 0.5;
 
         let mut avg_err = 0.;
-        while time <= 4. {
-            state = RK4.step(system, time, state, stepsize);
-            time += stepsize;
+        while x <= 4. {
+            y = RK4.step(system, x, y, h);
+            x += h;
 
-            let err = (solution(time) - state).abs();
+            let err = (solution(x) - y).abs();
             avg_err += err.norm();
 
-            println!("Time: {:.1}", time);
+            println!("Time: {:.1}", x);
             println!("---------");
             println!(
                 "x: Solution={:5.2}, State={:5.2}, Error={:.1e}",
-                solution(time)[0],
-                state[0],
+                solution(x)[0],
+                y[0],
                 err[0]
             );
             println!(
                 "y: Solution={:5.2}, State={:5.2}, Error={:.1e}\n",
-                solution(time)[1],
-                state[1],
+                solution(x)[1],
+                y[1],
                 err[1]
             );
         }
@@ -120,15 +117,15 @@ mod tests {
 
     #[test]
     fn rk4_integrate_smaller_stepsize() {
-        let (mut time, mut state) = initial();
-        let stepsize = 0.1;
+        let (mut x, mut y) = initial();
+        let h = 0.1;
 
         let mut avg_err = 0.;
-        while time <= 4. {
-            state = RK4.step(system, time, state, stepsize);
-            time += stepsize;
+        while x <= 4. {
+            y = RK4.step(system, x, y, h);
+            x += h;
 
-            let err = (solution(time) - state).abs();
+            let err = (solution(x) - y).abs();
             avg_err += err.norm();
         }
         avg_err /= 41.;
