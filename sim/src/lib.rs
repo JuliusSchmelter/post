@@ -1,28 +1,27 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 19.01.24
+// Last modified by Tibor Völcker on 28.01.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 // allow dead code for now, as it's still WIP
 #![allow(dead_code)]
 
-use nalgebra::{Vector3, Vector6};
-
 #[cfg(test)]
 mod example_data;
 pub mod integration;
 mod planet;
+mod state;
 mod transformations;
 pub mod vehicle;
 
 pub use integration::Integrator;
 pub use planet::{Atmosphere, Planet, EARTH_FISHER_1960, EARTH_SMITHSONIAN, EARTH_SPHERICAL};
+use state::{PrimaryState, State};
 pub use vehicle::Vehicle;
 
 use transformations::Transformations;
 
 pub struct Simulation {
-    pub time: f64,
-    state: Vector6<f64>,
+    state: PrimaryState,
     vehicle: Vehicle,
     planet: Planet,
     transformations: Transformations,
@@ -33,8 +32,7 @@ pub struct Simulation {
 impl Simulation {
     pub fn new(vehicle: Vehicle, planet: Planet, stepsize: f64, launch: [f64; 3]) -> Self {
         Simulation {
-            time: 0.,
-            state: Vector6::zeros(),
+            state: PrimaryState::default(),
             vehicle,
             planet,
             transformations: Transformations::new(launch),
@@ -43,67 +41,37 @@ impl Simulation {
         }
     }
 
-    fn system(&self, time: f64, state: &Vector6<f64>) -> Vector6<f64> {
-        let (pos, vel) = Self::split_state(*state);
-        let attitude = self.vehicle.steer(time);
+    fn system(&self, state: &PrimaryState) -> State {
+        let attitude = self.vehicle.steer(state.time);
 
         let ib = self
             .transformations
             .inertial_to_body(attitude.x, attitude.y, attitude.z);
-        let bi = ib.transpose();
+        let state = state.add_attitude(attitude, ib);
 
-        let pressure = self.planet.pressure(pos);
+        let pressure = self.planet.pressure(state.position);
+        let alpha = self.planet.alpha(ib.transform_vector(&state.velocity));
+        let mach = self.planet.mach_number(state.position, state.velocity);
+        let dynamic_pressure = self.planet.dynamic_pressure(state.position, state.velocity);
+        let state = state.add_env(pressure, alpha, mach, dynamic_pressure);
+
         let mut thrust = self.vehicle.thrust(pressure);
-
-        let alpha = self.planet.alpha(ib.transform_vector(&vel));
-        let mach = self.planet.mach_number(pos, vel);
-        let dynamic_pressure = self.planet.dynamic_pressure(pos, vel);
         let aero = self.vehicle.aero(alpha, mach, dynamic_pressure);
 
         thrust = self.vehicle.auto_throttle(thrust, aero);
 
-        let gravity = self.planet.gravity(state.fixed_rows::<3>(0).into());
+        let gravity = self.planet.gravity(state.position);
 
-        // r_dot_I = V_I
-        let r_dot = vel;
-        // V_dot_I = [IB]^-1 [A_TB + A_AB] + G_I
-        let v_dot = bi.transform_vector(&(thrust + aero)) + gravity;
-
-        Vector6::from_row_slice(&[r_dot.as_slice(), (v_dot).as_slice()].concat())
-    }
-
-    pub fn step(&mut self) {
-        self.state = self.integrator.step(
-            |time, state| self.system(time, state),
-            self.time,
-            self.state,
-            self.stepsize,
-        );
-        self.time += self.stepsize;
-    }
-}
-
-impl Simulation {
-    pub fn position(&self) -> Vector3<f64> {
-        self.state.fixed_rows::<3>(0).into()
-    }
-
-    pub fn set_position(&mut self, position: &[f64]) {
-        self.state.fixed_rows_mut::<3>(0).copy_from_slice(position);
-    }
-
-    pub fn velocity(&self) -> Vector3<f64> {
-        self.state.fixed_rows::<3>(3).into()
-    }
-
-    pub fn set_velocity(&mut self, velocity: &[f64]) {
-        self.state.fixed_rows_mut::<3>(3).copy_from_slice(velocity);
-    }
-
-    fn split_state(state: Vector6<f64>) -> (Vector3<f64>, Vector3<f64>) {
-        (
-            state.fixed_rows::<3>(0).into(),
-            state.fixed_rows::<3>(3).into(),
+        state.add_differentials(
+            state.body_to_inertial.transform_vector(&(thrust + aero)) + gravity,
+            0.,
         )
+    }
+
+    pub fn step(&mut self) -> &PrimaryState {
+        self.state = self
+            .integrator
+            .step(|state| self.system(state), &self.state, self.stepsize);
+        &self.state
     }
 }

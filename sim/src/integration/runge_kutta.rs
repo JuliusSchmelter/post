@@ -1,10 +1,8 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 17.01.24
+// Last modified by Tibor Völcker on 28.01.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{matrix, vector, SMatrix, SVector};
-
-use super::State;
 
 pub struct RungeKutta<const R: usize> {
     a: SMatrix<f64, R, R>,
@@ -15,11 +13,11 @@ pub struct RungeKutta<const R: usize> {
 impl<const R: usize> RungeKutta<R> {
     pub fn step<const D: usize>(
         &self,
-        func: impl Fn(f64, &State<D>) -> State<D>,
+        func: impl Fn(f64, &SVector<f64, D>) -> SVector<f64, D>,
         time: f64,
-        state: State<D>,
+        state: SVector<f64, D>,
         stepsize: f64,
-    ) -> State<D> {
+    ) -> SVector<f64, D> {
         let mut k = SMatrix::<f64, D, R>::zeros();
 
         for i in 0..R {
@@ -31,7 +29,7 @@ impl<const R: usize> RungeKutta<R> {
                     &(state
                         + (0..R)
                             .map(|j| self.a[(i, j)] * k.column(j))
-                            .sum::<State<D>>()),
+                            .sum::<SVector<f64, D>>()),
                 );
             k.set_column(i, &ki);
         }
@@ -39,7 +37,10 @@ impl<const R: usize> RungeKutta<R> {
         // See [1] p. VI-12
         // y_n+1 = y_n + SUM[b_i * k_i]
         // This could be done in one loop, but would be less readable
-        state + (0..R).map(|i| self.b[i] * k.column(i)).sum::<State<D>>()
+        state
+            + (0..R)
+                .map(|i| self.b[i] * k.column(i))
+                .sum::<SVector<f64, D>>()
     }
 }
 
