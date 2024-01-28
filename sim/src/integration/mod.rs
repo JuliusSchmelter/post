@@ -18,16 +18,16 @@ impl Integrator {
         stepsize: f64,
     ) -> PrimaryState {
         match self {
-            Integrator::RK4 => (
-                state.time + stepsize,
-                runge_kutta::RK4.step(
+            Integrator::RK4 => {
+                let state_vec = runge_kutta::RK4.step(
+                    // convert states to vectors and back
                     |time, &state| func(&(time, state).into()).differentials(),
                     state.time,
                     state.into(),
                     stepsize,
-                ),
-            )
-                .into(),
+                );
+                (state.time + stepsize, state_vec).into()
+            }
         }
     }
 }

@@ -66,20 +66,6 @@ impl State {
     }
 }
 
-impl From<PrimaryState> for SVector<f64, 7> {
-    fn from(val: PrimaryState) -> Self {
-        vector![
-            val.position[0],
-            val.position[1],
-            val.position[2],
-            val.velocity[0],
-            val.velocity[1],
-            val.velocity[2],
-            val.mass,
-        ]
-    }
-}
-
 impl From<&PrimaryState> for SVector<f64, 7> {
     fn from(val: &PrimaryState) -> Self {
         vector![
@@ -95,12 +81,12 @@ impl From<&PrimaryState> for SVector<f64, 7> {
 }
 
 impl From<(f64, SVector<f64, 7>)> for PrimaryState {
-    fn from(value: (f64, SVector<f64, 7>)) -> Self {
+    fn from(val: (f64, SVector<f64, 7>)) -> Self {
         Self {
-            time: value.0,
-            position: vector![value.1[0], value.1[1], value.1[2]],
-            velocity: vector![value.1[3], value.1[4], value.1[5]],
-            mass: value.1[6],
+            time: val.0,
+            position: vector![val.1[0], val.1[1], val.1[2]],
+            velocity: vector![val.1[3], val.1[4], val.1[5]],
+            mass: val.1[6],
         }
     }
 }
