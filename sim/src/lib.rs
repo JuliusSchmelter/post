@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 28.01.24
+// Last modified by Tibor Völcker on 11.02.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 // allow dead code for now, as it's still WIP
@@ -14,6 +14,7 @@ mod transformations;
 pub mod vehicle;
 
 pub use integration::Integrator;
+use nalgebra::Vector3;
 pub use planet::{Atmosphere, Planet, EARTH_FISHER_1960, EARTH_SMITHSONIAN, EARTH_SPHERICAL};
 use state::{PrimaryState, State};
 pub use vehicle::Vehicle;
@@ -73,5 +74,12 @@ impl Simulation {
             .integrator
             .step(|state| self.system(state), &self.state, self.stepsize);
         &self.state
+    }
+}
+
+impl Simulation {
+    pub fn init_inertial(&mut self, position: Vector3<f64>, velocity: Vector3<f64>) {
+        self.state.position = position;
+        self.state.velocity = velocity;
     }
 }

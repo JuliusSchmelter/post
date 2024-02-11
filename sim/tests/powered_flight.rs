@@ -1,8 +1,8 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 20.12.23
-// Last modified by Tibor Völcker on 19.01.24
+// Last modified by Tibor Völcker on 11.02.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
-use nalgebra::vector;
+use nalgebra::{vector, Vector3};
 use sim::vehicle::{Engine, Steering};
 use sim::*;
 use std::f64::consts::PI;
@@ -32,15 +32,14 @@ fn powered_flight() {
     );
     let r = planet.equatorial_radius;
     let mut sim = Simulation::new(vehicle, planet, 10., [0., 0., PI / 2.]);
-    sim.set_position(&[r, 0., 0.]);
+    sim.init_inertial(vector![r, 0., 0.], Vector3::zeros());
 
-    while sim.time < 10. * 60. {
-        sim.step();
+    let mut state = sim.step();
+    while state.time < 10. * 60. {
         println!(
             "Time: {:.0}\nPosition: {:.0}\nVelocity: {:.0}",
-            sim.time,
-            sim.position(),
-            sim.velocity()
+            state.time, state.position, state.velocity
         );
+        state = sim.step();
     }
 }
