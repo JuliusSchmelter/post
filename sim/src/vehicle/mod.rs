@@ -10,21 +10,21 @@ use utils::tables::linear_interpolation::Table2D;
 
 mod steering;
 
-fn side_side_angle(a: f64, b: f64, alpha: f64) -> f64 {
+fn side_side_angle(a: f64, b: f64, alpha: f64) -> Option<f64> {
     if alpha == 0. {
         if b > a {
-            return b - a;
+            return Some(b - a);
         }
-        return a + b;
+        return Some(a + b);
     }
 
     if alpha == PI {
-        return a - b;
+        return Some(a - b);
     }
 
     // No intersection possible (arcsin not defined)
     if alpha.sin() * b > a {
-        return f64::NAN;
+        return None;
     }
 
     let mut beta = (alpha.sin() * b / a).asin();
@@ -34,7 +34,7 @@ fn side_side_angle(a: f64, b: f64, alpha: f64) -> f64 {
 
     let gamma = PI - beta - alpha;
 
-    a * gamma.sin() / alpha.sin()
+    Some(a * gamma.sin() / alpha.sin())
 }
 
 #[derive(Clone)]
@@ -88,11 +88,14 @@ impl Vehicle {
         let angle = PI - aero.angle(&max_thrust);
 
         // Required thrust vector to exactly reach max acceleration
-        let req_thrust = side_side_angle(self.max_acceleration, aero.norm(), angle);
+        let opt_req_thrust = side_side_angle(self.max_acceleration, aero.norm(), angle);
 
+        match opt_req_thrust {
         // The clamping can lead to a throttle which violates the maximum acceleration
         // e.g. if the aero forces are very big
-        (req_thrust / max_thrust.norm()).clamp(0., 1.)
+            Some(req_thrust) => (req_thrust / max_thrust.norm()).clamp(0., 1.),
+            None => 1.,
+        }
     }
 
     pub fn aero(&self, alpha: f64, mach: f64, dynamic_pressure: f64) -> Vector3<f64> {
