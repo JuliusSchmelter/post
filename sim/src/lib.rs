@@ -14,7 +14,7 @@ mod transformations;
 pub mod vehicle;
 
 pub use integration::Integrator;
-use nalgebra::Vector3;
+use nalgebra::{vector, Vector3};
 pub use planet::{Atmosphere, Planet, EARTH_FISHER_1960, EARTH_SMITHSONIAN, EARTH_SPHERICAL};
 use state::{PrimaryState, State};
 pub use vehicle::Vehicle;
@@ -31,12 +31,12 @@ pub struct Simulation {
 }
 
 impl Simulation {
-    pub fn new(vehicle: Vehicle, planet: Planet, stepsize: f64, launch: [f64; 3]) -> Self {
+    pub fn new(vehicle: Vehicle, planet: Planet, stepsize: f64) -> Self {
         Simulation {
             state: PrimaryState::new(),
             vehicle,
             planet,
-            transformations: Transformations::new(launch),
+            transformations: Transformations::new(),
             integrator: Integrator::RK4,
             stepsize,
         }
@@ -89,5 +89,33 @@ impl Simulation {
     pub fn init_inertial(&mut self, position: Vector3<f64>, velocity: Vector3<f64>) {
         self.state.position = position;
         self.state.velocity = velocity;
+    }
+
+    pub fn init_geodetic(&mut self, latitude: f64, longitude: f64, azimuth: f64) {
+        let (lat, long, az) = (
+            latitude.to_radians(),
+            longitude.to_radians(),
+            azimuth.to_radians(),
+        );
+
+        let k = (self.planet.equatorial_radius / self.planet.polar_radius).powi(2);
+
+        let geocentric_lat = f64::atan(k.powi(2) * lat.tan());
+
+        self.transformations.launch = [geocentric_lat, long, az];
+
+        let distance_to_surface =
+            self.planet.equatorial_radius / f64::sqrt(1. + (k - 1.) * geocentric_lat.sin().powi(2));
+
+        self.state.position = distance_to_surface
+            * vector![
+                geocentric_lat.cos() * long.cos(),
+                geocentric_lat.cos() * long.sin(),
+                geocentric_lat.sin()
+            ];
+
+        self.state.velocity = -self
+            .planet
+            .rel_velocity(self.state.position, Vector3::zeros());
     }
 }

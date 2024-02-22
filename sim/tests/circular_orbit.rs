@@ -26,7 +26,7 @@ fn circular_orbit() {
     // T = 2 PI * sqrt(r^3 / mu)
     let period = 2. * PI * f64::sqrt(r.powi(3) / planet.mu());
 
-    let mut sim = Simulation::new(vehicle, planet, 10., [0., 0., 0.]);
+    let mut sim = Simulation::new(vehicle, planet, 10.);
     sim.init_inertial(vector![r, 0., 0.], vector![0., v, 0.]);
 
     let mut state = sim.step();

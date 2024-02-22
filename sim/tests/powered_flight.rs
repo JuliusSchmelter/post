@@ -2,7 +2,7 @@
 // Last modified by Tibor Völcker on 22.02.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
-use nalgebra::{vector, Vector3};
+use nalgebra::vector;
 use sim::vehicle::{Engine, Steering};
 use sim::*;
 use std::f64::consts::PI;
@@ -29,9 +29,8 @@ fn powered_flight() {
         [None, Some(steering), None],
         f64::INFINITY,
     );
-    let r = planet.equatorial_radius;
-    let mut sim = Simulation::new(vehicle, planet, 10., [0., 0., PI / 2.]);
-    sim.init_inertial(vector![r, 0., 0.], Vector3::zeros());
+    let mut sim = Simulation::new(vehicle, planet, 10.);
+    sim.init_geodetic(0., 0., 90.);
 
     let mut state = sim.step();
     while state.time < 10. * 60. {

@@ -1,17 +1,18 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.12.23
-// Last modified by Tibor Völcker on 24.12.23
+// Last modified by Tibor Völcker on 22.02.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{matrix, Rotation3};
 
+#[derive(Default)]
 pub struct Transformations {
     // [latitude, longitude, azimuth]
-    launch: [f64; 3],
+    pub launch: [f64; 3],
 }
 
 impl Transformations {
-    pub fn new(launch: [f64; 3]) -> Self {
-        Self { launch }
+    pub fn new() -> Self {
+        Self::default()
     }
 
     pub fn inertial_to_launch(&self) -> Rotation3<f64> {
