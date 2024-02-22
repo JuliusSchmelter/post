@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 20.12.23
-// Last modified by Tibor Völcker on 11.02.24
+// Last modified by Tibor Völcker on 22.02.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{vector, Vector3};
@@ -13,7 +13,7 @@ fn powered_flight() {
     let angular_rate = PI / (10. * 60.);
 
     let planet = EARTH_SPHERICAL;
-    let engine = Engine::new([0., 0.], 1e5, 1.);
+    let engine = Engine::new([0., 0.], 1e5, 100., 1.);
     let steering = Steering::Angular(vehicle::Angular::Polynomials(vector![
         0.,
         angular_rate,
@@ -21,7 +21,6 @@ fn powered_flight() {
         0.
     ]));
     let vehicle = Vehicle::new(
-        1e3,
         0.,
         Table2D::zeros(),
         Table2D::zeros(),

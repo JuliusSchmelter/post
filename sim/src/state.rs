@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 26.01.24
-// Last modified by Tibor Völcker on 28.01.24
+// Last modified by Tibor Völcker on 22.02.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{vector, Rotation3, SVector, Vector3};
@@ -26,6 +26,17 @@ pub struct PrimaryState {
     pub position: Vector3<f64>,
     pub velocity: Vector3<f64>,
     pub mass: f64,
+}
+
+impl PrimaryState {
+    pub fn new() -> Self {
+        Self {
+            time: 0.,
+            position: Vector3::zeros(),
+            velocity: Vector3::zeros(),
+            mass: 1.,
+        }
+    }
 }
 
 pub(crate) struct SecondaryState {

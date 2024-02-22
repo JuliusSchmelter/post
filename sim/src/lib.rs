@@ -33,7 +33,7 @@ pub struct Simulation {
 impl Simulation {
     pub fn new(vehicle: Vehicle, planet: Planet, stepsize: f64, launch: [f64; 3]) -> Self {
         Simulation {
-            state: PrimaryState::default(),
+            state: PrimaryState::new(),
             vehicle,
             planet,
             transformations: Transformations::new(launch),
@@ -56,12 +56,13 @@ impl Simulation {
         let dynamic_pressure = self.planet.dynamic_pressure(state.position, state.velocity);
         let state = state.add_env(pressure, alpha, mach, dynamic_pressure);
 
-        let aero = self.vehicle.aero(alpha, mach, dynamic_pressure);
+        let aero = self.vehicle.aero_force(alpha, mach, dynamic_pressure);
 
-        let throttle = self.vehicle.auto_throttle(pressure, aero);
-        let thrust = self.vehicle.thrust(throttle, pressure);
+        let throttle = self.vehicle.auto_throttle(state.mass, pressure, aero);
+        let thrust = self.vehicle.thrust_force(throttle, pressure);
+        let massflow = self.vehicle.massflow(throttle);
 
-        let body_acc = aero + thrust;
+        let body_acc = (aero + thrust) / state.mass;
 
         // Intersection would require negative thrust
         if body_acc.norm() > self.vehicle.max_acceleration * 1.001 || throttle.is_nan() {
@@ -71,8 +72,8 @@ impl Simulation {
         let gravity = self.planet.gravity(state.position);
 
         state.add_differentials(
-            state.body_to_inertial.transform_vector(&(thrust + aero)) + gravity,
-            0.,
+            state.body_to_inertial.transform_vector(&body_acc) + gravity,
+            massflow,
         )
     }
 

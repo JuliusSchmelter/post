@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 06.12.23
-// Last modified by Tibor Völcker on 11.02.24
+// Last modified by Tibor Völcker on 22.02.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::vector;
@@ -12,7 +12,6 @@ use utils::tables::linear_interpolation::Table2D;
 fn circular_orbit() {
     let planet = EARTH_SPHERICAL;
     let vehicle = Vehicle::new(
-        10e3,
         0.,
         Table2D::zeros(),
         Table2D::zeros(),
