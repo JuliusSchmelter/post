@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 19.01.24
+// Last modified by Tibor Völcker on 22.02.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use std::f64::consts::PI;
@@ -10,6 +10,33 @@ use utils::tables::linear_interpolation::Table2D;
 
 mod steering;
 
+fn side_side_angle(a: f64, b: f64, alpha: f64) -> f64 {
+    if alpha == 0. {
+        if b > a {
+            return b - a;
+        }
+        return a + b;
+    }
+
+    if alpha == PI {
+        return a - b;
+    }
+
+    // No intersection possible (arcsin not defined)
+    if alpha.sin() * b > a {
+        return f64::NAN;
+    }
+
+    let mut beta = (alpha.sin() * b / a).asin();
+    if b > a {
+        beta = PI - beta;
+    }
+
+    let gamma = PI - beta - alpha;
+
+    a * gamma.sin() / alpha.sin()
+}
+
 #[derive(Clone)]
 pub struct Vehicle {
     mass: f64,
@@ -19,7 +46,7 @@ pub struct Vehicle {
     side_force_coeff: Table2D,
     engines: Vec<Engine>,
     steering: [Option<Steering>; 3],
-    max_acceleration: f64,
+    pub max_acceleration: f64,
 }
 
 impl Vehicle {
@@ -45,53 +72,27 @@ impl Vehicle {
         }
     }
 
-    pub fn thrust(&self, pressure_atmos: f64) -> Vector3<f64> {
-        self.engines
-            .iter()
-            .map(|eng| eng.thrust(pressure_atmos))
-            .sum::<Vector3<f64>>()
+    pub fn thrust(&self, throttle: f64, pressure_atmos: f64) -> Vector3<f64> {
+        throttle
+            * self
+                .engines
+                .iter()
+                .map(|eng| eng.thrust(pressure_atmos))
+                .sum::<Vector3<f64>>()
             / self.mass
     }
 
-    fn auto_max_thrust(&self, angle_aero_thrust: f64, aero: f64) -> f64 {
-        // Opposite directions
-        if angle_aero_thrust == 0. {
-            return self.max_acceleration + aero;
-        }
+    pub fn auto_throttle(&self, pressure_atmos: f64, aero: Vector3<f64>) -> f64 {
+        let max_thrust = self.thrust(1., pressure_atmos);
 
-        // Same direction
-        if angle_aero_thrust == PI {
-            return self.max_acceleration - aero;
-        }
+        let angle = PI - aero.angle(&max_thrust);
 
-        // No intersection possible (arcsin not defined)
-        // Aero acceleration too big and gamma too small
-        if angle_aero_thrust.sin() * aero > self.max_acceleration {
-            panic!("Could not stay in max. acceleration (check aero forces)")
-        }
+        // Required thrust vector to exactly reach max acceleration
+        let req_thrust = side_side_angle(self.max_acceleration, aero.norm(), angle);
 
-        // Angle between aero forces and sensed acceleration
-        let angle_aero_sensed = PI
-            - (angle_aero_thrust.sin() * aero / self.max_acceleration).asin()
-            - angle_aero_thrust;
-
-        self.max_acceleration * angle_aero_sensed.sin() / angle_aero_thrust.sin()
-    }
-
-    pub fn auto_throttle(&self, thrust: Vector3<f64>, aero: Vector3<f64>) -> Vector3<f64> {
-        // Thrust needed to reach maximum acceleration
-        let max_thrust = self.auto_max_thrust(aero.angle(&thrust), aero.norm());
-
-        let throttle = (max_thrust / thrust.norm()).clamp(0., 1.);
-
-        let throttled_thrust = throttle * thrust;
-
-        // Intersection would require negative thrust
-        if (aero + throttled_thrust).norm() > self.max_acceleration {
-            panic!("Could not stay in max. acceleration (check aero forces)")
-        }
-
-        throttled_thrust
+        // The clamping can lead to a throttle which violates the maximum acceleration
+        // e.g. if the aero forces are very big
+        (req_thrust / max_thrust.norm()).clamp(0., 1.)
     }
 
     pub fn aero(&self, alpha: f64, mach: f64, dynamic_pressure: f64) -> Vector3<f64> {
@@ -155,20 +156,13 @@ mod tests {
 
         for data_point in data {
             print!("Testing {} km altitude ... ", data_point.altitude);
-            let thrust = data_point.vehicle.thrust(data_point.pressure);
-            let throttled_thrust = data_point
+            let throttle = data_point
                 .vehicle
-                .auto_throttle(thrust, data_point.aero_acc);
-            assert_almost_eq_rel!(
-                throttled_thrust.norm() / thrust.norm(),
-                data_point.auto_throttle,
-                0.0005
-            );
-            assert_almost_eq_rel!(
-                throttled_thrust.norm(),
-                data_point.thrust / data_point.vehicle.mass,
-                0.0005
-            );
+                .auto_throttle(data_point.pressure, data_point.aero_acc);
+            assert_almost_eq_rel!(throttle, data_point.auto_throttle, 0.001);
+
+            let thrust = data_point.vehicle.thrust(throttle, data_point.pressure);
+            assert_almost_eq_rel!(thrust.norm(), data_point.thrust, 0.001);
             println!("ok");
         }
     }

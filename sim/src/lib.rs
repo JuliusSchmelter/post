@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 11.02.24
+// Last modified by Tibor Völcker on 22.02.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 // allow dead code for now, as it's still WIP
@@ -56,10 +56,17 @@ impl Simulation {
         let dynamic_pressure = self.planet.dynamic_pressure(state.position, state.velocity);
         let state = state.add_env(pressure, alpha, mach, dynamic_pressure);
 
-        let mut thrust = self.vehicle.thrust(pressure);
         let aero = self.vehicle.aero(alpha, mach, dynamic_pressure);
 
-        thrust = self.vehicle.auto_throttle(thrust, aero);
+        let throttle = self.vehicle.auto_throttle(pressure, aero);
+        let thrust = self.vehicle.thrust(throttle, pressure);
+
+        let body_acc = aero + thrust;
+
+        // Intersection would require negative thrust
+        if body_acc.norm() > self.vehicle.max_acceleration * 1.001 || throttle.is_nan() {
+            panic!("Could not stay in max. acceleration (check aero forces)")
+        }
 
         let gravity = self.planet.gravity(state.position);
 
