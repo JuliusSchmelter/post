@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 28.01.24
+// Last modified by Tibor Völcker on 22.02.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{matrix, vector, SMatrix, SVector};
@@ -81,55 +81,75 @@ mod tests {
     }
 
     #[test]
+    /// Tests the Runge Kutta 4th order integrator
     fn rk4_integrate() {
+        const END: f64 = 4.;
+        const H: f64 = 0.5;
+        const EPSILON: f64 = 2e-2;
+
         let (mut x, mut y) = initial();
-        let h = 0.5;
 
         let mut avg_err = 0.;
-        while x <= 4. {
-            y = RK4.step(system, x, y, h);
-            x += h;
+        while x <= END {
+            y = RK4.step(system, x, y, H);
+            x += H;
 
             let err = (solution(x) - y).abs();
             avg_err += err.norm();
 
-            println!("Time: {:.1}", x);
-            println!("---------");
             println!(
-                "x: Solution={:5.2}, State={:5.2}, Error={:.1e}",
+                "Time: {:.1}\n\
+                ─────────     y_1,    y_2\n\
+                Solution: [{:6.2}, {:6.2}]\n\
+                State:    [{:6.2}, {:6.2}]\n\
+                Error:    [{:6.1e}, {:6.1e}]\n",
+                x,
                 solution(x)[0],
-                y[0],
-                err[0]
-            );
-            println!(
-                "y: Solution={:5.2}, State={:5.2}, Error={:.1e}\n",
                 solution(x)[1],
+                y[0],
                 y[1],
-                err[1]
+                err[0],
+                y[1],
             );
         }
-        avg_err /= 9.;
+        avg_err /= END / H + 1.;
 
-        println!("Avg. Error={avg_err:.2e}");
+        println!("Avg. Error: {avg_err:.2e}");
 
-        assert_lt!(avg_err, 5e-2);
+        assert_lt!(
+            avg_err,
+            EPSILON,
+            "Average error is too big!\n  {:.2e} > {:.2e}",
+            avg_err,
+            EPSILON
+        );
     }
 
     #[test]
+    /// Tests if a smaller stepsize will increase integration accuracy
     fn rk4_integrate_smaller_stepsize() {
+        const END: f64 = 4.;
+        const H: f64 = 0.1;
+        const EPSILON: f64 = 2e-5;
+
         let (mut x, mut y) = initial();
-        let h = 0.1;
 
         let mut avg_err = 0.;
-        while x <= 4. {
-            y = RK4.step(system, x, y, h);
-            x += h;
+        while x <= END {
+            y = RK4.step(system, x, y, H);
+            x += H;
 
             let err = (solution(x) - y).abs();
             avg_err += err.norm();
         }
-        avg_err /= 41.;
+        avg_err /= END / H + 1.;
 
-        assert_lt!(avg_err, 5e-5);
+        assert_lt!(
+            avg_err,
+            EPSILON,
+            "Average error is too big!\n  {:.2e} > {:.2e}",
+            avg_err,
+            EPSILON
+        );
     }
 }
