@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 17.01.24
+// Last modified by Tibor Völcker on 11.02.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 // CONVERSIONS from https://physics.nist.gov/cuu/pdf/sp811.pdf pp. 57-69
@@ -10,7 +10,7 @@ pub const KELVIN_PER_RANKIN: f64 = 1. / 1.8;
 pub const KILOGRAM_PER_SLUG: f64 = 1.459390e+01;
 pub const KILOGRAM_PER_POUND: f64 = 4.535924e-1;
 pub const PASCAL_PER_PSF: f64 = KILOGRAM_PER_POUND * STD_GRAVITY / SQUARE_METER_PER_SQUARE_FOOT;
-pub const NEWTON_PER_POUND_FORCE: f64 = 4.448222;
+pub const NEWTON_PER_POUND_FORCE: f64 = KILOGRAM_PER_POUND * STD_GRAVITY;
 
 // CONSTANTS from [1] p. IV-7
 pub const STD_GRAVITY: f64 = 9.80665; // [m / s^2]

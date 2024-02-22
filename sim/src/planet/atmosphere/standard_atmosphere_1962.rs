@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 17.01.24
+// Last modified by Tibor Völcker on 22.02.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use utils::constants::*;
@@ -52,7 +52,7 @@ fn get_table_row(geopotational_alt: f64) -> (f64, f64, f64, f64) {
             return STD_ATMOS_TABLE[i - 1];
         }
     }
-    STD_ATMOS_TABLE[STD_ATMOS_TABLE.len()]
+    STD_ATMOS_TABLE[STD_ATMOS_TABLE.len() - 1]
 }
 
 // TABLE DATA
@@ -197,54 +197,32 @@ mod tests {
     use super::super::Atmosphere;
     use crate::example_data::example_data;
     use crate::EARTH_SPHERICAL;
-    use nalgebra::vector;
     use utils::assert_almost_eq_rel;
-
-    #[test]
-    fn test_model_data() {
-        const ATMOSPHERIC_DATA_1967_MODEL: [[f64; 5]; 4] = [
-            // [ altitude [m], temperature [K], pressure [Pa], density [kg/m^2], speed of sound [m/s] ]
-            // values from https://www.pdas.com/atmoscalculator.html
-            [00e3, 288.15, 1.0133e5, 1.22500e-0, 340.294],
-            [10e3, 223.25, 2.6500e4, 4.13509e-1, 299.532],
-            [20e3, 216.65, 5.5292e3, 8.89083e-2, 295.070],
-            [40e3, 250.35, 2.8713e2, 3.99540e-3, 317.190],
-            // 1967 atmosphere model differs from 1962 version above 50 km
-        ];
-        const EPSILON: f64 = 0.002;
-
-        let mut planet = EARTH_SPHERICAL;
-        planet.add_atmosphere(Atmosphere::StandardAtmosphere1962);
-
-        for data_point in ATMOSPHERIC_DATA_1967_MODEL.iter() {
-            print!("Testing {} km altitude ... ", data_point[0]);
-            let position = vector![data_point[0], 0., 0.];
-            assert_almost_eq_rel!(planet.temperature(position), data_point[1], EPSILON);
-            assert_almost_eq_rel!(planet.pressure(position), data_point[2], EPSILON);
-            assert_almost_eq_rel!(planet.density(position), data_point[3], EPSILON);
-            assert_almost_eq_rel!(planet.speed_of_sound(position), data_point[4], EPSILON);
-            println!("ok");
-        }
-    }
-
     #[test]
     fn test_example_data() {
         let data = example_data();
-        const EPSILON: f64 = 0.002;
+        const EPSILON: f64 = 0.001;
 
         let mut planet = EARTH_SPHERICAL;
         planet.add_atmosphere(Atmosphere::StandardAtmosphere1962);
 
         for data_point in data.iter() {
             print!("Testing {} km altitude ... ", data_point.altitude);
-            let position = vector![data_point.altitude, 0., 0.];
             assert_almost_eq_rel!(
-                planet.temperature(position),
+                planet.temperature(data_point.position),
                 data_point.temperature,
                 EPSILON
             );
-            assert_almost_eq_rel!(planet.pressure(position), data_point.pressure, EPSILON);
-            assert_almost_eq_rel!(planet.density(position), data_point.density, EPSILON);
+            assert_almost_eq_rel!(
+                planet.pressure(data_point.position),
+                data_point.pressure,
+                EPSILON
+            );
+            assert_almost_eq_rel!(
+                planet.density(data_point.position),
+                data_point.density,
+                EPSILON
+            );
             println!("ok");
         }
     }

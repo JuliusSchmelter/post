@@ -33,6 +33,6 @@ impl Transformations {
     }
 
     pub fn inertial_to_body(&self, roll: f64, yaw: f64, pitch: f64) -> Rotation3<f64> {
-        self.inertial_to_launch() * Self::launch_to_body(roll, yaw, pitch)
+        Self::launch_to_body(roll, yaw, pitch) * self.inertial_to_launch()
     }
 }

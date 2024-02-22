@@ -114,6 +114,8 @@ const LIFT_TABLE2: ([f64; 7], [f64; 12], [[f64; 12]; 7]) = (
 pub struct DataPoint {
     pub time: f64,
     pub mass: f64,
+    pub position: Vector3<f64>,
+    pub velocity: Vector3<f64>,
     pub altitude: f64,
     pub temperature: f64,
     pub pressure: f64,
@@ -171,6 +173,8 @@ pub fn example_data() -> [DataPoint; 4] {
         DataPoint {
             time: 0.,
             mass: 4.03328112e6 * KILOGRAM_PER_POUND,
+            position: vector![3.00354800e6, -1.81429627e7, 9.98490063e6] * METER_PER_FOOT,
+            velocity: vector![1.32300480e3, 2.19022024e2, 0.] * METER_PER_FOOT,
             altitude: -4.76837158e-7 * METER_PER_FOOT,
             temperature: 5.18670000e2 * KELVIN_PER_RANKIN,
             pressure: 2.11621660e3 * PASCAL_PER_PSF,
@@ -188,6 +192,8 @@ pub fn example_data() -> [DataPoint; 4] {
         DataPoint {
             time: 1.50000000e1,
             mass: 3.84631074e6 * KILOGRAM_PER_POUND,
+            position: vector![3.02352433e6, -1.81404764e7, 9.98534136e6] * METER_PER_FOOT,
+            velocity: vector![1.34110394e3, 1.07998292e2, 6.10765341e1] * METER_PER_FOOT,
             altitude: 9.33310129e2 * METER_PER_FOOT,
             temperature: 5.15341815e2 * KELVIN_PER_RANKIN,
             pressure: 2.04581341e3 * PASCAL_PER_PSF,
@@ -205,6 +211,8 @@ pub fn example_data() -> [DataPoint; 4] {
         DataPoint {
             time: 0.,
             mass: 3.57822526e5 * KILOGRAM_PER_POUND,
+            position: vector![7.02620764e6, -1.73942758e7, 9.94057977e6] * METER_PER_FOOT,
+            velocity: vector![2.23048738e4, 7.85391572e3, -2.22909900e3] * METER_PER_FOOT,
             altitude: 3.04960868e5 * METER_PER_FOOT,
             temperature: 3.41188380e2 * KELVIN_PER_RANKIN,
             pressure: 2.01763300e-3 * PASCAL_PER_PSF,
@@ -222,6 +230,8 @@ pub fn example_data() -> [DataPoint; 4] {
         DataPoint {
             time: 2.18072658e1,
             mass: 3.10281123e5 * KILOGRAM_PER_POUND,
+            position: vector![7.53212452e6, -1.72106460e7, 9.88707980e6] * METER_PER_FOOT,
+            velocity: vector![2.40870305e4, 8.99928739e3, -2.68459504e3] * METER_PER_FOOT,
             altitude: 3.03804044e5 * METER_PER_FOOT,
             temperature: 3.39250012e2 * KELVIN_PER_RANKIN,
             pressure: 2.14880703e-3 * PASCAL_PER_PSF,

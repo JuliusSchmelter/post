@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.11.23
-// Last modified by Tibor Völcker on 17.01.24
+// Last modified by Tibor Völcker on 18.02.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 mod atmosphere;
@@ -97,7 +97,19 @@ impl Planet {
         self.gravitational_parameters[0]
     }
 
-    pub fn geopotational_altitude(&self, altitude: f64) -> f64 {
+    pub fn altitude(&self, position: Vector3<f64>) -> f64 {
+        let k = (self.equatorial_radius / self.polar_radius).powi(2);
+
+        let geocentric_lat = f64::asin(position.z / position.norm());
+
+        let distance_to_surface =
+            self.equatorial_radius / f64::sqrt(1. + (k - 1.) * geocentric_lat.sin().powi(2));
+
+        position.norm() - distance_to_surface
+    }
+
+    pub fn geopotational_altitude(&self, position: Vector3<f64>) -> f64 {
+        let altitude = self.altitude(position);
         let avg_altitude = 0.5 * (self.equatorial_radius + self.polar_radius);
         avg_altitude * altitude / (avg_altitude + altitude)
     }
@@ -120,7 +132,7 @@ impl Planet {
         if let Some(atmos) = &self.atmosphere {
             match atmos {
                 Atmosphere::StandardAtmosphere1962 => {
-                    let geopotential_alt = self.geopotational_altitude(position.norm());
+                    let geopotential_alt = self.geopotational_altitude(position);
                     standard_atmosphere_1962::temperature(geopotential_alt)
                 }
             }
@@ -133,7 +145,7 @@ impl Planet {
         if let Some(atmos) = &self.atmosphere {
             match atmos {
                 Atmosphere::StandardAtmosphere1962 => {
-                    let geopotential_alt = self.geopotational_altitude(position.norm());
+                    let geopotential_alt = self.geopotational_altitude(position);
                     standard_atmosphere_1962::pressure(geopotential_alt)
                 }
             }
@@ -146,7 +158,7 @@ impl Planet {
         if let Some(atmos) = &self.atmosphere {
             match atmos {
                 Atmosphere::StandardAtmosphere1962 => {
-                    let geopotential_alt = self.geopotational_altitude(position.norm());
+                    let geopotential_alt = self.geopotational_altitude(position);
                     standard_atmosphere_1962::density(geopotential_alt)
                 }
             }
@@ -159,7 +171,7 @@ impl Planet {
         if let Some(atmos) = &self.atmosphere {
             match atmos {
                 Atmosphere::StandardAtmosphere1962 => {
-                    let geopotential_alt = self.geopotational_altitude(position.norm());
+                    let geopotential_alt = self.geopotational_altitude(position);
                     standard_atmosphere_1962::speed_of_sound(geopotential_alt)
                 }
             }
@@ -170,6 +182,9 @@ impl Planet {
 
     pub fn alpha(&self, velocity: Vector3<f64>) -> f64 {
         if velocity.x == 0. {
+            if velocity.z == 0. {
+                return 0.;
+            }
             return velocity.z.signum() * PI / 2.;
         }
         // From [1]: sin(alpha) = z / sqrt(x^2 + z^2)
