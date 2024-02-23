@@ -8,22 +8,22 @@ use nalgebra::{Rotation3, Vector3};
 
 use crate::planet::EnvState as PlanetState;
 
+#[derive(Default)]
 pub struct Atmosphere {
     wind: Vector3<f64>,
     model: AtmosphereModel,
 }
 
+#[derive(Default)]
 pub enum AtmosphereModel {
+    #[default]
     NoAtmosphere,
     StandardAtmosphere1962,
 }
 
 impl Atmosphere {
     pub fn new() -> Self {
-        Atmosphere {
-            wind: Vector3::zeros(),
-            model: AtmosphereModel::NoAtmosphere,
-        }
+        Self::default()
     }
 
     pub fn add_atmosphere(&mut self) -> &Self {
