@@ -32,6 +32,7 @@ impl Atmosphere {
     }
 }
 
+#[derive(Default)]
 pub struct State {
     pub time: f64,
     pub position: Vector3<f64>,

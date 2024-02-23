@@ -44,9 +44,13 @@ mod tests {
     #[test]
     fn angular_polynomials() {
         let steering = Steering::Angular(Angular::Polynomials(vector![4., 3., 2., 1.]));
+        let state = State {
+            time: 2.,
+            ..Default::default()
+        };
 
         assert_eq!(
-            steering.update(2.),
+            steering.update(&state),
             4. + 3. * 2. + 2. * 2_f64.powi(2) + 1. * 2_f64.powi(3)
         )
     }
