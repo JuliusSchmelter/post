@@ -2,25 +2,16 @@
 // Last modified by Tibor Völcker on 23.02.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
-mod atmosphere;
-
-use std::f64::consts::PI;
-
-pub use atmosphere::Atmosphere;
 use nalgebra::{vector, Vector3};
 use utils::constants::*;
 
 use crate::state::PrimaryState;
-
-use self::atmosphere::standard_atmosphere_1962;
 
 pub struct Planet {
     pub equatorial_radius: f64,
     pub polar_radius: f64,
     gravitational_parameters: [f64; 4],
     pub rotation_rate: f64,
-    atmosphere: Option<Atmosphere>,
-    wind: Option<Vector3<f64>>,
 }
 
 pub const EARTH_SPHERICAL: Planet = Planet {
@@ -29,8 +20,6 @@ pub const EARTH_SPHERICAL: Planet = Planet {
     // [mu, J_2, J_3, J_4]
     gravitational_parameters: [1.4076539e16 * CUBIC_METER_PER_CUBIC_FOOT, 0., 0., 0.],
     rotation_rate: 7.29211e-5,
-    atmosphere: None,
-    wind: None,
 };
 
 pub const EARTH_FISHER_1960: Planet = Planet {
@@ -39,8 +28,6 @@ pub const EARTH_FISHER_1960: Planet = Planet {
     // [mu, J_2, J_3, J_4]
     gravitational_parameters: [1.4076539e16 * CUBIC_METER_PER_CUBIC_FOOT, 1.0823e-3, 0., 0.],
     rotation_rate: 7.29211e-5,
-    atmosphere: None,
-    wind: None,
 };
 
 pub const EARTH_SMITHSONIAN: Planet = Planet {
@@ -54,21 +41,9 @@ pub const EARTH_SMITHSONIAN: Planet = Planet {
         -1.608e-6,
     ],
     rotation_rate: 7.29211e-5,
-    atmosphere: None,
-    wind: None,
 };
 
-impl Planet {
-    pub fn add_atmosphere(&mut self, atmosphere: Atmosphere) {
-        self.atmosphere = Some(atmosphere);
-    }
-
-    pub fn add_wind(&mut self, wind: Vector3<f64>) {
-        self.wind = Some(wind);
-    }
-}
-
-struct State {
+pub struct State {
     pub time: f64,
     pub position: Vector3<f64>,
     pub velocity: Vector3<f64>,
@@ -76,7 +51,6 @@ struct State {
     pub altitude: f64,
     pub geopotential_altitude: f64,
     pub rel_velocity: Vector3<f64>,
-    pub atmos_rel_velocity: Vector3<f64>,
 }
 
 impl Planet {
@@ -89,7 +63,6 @@ impl Planet {
             altitude: self.altitude(state.position),
             geopotential_altitude: self.geopotational_altitude(state.position),
             rel_velocity: self.rel_velocity(state.position, state.velocity),
-            atmos_rel_velocity: self.atmos_rel_velocity(state.position, state.velocity),
         }
     }
 }
@@ -145,90 +118,21 @@ impl Planet {
     pub fn rel_velocity(&self, position: Vector3<f64>, velocity: Vector3<f64>) -> Vector3<f64> {
         velocity - vector![0., 0., self.rotation_rate].cross(&position)
     }
-
-    pub fn atmos_rel_velocity(
-        &self,
-        position: Vector3<f64>,
-        velocity: Vector3<f64>,
-    ) -> Vector3<f64> {
-        self.rel_velocity(position, velocity) + self.wind.unwrap_or(Vector3::zeros())
-    }
 }
 
-impl Planet {
-    pub fn temperature(&self, state: &State) -> f64 {
-        if let Some(atmos) = &self.atmosphere {
-            match atmos {
-                Atmosphere::StandardAtmosphere1962 => {
-                    standard_atmosphere_1962::temperature(state.geopotential_altitude)
-                }
-            }
-        } else {
-            0.
-        }
-    }
-
-    pub fn pressure(&self, state: &State) -> f64 {
-        if let Some(atmos) = &self.atmosphere {
-            match atmos {
-                Atmosphere::StandardAtmosphere1962 => {
-                    standard_atmosphere_1962::pressure(state.geopotential_altitude)
-                }
-            }
-        } else {
-            0.
-        }
-    }
-
-    pub fn density(&self, state: &State) -> f64 {
-        if let Some(atmos) = &self.atmosphere {
-            match atmos {
-                Atmosphere::StandardAtmosphere1962 => {
-                    standard_atmosphere_1962::density(state.geopotential_altitude)
-                }
-            }
-        } else {
-            0.
-        }
-    }
-
-    pub fn speed_of_sound(&self, state: &State) -> f64 {
-        if let Some(atmos) = &self.atmosphere {
-            match atmos {
-                Atmosphere::StandardAtmosphere1962 => {
-                    standard_atmosphere_1962::speed_of_sound(state.geopotential_altitude)
-                }
-            }
-        } else {
-            0.
-        }
-    }
-
-    pub fn alpha(&self, velocity: Vector3<f64>) -> f64 {
-        if velocity.x == 0. {
-            if velocity.z == 0. {
-                return 0.;
-            }
-            return velocity.z.signum() * PI / 2.;
-        }
-        // From [1]: sin(alpha) = z / sqrt(x^2 + z^2)
-        //           cos(alpha) = x / sqrt(x^2 + z^2)
-        //               alpha = atan(sin(alpha) / cos(alpha))
-        // As far as I can see, is the 'sqrt(x^2 + z^2) term useless
-        f64::atan(velocity.z / velocity.x)
-    }
-
-    pub fn mach_number(&self, state: &State) -> f64 {
-        if self.speed_of_sound(state) == 0. {
-            return 0.;
-        }
-        state.atmos_rel_velocity.norm() / self.speed_of_sound(state)
-    }
-
-    pub fn dynamic_pressure(&self, state: &State) -> f64 {
-        0.5 * self.density(state) * state.atmos_rel_velocity.norm().powi(2)
-    }
-}
+// pub fn alpha(&self, velocity: Vector3<f64>) -> f64 {
+//     if velocity.x == 0. {
+//         if velocity.z == 0. {
+//             return 0.;
+//         }
+//         return velocity.z.signum() * PI / 2.;
+//     }
+//     // From [1]: sin(alpha) = z / sqrt(x^2 + z^2)
+//     //           cos(alpha) = x / sqrt(x^2 + z^2)
+//     //               alpha = atan(sin(alpha) / cos(alpha))
+//     // As far as I can see, is the 'sqrt(x^2 + z^2) term useless
+//     f64::atan(velocity.z / velocity.x)
+// }
 
 #[cfg(test)]
 mod tests {

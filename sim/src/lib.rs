@@ -5,6 +5,7 @@
 // allow dead code for now, as it's still WIP
 #![allow(dead_code)]
 
+mod atmosphere;
 pub mod example_data;
 pub mod integration;
 mod planet;
@@ -12,9 +13,10 @@ mod state;
 mod transformations;
 pub mod vehicle;
 
+pub use atmosphere::Atmosphere;
 pub use integration::Integrator;
 use nalgebra::{vector, Vector3};
-pub use planet::{Atmosphere, Planet, EARTH_FISHER_1960, EARTH_SMITHSONIAN, EARTH_SPHERICAL};
+pub use planet::{Planet, EARTH_FISHER_1960, EARTH_SMITHSONIAN, EARTH_SPHERICAL};
 use state::{PrimaryState, State};
 pub use vehicle::Vehicle;
 
@@ -24,6 +26,7 @@ pub struct Simulation {
     pub state: PrimaryState,
     vehicle: Vehicle,
     planet: Planet,
+    atmosphere: Atmosphere,
     transformations: Transformations,
     integrator: Integrator,
     stepsize: f64,
@@ -35,6 +38,7 @@ impl Simulation {
             state: PrimaryState::new(),
             vehicle,
             planet,
+            atmosphere: Atmosphere::new(),
             transformations: Transformations::new(),
             integrator: Integrator::RK4,
             stepsize,
@@ -44,9 +48,7 @@ impl Simulation {
     fn system(&self, state: &PrimaryState) -> State {
         let state = self.planet.environment(state);
 
-        let pressure = self.planet.pressure(state);
-        let mach = self.planet.mach_number(state);
-        let dynamic_pressure = self.planet.dynamic_pressure(state);
+        let state = self.atmosphere.environment(state);
 
         let attitude = self.vehicle.steer(state.time);
 
