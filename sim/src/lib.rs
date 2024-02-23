@@ -41,6 +41,11 @@ impl Simulation {
         }
     }
 
+    pub fn add_atmosphere(&mut self) -> &Self {
+        self.atmosphere.add_atmosphere();
+        self
+    }
+
     fn system(&self, state: &PrimaryState) -> State {
         let state = self.planet.environment(state);
 

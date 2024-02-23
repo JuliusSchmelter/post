@@ -104,8 +104,11 @@ impl Vehicle {
                 0.
             }
         }));
-        let inertial_to_body = launch_to_body(euler_angles.x, euler_angles.y, euler_angles.z)
-            * state.inertial_to_launch;
+        let inertial_to_body = launch_to_body(
+            euler_angles.x.to_radians(),
+            euler_angles.y.to_radians(),
+            euler_angles.z.to_radians(),
+        ) * state.inertial_to_launch;
 
         SteeringState {
             time: state.time,
@@ -151,8 +154,10 @@ pub struct ForceState {
     pub body_to_inertial: Rotation3<f64>,
     pub gravity_acceleration: Vector3<f64>,
     pub vehicle_acceleration: Vector3<f64>,
-    pub thrust_force: f64,
-    pub aero_force: f64,
+    pub throttle: f64,
+    pub thrust_force: Vector3<f64>,
+    pub aero_force: Vector3<f64>,
+    pub alpha: f64,
 }
 
 impl Vehicle {
@@ -162,13 +167,17 @@ impl Vehicle {
                 .inertial_to_body
                 .transform_vector(&state.atmos_rel_velocity),
         );
-        let aero_force = self.aero_force(alpha, state.mach_number, state.dynamic_pressure);
+        let mut aero_force = self.aero_force(alpha, state.mach_number, state.dynamic_pressure);
+
+        if aero_force.norm().is_nan() {
+            aero_force = vector![0., 0., 0.];
+        }
 
         let throttle = self.auto_throttle(state.mass, state.pressure, aero_force);
-        let thrust = self.thrust_force(throttle, state.pressure);
+        let thrust_force = self.thrust_force(throttle, state.pressure);
         let massflow = self.massflow(throttle);
 
-        let body_acc = (aero_force + thrust) / state.mass;
+        let body_acc = (aero_force + thrust_force) / state.mass;
 
         // Intersection would require negative thrust
         if body_acc.norm() > self.max_acceleration * 1.001 || throttle.is_nan() {
@@ -200,8 +209,10 @@ impl Vehicle {
             body_to_inertial: state.body_to_inertial,
             gravity_acceleration: state.gravity_acceleration,
             vehicle_acceleration: body_acc,
-            thrust_force: thrust.norm(),
-            aero_force: aero_force.norm(),
+            throttle,
+            thrust_force,
+            aero_force,
+            alpha,
         }
     }
 

@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 11.02.24
-// Last modified by Tibor Völcker on 19.02.24
+// Last modified by Tibor Völcker on 23.02.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use sim::example_data::example_data;
@@ -10,11 +10,11 @@ use utils::assert_almost_eq_rel;
 fn phase_1() {
     let data = example_data();
 
-    let mut planet = EARTH_SPHERICAL;
-    planet.add_atmosphere(Atmosphere::StandardAtmosphere1962);
+    let planet = EARTH_SPHERICAL;
     let vehicle = data[0].vehicle.clone();
-
     let mut sim = Simulation::new(vehicle, planet, 5.);
+    sim.add_atmosphere();
+
     sim.init_geodetic(28.5, 279.4, 90.);
     sim.state.mass = data[0].mass;
 
@@ -52,11 +52,11 @@ fn phase_1() {
 fn phase_11() {
     let data = example_data();
 
-    let mut planet = EARTH_SPHERICAL;
-    planet.add_atmosphere(Atmosphere::StandardAtmosphere1962);
+    let planet = EARTH_SPHERICAL;
     let vehicle = data[2].vehicle.clone();
-
     let mut sim = Simulation::new(vehicle, planet, data[3].time);
+    sim.add_atmosphere();
+
     sim.init_geodetic(28.5, 279.4, 90.);
     sim.init_inertial(data[2].position, data[2].velocity);
     sim.state.mass = data[2].mass;
