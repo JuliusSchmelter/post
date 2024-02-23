@@ -156,12 +156,11 @@ impl Planet {
 }
 
 impl Planet {
-    pub fn temperature(&self, position: Vector3<f64>) -> f64 {
+    pub fn temperature(&self, state: &State) -> f64 {
         if let Some(atmos) = &self.atmosphere {
             match atmos {
                 Atmosphere::StandardAtmosphere1962 => {
-                    let geopotential_alt = self.geopotational_altitude(position);
-                    standard_atmosphere_1962::temperature(geopotential_alt)
+                    standard_atmosphere_1962::temperature(state.geopotential_altitude)
                 }
             }
         } else {
@@ -169,12 +168,11 @@ impl Planet {
         }
     }
 
-    pub fn pressure(&self, position: Vector3<f64>) -> f64 {
+    pub fn pressure(&self, state: &State) -> f64 {
         if let Some(atmos) = &self.atmosphere {
             match atmos {
                 Atmosphere::StandardAtmosphere1962 => {
-                    let geopotential_alt = self.geopotational_altitude(position);
-                    standard_atmosphere_1962::pressure(geopotential_alt)
+                    standard_atmosphere_1962::pressure(state.geopotential_altitude)
                 }
             }
         } else {
@@ -182,12 +180,11 @@ impl Planet {
         }
     }
 
-    pub fn density(&self, position: Vector3<f64>) -> f64 {
+    pub fn density(&self, state: &State) -> f64 {
         if let Some(atmos) = &self.atmosphere {
             match atmos {
                 Atmosphere::StandardAtmosphere1962 => {
-                    let geopotential_alt = self.geopotational_altitude(position);
-                    standard_atmosphere_1962::density(geopotential_alt)
+                    standard_atmosphere_1962::density(state.geopotential_altitude)
                 }
             }
         } else {
@@ -195,12 +192,11 @@ impl Planet {
         }
     }
 
-    pub fn speed_of_sound(&self, position: Vector3<f64>) -> f64 {
+    pub fn speed_of_sound(&self, state: &State) -> f64 {
         if let Some(atmos) = &self.atmosphere {
             match atmos {
                 Atmosphere::StandardAtmosphere1962 => {
-                    let geopotential_alt = self.geopotational_altitude(position);
-                    standard_atmosphere_1962::speed_of_sound(geopotential_alt)
+                    standard_atmosphere_1962::speed_of_sound(state.geopotential_altitude)
                 }
             }
         } else {
@@ -222,15 +218,15 @@ impl Planet {
         f64::atan(velocity.z / velocity.x)
     }
 
-    pub fn mach_number(&self, position: Vector3<f64>, velocity: Vector3<f64>) -> f64 {
-        if self.speed_of_sound(position) == 0. {
+    pub fn mach_number(&self, state: &State) -> f64 {
+        if self.speed_of_sound(state) == 0. {
             return 0.;
         }
-        self.atmos_rel_velocity(position, velocity).norm() / self.speed_of_sound(position)
+        state.atmos_rel_velocity.norm() / self.speed_of_sound(state)
     }
 
-    pub fn dynamic_pressure(&self, position: Vector3<f64>, velocity: Vector3<f64>) -> f64 {
-        0.5 * self.density(position) * self.atmos_rel_velocity(position, velocity).norm().powi(2)
+    pub fn dynamic_pressure(&self, state: &State) -> f64 {
+        0.5 * self.density(state) * state.atmos_rel_velocity.norm().powi(2)
     }
 }
 

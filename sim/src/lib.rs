@@ -44,6 +44,10 @@ impl Simulation {
     fn system(&self, state: &PrimaryState) -> State {
         let state = self.planet.environment(state);
 
+        let pressure = self.planet.pressure(state);
+        let mach = self.planet.mach_number(state);
+        let dynamic_pressure = self.planet.dynamic_pressure(state);
+
         let attitude = self.vehicle.steer(state.time);
 
         let ib = self.transformations.inertial_to_body(
@@ -53,7 +57,6 @@ impl Simulation {
         );
         let state = state.add_attitude(attitude, ib);
 
-        let pressure = self.planet.pressure(state.position);
         let rel_velocity_inertial = self
             .planet
             .atmos_rel_velocity(state.position, state.velocity);
@@ -61,8 +64,6 @@ impl Simulation {
             .inertial_to_body
             .transform_vector(&rel_velocity_inertial);
         let alpha = self.planet.alpha(rel_velocity_body);
-        let mach = self.planet.mach_number(state.position, state.velocity);
-        let dynamic_pressure = self.planet.dynamic_pressure(state.position, state.velocity);
         let state = state.add_env(pressure, alpha, mach, dynamic_pressure);
 
         let aero = self.vehicle.aero_force(alpha, mach, dynamic_pressure);
