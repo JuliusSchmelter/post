@@ -59,8 +59,8 @@ pub struct EnvState {
 }
 
 impl Planet {
-    pub fn environment(&self, state: &PrimaryState) -> &EnvState {
-        &EnvState {
+    pub fn environment(&self, state: &PrimaryState) -> EnvState {
+        EnvState {
             time: state.time,
             position: state.position,
             velocity: state.velocity,
@@ -116,8 +116,8 @@ pub struct ForceState {
 }
 
 impl Planet {
-    pub fn force(&self, state: &SteeringState) -> &ForceState {
-        &ForceState {
+    pub fn force(&self, state: &SteeringState) -> ForceState {
+        ForceState {
             time: state.time,
             position: state.position,
             velocity: state.velocity,

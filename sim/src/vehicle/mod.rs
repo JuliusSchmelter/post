@@ -96,7 +96,7 @@ pub struct SteeringState {
 }
 
 impl Vehicle {
-    pub fn steering(&self, state: &AtmosState) -> &SteeringState {
+    pub fn steering(&self, state: &AtmosState) -> SteeringState {
         let euler_angles = Vector3::from_iterator(self.steering.iter().map(|steer_opt| {
             if let Some(steer) = steer_opt {
                 steer.update(state)
@@ -107,7 +107,7 @@ impl Vehicle {
         let inertial_to_body = launch_to_body(euler_angles.x, euler_angles.y, euler_angles.z)
             * state.inertial_to_launch;
 
-        &SteeringState {
+        SteeringState {
             time: state.time,
             position: state.position,
             velocity: state.velocity,
@@ -156,7 +156,7 @@ pub struct ForceState {
 }
 
 impl Vehicle {
-    pub fn force(&self, state: &PlanetState) -> &ForceState {
+    pub fn force(&self, state: &PlanetState) -> ForceState {
         let alpha = self.alpha(
             state
                 .inertial_to_body
@@ -178,7 +178,7 @@ impl Vehicle {
         let acceleration =
             state.body_to_inertial.transform_vector(&body_acc) + state.gravity_acceleration;
 
-        &ForceState {
+        ForceState {
             time: state.time,
             position: state.position,
             velocity: state.velocity,

@@ -44,13 +44,13 @@ impl Simulation {
     fn system(&self, state: &PrimaryState) -> State {
         let state = self.planet.environment(state);
 
-        let state = self.atmosphere.environment(state);
+        let state = self.atmosphere.environment(&state);
 
-        let state = self.vehicle.steering(state);
+        let state = self.vehicle.steering(&state);
 
-        let state = self.planet.force(state);
+        let state = self.planet.force(&state);
 
-        let state = self.vehicle.force(state);
+        self.vehicle.force(&state)
     }
 
     pub fn step(&mut self) -> &PrimaryState {

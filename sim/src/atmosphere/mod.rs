@@ -51,11 +51,11 @@ pub struct State {
 }
 
 impl Atmosphere {
-    pub fn environment(&self, state: &PlanetState) -> &State {
+    pub fn environment(&self, state: &PlanetState) -> State {
         let speed_of_sound = self.speed_of_sound(state);
         let density = self.density(state);
         let atmos_rel_velocity = self.atmos_rel_velocity(state);
-        &State {
+        State {
             time: state.time,
             position: state.position,
             velocity: state.velocity,
