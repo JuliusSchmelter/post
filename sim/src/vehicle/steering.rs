@@ -1,8 +1,10 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 06.12.23
-// Last modified by Tibor Völcker on 17.01.24
+// Last modified by Tibor Völcker on 23.02.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::Vector4;
+
+use crate::atmosphere::State;
 
 #[derive(Clone)]
 pub enum Steering {
@@ -19,12 +21,12 @@ pub enum Angular {
 }
 
 impl Steering {
-    pub fn update(&self, variable: f64) -> f64 {
+    pub fn update(&self, state: &State) -> f64 {
         match self {
             Steering::Angular(steering_type) => match steering_type {
                 Angular::Polynomials(coeffs) => {
                     // See [1] p. V-22
-                    Vector4::from_iterator((0..4).map(|i| variable.powi(i)))
+                    Vector4::from_iterator((0..4).map(|i| state.time.powi(i)))
                         .component_mul(coeffs)
                         .sum()
                 }

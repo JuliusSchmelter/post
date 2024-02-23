@@ -1,12 +1,14 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 22.02.24
+// Last modified by Tibor Völcker on 23.02.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use std::f64::consts::PI;
 
-use nalgebra::{vector, Vector3};
+use nalgebra::{vector, Rotation3, Vector3};
 pub use steering::{Angular, Steering};
 use utils::{constants::STD_GRAVITY, tables::linear_interpolation::Table2D};
+
+use crate::{atmosphere::State as AtmosState, transformations::launch_to_body};
 
 mod steering;
 
@@ -68,7 +70,63 @@ impl Vehicle {
             max_acceleration,
         }
     }
+}
 
+pub struct State {
+    pub time: f64,
+    pub position: Vector3<f64>,
+    pub velocity: Vector3<f64>,
+    pub mass: f64,
+    pub altitude: f64,
+    pub geopotential_altitude: f64,
+    pub rel_velocity: Vector3<f64>,
+    pub atmos_rel_velocity: Vector3<f64>,
+    pub temperature: f64,
+    pub pressure: f64,
+    pub density: f64,
+    pub speed_of_sound: f64,
+    pub mach_number: f64,
+    pub dynamic_pressure: f64,
+    pub euler_angles: [f64; 3],
+    pub inertial_to_body: Rotation3<f64>,
+    pub body_to_inertial: Rotation3<f64>,
+}
+
+impl Vehicle {
+    pub fn steering(&self, state: &AtmosState) -> &State {
+        let euler_angles = Vector3::from_iterator(self.steering.iter().map(|steer_opt| {
+            if let Some(steer) = steer_opt {
+                steer.update(state)
+            } else {
+                0.
+            }
+        }));
+        let inertial_to_body = launch_to_body(euler_angles.x, euler_angles.y, euler_angles.z)
+            * state.inertial_to_launch;
+
+        &State {
+            time: state.time,
+            position: state.position,
+            velocity: state.velocity,
+            mass: state.mass,
+            altitude: state.altitude,
+            geopotential_altitude: state.geopotential_altitude,
+            rel_velocity: state.rel_velocity,
+            atmos_rel_velocity: state.atmos_rel_velocity,
+            temperature: state.temperature,
+            pressure: state.pressure,
+            density: state.density,
+            speed_of_sound: state.speed_of_sound,
+            mach_number: state.mach_number,
+            dynamic_pressure: state.dynamic_pressure,
+            euler_angles: euler_angles.into(),
+            inertial_to_body,
+            body_to_inertial: inertial_to_body.transpose(),
+        }
+    }
+}
+
+impl Vehicle {
     pub fn thrust_force(&self, throttle: f64, pressure_atmos: f64) -> Vector3<f64> {
         throttle
             * self
@@ -112,16 +170,6 @@ impl Vehicle {
         let cn = alpha.to_radians().sin() * cd + alpha.to_radians().cos() * cl;
 
         dynamic_pressure * self.reference_area * vector![-ca, cy, -cn]
-    }
-
-    pub fn steer(&self, variable: f64) -> Vector3<f64> {
-        Vector3::from_iterator(self.steering.iter().map(|steer_opt| {
-            if let Some(steer) = steer_opt {
-                steer.update(variable)
-            } else {
-                0.
-            }
-        }))
     }
 }
 

@@ -46,21 +46,11 @@ impl Simulation {
 
         let state = self.atmosphere.environment(state);
 
-        let attitude = self.vehicle.steer(state.time);
+        let state = self.vehicle.steering(state);
 
-        let ib = self.transformations.inertial_to_body(
-            attitude.x.to_radians(),
-            attitude.y.to_radians(),
-            attitude.z.to_radians(),
-        );
-        let state = state.add_attitude(attitude, ib);
-
-        let rel_velocity_inertial = self
-            .planet
-            .atmos_rel_velocity(state.position, state.velocity);
         let rel_velocity_body = state
             .inertial_to_body
-            .transform_vector(&rel_velocity_inertial);
+            .transform_vector(&state.atmos_rel_velocity);
         let alpha = self.planet.alpha(rel_velocity_body);
         let state = state.add_env(pressure, alpha, mach, dynamic_pressure);
 
