@@ -5,7 +5,7 @@
 use nalgebra::{vector, Rotation3, Vector3};
 use utils::constants::*;
 
-use crate::{state::PrimaryState, transformations::inertial_to_launch, vehicle::State};
+use crate::{state::PrimaryState, transformations::inertial_to_launch, vehicle::SteeringState};
 
 pub struct Planet {
     pub equatorial_radius: f64,
@@ -116,7 +116,7 @@ pub struct ForceState {
 }
 
 impl Planet {
-    pub fn force(&self, state: &State) -> &ForceState {
+    pub fn force(&self, state: &SteeringState) -> &ForceState {
         &ForceState {
             time: state.time,
             position: state.position,
@@ -169,20 +169,6 @@ impl Planet {
         ]
     }
 }
-
-// pub fn alpha(&self, velocity: Vector3<f64>) -> f64 {
-//     if velocity.x == 0. {
-//         if velocity.z == 0. {
-//             return 0.;
-//         }
-//         return velocity.z.signum() * PI / 2.;
-//     }
-//     // From [1]: sin(alpha) = z / sqrt(x^2 + z^2)
-//     //           cos(alpha) = x / sqrt(x^2 + z^2)
-//     //               alpha = atan(sin(alpha) / cos(alpha))
-//     // As far as I can see, is the 'sqrt(x^2 + z^2) term useless
-//     f64::atan(velocity.z / velocity.x)
-// }
 
 #[cfg(test)]
 mod tests {

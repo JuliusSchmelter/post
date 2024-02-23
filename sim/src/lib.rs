@@ -50,31 +50,7 @@ impl Simulation {
 
         let state = self.planet.force(state);
 
-        let rel_velocity_body = state
-            .inertial_to_body
-            .transform_vector(&state.atmos_rel_velocity);
-        let alpha = self.planet.alpha(rel_velocity_body);
-        let state = state.add_env(pressure, alpha, mach, dynamic_pressure);
-
-        let aero = self.vehicle.aero_force(alpha, mach, dynamic_pressure);
-
-        let throttle = self.vehicle.auto_throttle(state.mass, pressure, aero);
-        let thrust = self.vehicle.thrust_force(throttle, pressure);
-        let massflow = self.vehicle.massflow(throttle);
-
-        let body_acc = (aero + thrust) / state.mass;
-
-        // Intersection would require negative thrust
-        if body_acc.norm() > self.vehicle.max_acceleration * 1.001 || throttle.is_nan() {
-            panic!("Could not stay in max. acceleration (check aero forces)")
-        }
-
-        let gravity = self.planet.gravity(state.position);
-
-        state.add_differentials(
-            state.body_to_inertial.transform_vector(&body_acc) + gravity,
-            massflow,
-        )
+        let state = self.vehicle.force(state);
     }
 
     pub fn step(&mut self) -> &PrimaryState {
