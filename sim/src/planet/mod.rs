@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.11.23
-// Last modified by Tibor Völcker on 18.02.24
+// Last modified by Tibor Völcker on 23.02.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 mod atmosphere;
@@ -9,6 +9,8 @@ use std::f64::consts::PI;
 pub use atmosphere::Atmosphere;
 use nalgebra::{vector, Vector3};
 use utils::constants::*;
+
+use crate::state::PrimaryState;
 
 use self::atmosphere::standard_atmosphere_1962;
 
@@ -63,6 +65,32 @@ impl Planet {
 
     pub fn add_wind(&mut self, wind: Vector3<f64>) {
         self.wind = Some(wind);
+    }
+}
+
+struct State {
+    pub time: f64,
+    pub position: Vector3<f64>,
+    pub velocity: Vector3<f64>,
+    pub mass: f64,
+    pub altitude: f64,
+    pub geopotential_altitude: f64,
+    pub rel_velocity: Vector3<f64>,
+    pub atmos_rel_velocity: Vector3<f64>,
+}
+
+impl Planet {
+    pub fn environment(&self, state: &PrimaryState) -> &State {
+        &State {
+            time: state.time,
+            position: state.position,
+            velocity: state.velocity,
+            mass: state.mass,
+            altitude: self.altitude(state.position),
+            geopotential_altitude: self.geopotational_altitude(state.position),
+            rel_velocity: self.rel_velocity(state.position, state.velocity),
+            atmos_rel_velocity: self.atmos_rel_velocity(state.position, state.velocity),
+        }
     }
 }
 

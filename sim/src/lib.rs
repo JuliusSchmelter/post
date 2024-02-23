@@ -42,6 +42,8 @@ impl Simulation {
     }
 
     fn system(&self, state: &PrimaryState) -> State {
+        let state = self.planet.environment(state);
+
         let attitude = self.vehicle.steer(state.time);
 
         let ib = self.transformations.inertial_to_body(
