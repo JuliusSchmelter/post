@@ -48,6 +48,8 @@ impl Simulation {
 
         let state = self.vehicle.steering(state);
 
+        let state = self.planet.force(state);
+
         let rel_velocity_body = state
             .inertial_to_body
             .transform_vector(&state.atmos_rel_velocity);

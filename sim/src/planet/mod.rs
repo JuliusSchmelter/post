@@ -5,7 +5,7 @@
 use nalgebra::{vector, Rotation3, Vector3};
 use utils::constants::*;
 
-use crate::{state::PrimaryState, transformations::inertial_to_launch};
+use crate::{state::PrimaryState, transformations::inertial_to_launch, vehicle::State};
 
 pub struct Planet {
     pub equatorial_radius: f64,
@@ -47,7 +47,7 @@ pub const EARTH_SMITHSONIAN: Planet = Planet {
     launch: [0., 0., 0.],
 };
 
-pub struct State {
+pub struct EnvState {
     pub time: f64,
     pub position: Vector3<f64>,
     pub velocity: Vector3<f64>,
@@ -59,8 +59,8 @@ pub struct State {
 }
 
 impl Planet {
-    pub fn environment(&self, state: &PrimaryState) -> &State {
-        &State {
+    pub fn environment(&self, state: &PrimaryState) -> &EnvState {
+        &EnvState {
             time: state.time,
             position: state.position,
             velocity: state.velocity,
@@ -71,9 +71,78 @@ impl Planet {
             rel_velocity: self.rel_velocity(state.position, state.velocity),
         }
     }
+
+    pub fn altitude(&self, position: Vector3<f64>) -> f64 {
+        let k = (self.equatorial_radius / self.polar_radius).powi(2);
+
+        let geocentric_lat = f64::asin(position.z / position.norm());
+
+        let distance_to_surface =
+            self.equatorial_radius / f64::sqrt(1. + (k - 1.) * geocentric_lat.sin().powi(2));
+
+        position.norm() - distance_to_surface
+    }
+
+    pub fn geopotational_altitude(&self, position: Vector3<f64>) -> f64 {
+        let altitude = self.altitude(position);
+        let avg_altitude = 0.5 * (self.equatorial_radius + self.polar_radius);
+        avg_altitude * altitude / (avg_altitude + altitude)
+    }
+
+    pub fn rel_velocity(&self, position: Vector3<f64>, velocity: Vector3<f64>) -> Vector3<f64> {
+        velocity - vector![0., 0., self.rotation_rate].cross(&position)
+    }
+}
+
+pub struct ForceState {
+    pub time: f64,
+    pub position: Vector3<f64>,
+    pub velocity: Vector3<f64>,
+    pub mass: f64,
+    pub altitude: f64,
+    pub geopotential_altitude: f64,
+    pub rel_velocity: Vector3<f64>,
+    pub atmos_rel_velocity: Vector3<f64>,
+    pub temperature: f64,
+    pub pressure: f64,
+    pub density: f64,
+    pub speed_of_sound: f64,
+    pub mach_number: f64,
+    pub dynamic_pressure: f64,
+    pub euler_angles: [f64; 3],
+    pub inertial_to_body: Rotation3<f64>,
+    pub body_to_inertial: Rotation3<f64>,
+    pub gravity_acceleration: Vector3<f64>,
 }
 
 impl Planet {
+    pub fn force(&self, state: &State) -> &ForceState {
+        &ForceState {
+            time: state.time,
+            position: state.position,
+            velocity: state.velocity,
+            mass: state.mass,
+            altitude: state.altitude,
+            geopotential_altitude: state.geopotential_altitude,
+            rel_velocity: state.rel_velocity,
+            atmos_rel_velocity: state.atmos_rel_velocity,
+            temperature: state.temperature,
+            pressure: state.pressure,
+            density: state.density,
+            speed_of_sound: state.speed_of_sound,
+            mach_number: state.mach_number,
+            dynamic_pressure: state.dynamic_pressure,
+            euler_angles: state.euler_angles,
+            inertial_to_body: state.inertial_to_body,
+            body_to_inertial: state.body_to_inertial,
+            gravity_acceleration: self.gravity(state.position),
+        }
+    }
+
+    pub fn mu(&self) -> f64 {
+        self.gravitational_parameters[0]
+    }
+
     #[allow(non_snake_case)]
     pub fn gravity(&self, position: Vector3<f64>) -> Vector3<f64> {
         let r: f64 = position.norm();
@@ -98,31 +167,6 @@ impl Planet {
                             - 3. / 5. * r.powi(2))
                     + D * R.powi(4) * (15. / 7. - 10. * Z.powi(2) + 9. * Z.powi(4)) * position.z)
         ]
-    }
-
-    pub fn mu(&self) -> f64 {
-        self.gravitational_parameters[0]
-    }
-
-    pub fn altitude(&self, position: Vector3<f64>) -> f64 {
-        let k = (self.equatorial_radius / self.polar_radius).powi(2);
-
-        let geocentric_lat = f64::asin(position.z / position.norm());
-
-        let distance_to_surface =
-            self.equatorial_radius / f64::sqrt(1. + (k - 1.) * geocentric_lat.sin().powi(2));
-
-        position.norm() - distance_to_surface
-    }
-
-    pub fn geopotational_altitude(&self, position: Vector3<f64>) -> f64 {
-        let altitude = self.altitude(position);
-        let avg_altitude = 0.5 * (self.equatorial_radius + self.polar_radius);
-        avg_altitude * altitude / (avg_altitude + altitude)
-    }
-
-    pub fn rel_velocity(&self, position: Vector3<f64>, velocity: Vector3<f64>) -> Vector3<f64> {
-        velocity - vector![0., 0., self.rotation_rate].cross(&position)
     }
 }
 

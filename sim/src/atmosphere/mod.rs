@@ -6,7 +6,7 @@ pub mod standard_atmosphere_1962;
 
 use nalgebra::{Rotation3, Vector3};
 
-use crate::planet::State as PlanetState;
+use crate::planet::EnvState as PlanetState;
 
 pub struct Atmosphere {
     wind: Vector3<f64>,
