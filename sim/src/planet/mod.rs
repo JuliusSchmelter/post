@@ -2,16 +2,17 @@
 // Last modified by Tibor Völcker on 23.02.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
-use nalgebra::{vector, Vector3};
+use nalgebra::{vector, Rotation3, Vector3};
 use utils::constants::*;
 
-use crate::state::PrimaryState;
+use crate::{state::PrimaryState, transformations::inertial_to_launch};
 
 pub struct Planet {
     pub equatorial_radius: f64,
     pub polar_radius: f64,
     gravitational_parameters: [f64; 4],
     pub rotation_rate: f64,
+    pub launch: [f64; 3],
 }
 
 pub const EARTH_SPHERICAL: Planet = Planet {
@@ -20,6 +21,7 @@ pub const EARTH_SPHERICAL: Planet = Planet {
     // [mu, J_2, J_3, J_4]
     gravitational_parameters: [1.4076539e16 * CUBIC_METER_PER_CUBIC_FOOT, 0., 0., 0.],
     rotation_rate: 7.29211e-5,
+    launch: [0., 0., 0.],
 };
 
 pub const EARTH_FISHER_1960: Planet = Planet {
@@ -28,6 +30,7 @@ pub const EARTH_FISHER_1960: Planet = Planet {
     // [mu, J_2, J_3, J_4]
     gravitational_parameters: [1.4076539e16 * CUBIC_METER_PER_CUBIC_FOOT, 1.0823e-3, 0., 0.],
     rotation_rate: 7.29211e-5,
+    launch: [0., 0., 0.],
 };
 
 pub const EARTH_SMITHSONIAN: Planet = Planet {
@@ -41,12 +44,14 @@ pub const EARTH_SMITHSONIAN: Planet = Planet {
         -1.608e-6,
     ],
     rotation_rate: 7.29211e-5,
+    launch: [0., 0., 0.],
 };
 
 pub struct State {
     pub time: f64,
     pub position: Vector3<f64>,
     pub velocity: Vector3<f64>,
+    pub inertial_to_launch: Rotation3<f64>,
     pub mass: f64,
     pub altitude: f64,
     pub geopotential_altitude: f64,
@@ -59,6 +64,7 @@ impl Planet {
             time: state.time,
             position: state.position,
             velocity: state.velocity,
+            inertial_to_launch: inertial_to_launch(self.launch[0], self.launch[1], self.launch[2]),
             mass: state.mass,
             altitude: self.altitude(state.position),
             geopotential_altitude: self.geopotational_altitude(state.position),

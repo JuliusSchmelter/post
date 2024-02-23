@@ -4,7 +4,7 @@
 
 pub mod standard_atmosphere_1962;
 
-use nalgebra::Vector3;
+use nalgebra::{Rotation3, Vector3};
 
 use crate::planet::State as PlanetState;
 
@@ -36,6 +36,7 @@ pub struct State {
     pub time: f64,
     pub position: Vector3<f64>,
     pub velocity: Vector3<f64>,
+    pub inertial_to_launch: Rotation3<f64>,
     pub mass: f64,
     pub altitude: f64,
     pub geopotential_altitude: f64,
@@ -58,6 +59,7 @@ impl Atmosphere {
             time: state.time,
             position: state.position,
             velocity: state.velocity,
+            inertial_to_launch: state.inertial_to_launch,
             mass: state.mass,
             altitude: state.altitude,
             geopotential_altitude: state.geopotential_altitude,

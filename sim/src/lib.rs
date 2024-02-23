@@ -20,14 +20,11 @@ pub use planet::{Planet, EARTH_FISHER_1960, EARTH_SMITHSONIAN, EARTH_SPHERICAL};
 use state::{PrimaryState, State};
 pub use vehicle::Vehicle;
 
-use transformations::Transformations;
-
 pub struct Simulation {
     pub state: PrimaryState,
     vehicle: Vehicle,
     planet: Planet,
     atmosphere: Atmosphere,
-    transformations: Transformations,
     integrator: Integrator,
     stepsize: f64,
 }
@@ -39,7 +36,6 @@ impl Simulation {
             vehicle,
             planet,
             atmosphere: Atmosphere::new(),
-            transformations: Transformations::new(),
             integrator: Integrator::RK4,
             stepsize,
         }
@@ -114,7 +110,7 @@ impl Simulation {
 
         let geocentric_lat = f64::atan(k.powi(2) * lat.tan());
 
-        self.transformations.launch = [geocentric_lat, long, az];
+        self.planet.launch = [geocentric_lat, long, az];
 
         let distance_to_surface =
             self.planet.equatorial_radius / f64::sqrt(1. + (k - 1.) * geocentric_lat.sin().powi(2));
