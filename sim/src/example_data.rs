@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.01.24
-// Last modified by Tibor Völcker on 22.02.24
+// Last modified by Tibor Völcker on 01.03.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{vector, Vector3};
@@ -7,7 +7,7 @@ use nalgebra::{vector, Vector3};
 use utils::constants::*;
 use utils::tables::linear_interpolation::Table2D;
 
-use crate::vehicle::{Angular, Engine, Steering};
+use crate::vehicle::Engine;
 use crate::Vehicle;
 
 const DRAG_TABLE1: ([f64; 5], [f64; 12], [[f64; 12]; 5]) = (
@@ -129,6 +129,7 @@ pub struct DataPoint {
     pub dynamic_pressure: f64,
     pub aero: Vector3<f64>,
     pub vehicle: Vehicle,
+    pub steering_coeffs: [f64; 4],
 }
 
 pub fn example_data() -> [DataPoint; 4] {
@@ -143,7 +144,6 @@ pub fn example_data() -> [DataPoint; 4] {
             439.0,
             232.5 * SQUARE_METER_PER_SQUARE_FOOT,
         )],
-        [None, None, None],
         3. * STD_GRAVITY,
     );
     let vehicle2 = Vehicle::new(
@@ -157,18 +157,9 @@ pub fn example_data() -> [DataPoint; 4] {
             459.0,
             154.54 * SQUARE_METER_PER_SQUARE_FOOT,
         )],
-        [
-            None,
-            None,
-            Some(Steering::Angular(Angular::Polynomials(vector![
-                -9.66287352e1,
-                -1.16711775e-1,
-                0.,
-                0.
-            ]))),
-        ],
         3. * STD_GRAVITY,
     );
+    let steering_coeffs = [-9.66287352e1, -1.16711775e-1, 0., 0.];
     [
         DataPoint {
             time: 0.,
@@ -188,6 +179,7 @@ pub fn example_data() -> [DataPoint; 4] {
             dynamic_pressure: 0. * PASCAL_PER_PSF,
             aero: Vector3::new(-0., 0., -0.) * NEWTON_PER_POUND_FORCE,
             vehicle: vehicle1.clone(),
+            steering_coeffs: [0., 0., 0., 0.],
         },
         DataPoint {
             time: 1.50000000e1,
@@ -207,6 +199,7 @@ pub fn example_data() -> [DataPoint; 4] {
             dynamic_pressure: 1.93297185e1 * PASCAL_PER_PSF,
             aero: Vector3::new(-1.59202357e4, 0., -1.09857008e3) * NEWTON_PER_POUND_FORCE,
             vehicle: vehicle1,
+            steering_coeffs: [0., 0., 0., 0.],
         },
         DataPoint {
             time: 0.,
@@ -226,6 +219,7 @@ pub fn example_data() -> [DataPoint; 4] {
             dynamic_pressure: 8.63665574e-1 * PASCAL_PER_PSF,
             aero: Vector3::new(-1.66106776e2, 0., -6.28680574e2) * NEWTON_PER_POUND_FORCE,
             vehicle: vehicle2.clone(),
+            steering_coeffs,
         },
         DataPoint {
             time: 2.18072658e1,
@@ -245,6 +239,7 @@ pub fn example_data() -> [DataPoint; 4] {
             dynamic_pressure: 1.10682128e0 * PASCAL_PER_PSF,
             aero: Vector3::new(-2.13216514e2, 0., -6.17695942e2) * NEWTON_PER_POUND_FORCE,
             vehicle: vehicle2,
+            steering_coeffs,
         },
     ]
 }

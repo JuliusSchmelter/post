@@ -1,19 +1,13 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 23.02.24
+// Last modified by Tibor Völcker on 01.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use std::f64::consts::PI;
 
 use nalgebra::{vector, Rotation3, Vector3};
-pub use steering::{Angular, Steering};
 use utils::{constants::STD_GRAVITY, tables::linear_interpolation::Table2D};
 
-use crate::{
-    atmosphere::State as AtmosState, planet::ForceState as PlanetState,
-    transformations::launch_to_body,
-};
-
-mod steering;
+use crate::planet::ForceState as PlanetState;
 
 fn side_side_angle(a: f64, b: f64, alpha: f64) -> Option<f64> {
     if alpha == 0. {
@@ -49,7 +43,6 @@ pub struct Vehicle {
     lift_coeff: Table2D,
     side_force_coeff: Table2D,
     engines: Vec<Engine>,
-    steering: [Option<Steering>; 3],
     pub max_acceleration: f64,
 }
 
@@ -60,7 +53,6 @@ impl Vehicle {
         lift_coeff: Table2D,
         side_force_coeff: Table2D,
         engines: Vec<Engine>,
-        steering: [Option<Steering>; 3],
         max_acceleration: f64,
     ) -> Self {
         Self {
@@ -69,70 +61,12 @@ impl Vehicle {
             lift_coeff,
             side_force_coeff,
             engines,
-            steering,
             max_acceleration,
         }
     }
 }
 
-pub struct SteeringState {
-    pub time: f64,
-    pub position: Vector3<f64>,
-    pub velocity: Vector3<f64>,
-    pub mass: f64,
-    pub altitude: f64,
-    pub geopotential_altitude: f64,
-    pub rel_velocity: Vector3<f64>,
-    pub atmos_rel_velocity: Vector3<f64>,
-    pub temperature: f64,
-    pub pressure: f64,
-    pub density: f64,
-    pub speed_of_sound: f64,
-    pub mach_number: f64,
-    pub dynamic_pressure: f64,
-    pub euler_angles: [f64; 3],
-    pub inertial_to_body: Rotation3<f64>,
-    pub body_to_inertial: Rotation3<f64>,
-}
-
-impl Vehicle {
-    pub fn steering(&self, state: &AtmosState) -> SteeringState {
-        let euler_angles = Vector3::from_iterator(self.steering.iter().map(|steer_opt| {
-            if let Some(steer) = steer_opt {
-                steer.update(state)
-            } else {
-                0.
-            }
-        }));
-        let inertial_to_body = launch_to_body(
-            euler_angles.x.to_radians(),
-            euler_angles.y.to_radians(),
-            euler_angles.z.to_radians(),
-        ) * state.inertial_to_launch;
-
-        SteeringState {
-            time: state.time,
-            position: state.position,
-            velocity: state.velocity,
-            mass: state.mass,
-            altitude: state.altitude,
-            geopotential_altitude: state.geopotential_altitude,
-            rel_velocity: state.rel_velocity,
-            atmos_rel_velocity: state.atmos_rel_velocity,
-            temperature: state.temperature,
-            pressure: state.pressure,
-            density: state.density,
-            speed_of_sound: state.speed_of_sound,
-            mach_number: state.mach_number,
-            dynamic_pressure: state.dynamic_pressure,
-            euler_angles: euler_angles.into(),
-            inertial_to_body,
-            body_to_inertial: inertial_to_body.transpose(),
-        }
-    }
-}
-
-pub struct ForceState {
+pub struct State {
     pub time: f64,
     pub position: Vector3<f64>,
     pub velocity: Vector3<f64>,
@@ -161,7 +95,7 @@ pub struct ForceState {
 }
 
 impl Vehicle {
-    pub fn force(&self, state: &PlanetState) -> ForceState {
+    pub fn force(&self, state: &PlanetState) -> State {
         let alpha = self.alpha(
             state
                 .inertial_to_body
@@ -187,7 +121,7 @@ impl Vehicle {
         let acceleration =
             state.body_to_inertial.transform_vector(&body_acc) + state.gravity_acceleration;
 
-        ForceState {
+        State {
             time: state.time,
             position: state.position,
             velocity: state.velocity,

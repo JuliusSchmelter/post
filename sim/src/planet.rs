@@ -1,11 +1,13 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.11.23
-// Last modified by Tibor Völcker on 23.02.24
+// Last modified by Tibor Völcker on 01.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{vector, Rotation3, Vector3};
 use utils::constants::*;
 
-use crate::{state::PrimaryState, transformations::inertial_to_launch, vehicle::SteeringState};
+use crate::{
+    state::PrimaryState, steering::State as SteeringState, transformations::inertial_to_launch,
+};
 
 pub struct Planet {
     pub equatorial_radius: f64,

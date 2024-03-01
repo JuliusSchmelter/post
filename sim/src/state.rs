@@ -1,12 +1,10 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 26.01.24
-// Last modified by Tibor Völcker on 23.02.24
+// Last modified by Tibor Völcker on 01.03.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{vector, SVector, Vector3};
 
-use crate::vehicle::ForceState;
-
-pub type State = ForceState;
+pub use crate::vehicle::State;
 
 pub struct PrimaryState {
     pub time: f64,

@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 06.12.23
-// Last modified by Tibor Völcker on 22.02.24
+// Last modified by Tibor Völcker on 01.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::vector;
@@ -17,7 +17,6 @@ fn circular_orbit() {
         Table2D::zeros(),
         Table2D::zeros(),
         vec![],
-        [None, None, None],
         f64::INFINITY,
     );
     let r: f64 = 7000e3;

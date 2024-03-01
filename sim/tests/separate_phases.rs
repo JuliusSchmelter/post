@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 11.02.24
-// Last modified by Tibor Völcker on 23.02.24
+// Last modified by Tibor Völcker on 01.03.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use sim::example_data::example_data;
@@ -55,6 +55,7 @@ fn phase_11() {
     let planet = EARTH_SPHERICAL;
     let vehicle = data[2].vehicle.clone();
     let mut sim = Simulation::new(vehicle, planet, data[3].time);
+    sim.add_steering(2, data[2].steering_coeffs);
     sim.add_atmosphere();
 
     sim.init_geodetic(28.5, 279.4, 90.);
