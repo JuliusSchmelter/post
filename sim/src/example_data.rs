@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.01.24
-// Last modified by Tibor Völcker on 01.03.24
+// Last modified by Tibor Völcker on 04.03.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{vector, Vector3};
@@ -134,6 +134,7 @@ pub struct DataPoint {
 
 pub fn example_data() -> [DataPoint; 4] {
     let vehicle1 = Vehicle::new(
+        (4.03328112e6 - 2.249e6) * KILOGRAM_PER_POUND,
         4500. * SQUARE_METER_PER_SQUARE_FOOT,
         Table2D::new(DRAG_TABLE1.0, DRAG_TABLE1.1, DRAG_TABLE1.2),
         Table2D::new(LIFT_TABLE1.0, LIFT_TABLE1.1, LIFT_TABLE1.2),
@@ -147,6 +148,7 @@ pub fn example_data() -> [DataPoint; 4] {
         3. * STD_GRAVITY,
     );
     let vehicle2 = Vehicle::new(
+        (3.57822526e5 - 4.75414027e4) * KILOGRAM_PER_POUND,
         4840. * SQUARE_METER_PER_SQUARE_FOOT,
         Table2D::new(DRAG_TABLE2.0, DRAG_TABLE2.1, DRAG_TABLE2.2),
         Table2D::new(LIFT_TABLE2.0, LIFT_TABLE2.1, LIFT_TABLE2.2),

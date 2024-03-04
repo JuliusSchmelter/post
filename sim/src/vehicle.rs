@@ -38,6 +38,7 @@ fn side_side_angle(a: f64, b: f64, alpha: f64) -> Option<f64> {
 
 #[derive(Clone)]
 pub struct Vehicle {
+    mass: f64,
     reference_area: f64,
     drag_coeff: Table2D,
     lift_coeff: Table2D,
@@ -48,6 +49,7 @@ pub struct Vehicle {
 
 impl Vehicle {
     pub fn new(
+        mass: f64,
         reference_area: f64,
         drag_coeff: Table2D,
         lift_coeff: Table2D,
@@ -56,6 +58,7 @@ impl Vehicle {
         max_acceleration: f64,
     ) -> Self {
         Self {
+            mass,
             reference_area,
             drag_coeff,
             lift_coeff,
@@ -73,6 +76,7 @@ pub struct State {
     pub velocity: Vector3<f64>,
     pub acceleration: Vector3<f64>,
     pub mass: f64,
+    pub propellant_mass: f64,
     pub massflow: f64,
     pub altitude: f64,
     pub geopotential_altitude: f64,
@@ -128,6 +132,7 @@ impl Vehicle {
             velocity: state.velocity,
             acceleration,
             mass: state.mass,
+            propellant_mass: state.mass - self.mass,
             massflow,
             altitude: state.altitude,
             geopotential_altitude: state.geopotential_altitude,

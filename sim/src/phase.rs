@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 04.03.24
+// Last modified by Tibor Völcker on 05.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use crate::atmosphere::Atmosphere;
@@ -143,8 +143,6 @@ mod tests {
         sim.init_geodetic(28.5, 279.4, 90.);
         sim.state.mass = data[0].mass;
 
-        assert_eq!(sim.state.time, data[0].time);
-        assert_almost_eq_rel!(sim.state.mass, data[0].mass, 0.001);
         assert_almost_eq_rel!(sim.state.position[0], data[0].position[0], 0.001);
         assert_almost_eq_rel!(sim.state.position[1], data[0].position[1], 0.001);
         assert_almost_eq_rel!(sim.state.position[2], data[0].position[2], 0.001);
@@ -179,8 +177,7 @@ mod tests {
 
         let planet = EARTH_SPHERICAL;
         let vehicle = data[2].vehicle.clone();
-        let vehicle_mass = data[3].mass;
-        let mut sim = Phase::new(vehicle, planet, 20., move |s| s.mass - vehicle_mass);
+        let mut sim = Phase::new(vehicle, planet, 20., |s: &State| s.propellant_mass);
         sim.add_steering(2, data[2].steering_coeffs);
         sim.add_atmosphere();
 
