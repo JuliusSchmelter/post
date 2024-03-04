@@ -30,10 +30,17 @@ pub struct Simulation {
     atmosphere: Atmosphere,
     integrator: Integrator,
     stepsize: f64,
+    end_criterion: Box<dyn Fn(&State) -> f64>,
+    pub ended: bool,
 }
 
 impl Simulation {
-    pub fn new(vehicle: Vehicle, planet: Planet, stepsize: f64) -> Self {
+    pub fn new(
+        vehicle: Vehicle,
+        planet: Planet,
+        stepsize: f64,
+        end_criterion: impl Fn(&State) -> f64 + 'static,
+    ) -> Self {
         Simulation {
             state: State::new(),
             vehicle,
@@ -42,6 +49,8 @@ impl Simulation {
             atmosphere: Atmosphere::new(),
             integrator: Integrator::RK4,
             stepsize,
+            end_criterion: Box::new(end_criterion),
+            ended: false,
         }
     }
 
@@ -68,11 +77,25 @@ impl Simulation {
     }
 
     pub fn step(&mut self) -> &State {
-        let state = self
-            .integrator
-            .step(|state| self.system(state), &self.state, self.stepsize);
-        self.state = self.system(&state);
+        if self.ended {
+            panic!("Simulation already has ended!")
+        }
 
+        let primary_state =
+            self.integrator
+                .step(|state| self.system(state), &self.state, self.stepsize);
+        let state = self.system(&primary_state);
+
+        if (self.end_criterion)(&state) < 0. {
+            // The stepsize was too big. Try again with half the stepsize.
+            self.stepsize /= 2.;
+            return self.step();
+        } else if (self.end_criterion)(&state) < 1e-3 {
+            // We found a good last stepsize. Simulation has ended.
+            self.ended = true;
+        }
+
+        self.state = state;
         &self.state
     }
 }

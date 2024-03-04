@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 11.02.24
-// Last modified by Tibor Völcker on 01.03.24
+// Last modified by Tibor Völcker on 04.03.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use sim::example_data::example_data;
@@ -12,7 +12,7 @@ fn phase_1() {
 
     let planet = EARTH_SPHERICAL;
     let vehicle = data[0].vehicle.clone();
-    let mut sim = Simulation::new(vehicle, planet, 5.);
+    let mut sim = Simulation::new(vehicle, planet, 5., |s| 15. - s.time);
     sim.add_atmosphere();
 
     sim.init_geodetic(28.5, 279.4, 90.);
@@ -31,7 +31,7 @@ fn phase_1() {
         "Time: {:.0}\nPosition: {:.0}\nVelocity: {:.0}",
         sim.state.time, sim.state.position, sim.state.velocity
     );
-    while sim.state.time < data[1].time {
+    while !sim.ended {
         sim.step();
         println!(
             "Time: {:.0}\nPosition: {:.0}\nVelocity: {:.0}",
@@ -54,7 +54,8 @@ fn phase_11() {
 
     let planet = EARTH_SPHERICAL;
     let vehicle = data[2].vehicle.clone();
-    let mut sim = Simulation::new(vehicle, planet, data[3].time);
+    let vehicle_mass = data[3].mass;
+    let mut sim = Simulation::new(vehicle, planet, 20., move |s| s.mass - vehicle_mass);
     sim.add_steering(2, data[2].steering_coeffs);
     sim.add_atmosphere();
 
@@ -66,7 +67,7 @@ fn phase_11() {
         "Time: {:.0}\nPosition: {:.0}\nVelocity: {:.0}",
         sim.state.time, sim.state.position, sim.state.velocity
     );
-    while sim.state.time < 20. {
+    while !sim.ended {
         sim.step();
         println!(
             "Time: {:.0}\nPosition: {:.0}\nVelocity: {:.0}",
