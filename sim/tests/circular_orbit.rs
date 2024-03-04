@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 06.12.23
-// Last modified by Tibor Völcker on 01.03.24
+// Last modified by Tibor Völcker on 04.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::vector;
@@ -25,24 +25,23 @@ fn circular_orbit() {
     // T = 2 PI * sqrt(r^3 / mu)
     let period = 2. * PI * f64::sqrt(r.powi(3) / planet.mu());
 
-    let mut sim = Simulation::new(vehicle, planet, 10.);
+    let mut sim = Simulation::new(vehicle, planet, 10., move |s| period - s.time);
     sim.init_inertial(vector![r, 0., 0.], vector![0., v, 0.]);
 
-    let mut state = sim.step();
-    while state.time < period {
+    while !sim.ended {
+        sim.step();
         println!(
             "Time: {:.0}\nPosition: {:.0}\nVelocity: {:.0}",
-            state.time, state.position, state.velocity
+            sim.state.time, sim.state.position, sim.state.velocity
         );
-        state = sim.step();
 
-        assert_almost_eq!(state.position.norm(), 7000e3, 10e3);
-        assert_eq!(state.position[2], 0.);
-        assert_eq!(state.velocity[2], 0.);
+        assert_almost_eq!(sim.state.position.norm(), 7000e3, 10e3);
+        assert_eq!(sim.state.position[2], 0.);
+        assert_eq!(sim.state.velocity[2], 0.);
     }
 
-    assert_almost_eq!(state.position[0], 7000e3, 10e3);
-    assert_almost_eq!(state.position[1].abs(), 0., 50e3);
-    assert_almost_eq!(state.velocity[0].abs(), 0., 10e3);
-    assert_almost_eq!(state.velocity[1], v, 10.);
+    assert_almost_eq!(sim.state.position[0], 7000e3, 10e3);
+    assert_almost_eq!(sim.state.position[1].abs(), 0., 50e3);
+    assert_almost_eq!(sim.state.velocity[0].abs(), 0., 10e3);
+    assert_almost_eq!(sim.state.velocity[1], v, 10.);
 }

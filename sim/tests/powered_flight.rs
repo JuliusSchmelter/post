@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 20.12.23
-// Last modified by Tibor Völcker on 01.03.24
+// Last modified by Tibor Völcker on 04.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use sim::vehicle::Engine;
@@ -21,16 +21,15 @@ fn powered_flight() {
         vec![engine],
         f64::INFINITY,
     );
-    let mut sim = Simulation::new(vehicle, planet, 10.);
+    let mut sim = Simulation::new(vehicle, planet, 10., |s| 10. * 60. - s.time);
     sim.add_steering(1, [0., angular_rate, 0., 0.]);
     sim.init_geodetic(0., 0., 90.);
 
-    let mut state = sim.step();
-    while state.time < 10. * 60. {
+    while !sim.ended {
+        sim.step();
         println!(
             "Time: {:.0}\nPosition: {:.0}\nVelocity: {:.0}",
-            state.time, state.position, state.velocity
+            sim.state.time, sim.state.position, sim.state.velocity
         );
-        state = sim.step();
     }
 }
