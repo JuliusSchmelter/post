@@ -15,7 +15,6 @@ mod steering;
 mod transformations;
 mod vehicle;
 
-pub use example_data::example_data;
 pub use phase::Phase;
 pub use planet::{Planet, EARTH_FISHER_1960, EARTH_SMITHSONIAN, EARTH_SPHERICAL};
 pub use vehicle::{Engine, Vehicle};
