@@ -2,7 +2,7 @@
 // Last modified by Tibor Völcker on 04.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
-use sim::vehicle::Engine;
+use sim::Engine;
 use sim::*;
 use std::f64::consts::PI;
 use utils::tables::linear_interpolation::Table2D;
@@ -21,7 +21,7 @@ fn powered_flight() {
         vec![engine],
         f64::INFINITY,
     );
-    let mut sim = Simulation::new(vehicle, planet, 10., |s| 10. * 60. - s.time);
+    let mut sim = Phase::new(vehicle, planet, 10., |s| 10. * 60. - s.time);
     sim.add_steering(1, [0., angular_rate, 0., 0.]);
     sim.init_geodetic(0., 0., 90.);
 
