@@ -76,15 +76,14 @@ impl Simulation {
         self.vehicle.force(&state)
     }
 
-    pub fn step(&mut self) -> &State {
+    pub fn step(&mut self) {
         if self.ended {
             panic!("Simulation already has ended!")
         }
 
-        let primary_state =
-            self.integrator
-                .step(|state| self.system(state), &self.state, self.stepsize);
-        let state = self.system(&primary_state);
+        let state = self
+            .integrator
+            .step(|state| self.system(state), &self.state, self.stepsize);
 
         if (self.end_criterion)(&state) < 0. {
             // The stepsize was too big. Try again with half the stepsize.
@@ -96,7 +95,6 @@ impl Simulation {
         }
 
         self.state = state;
-        &self.state
     }
 }
 

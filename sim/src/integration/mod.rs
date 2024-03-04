@@ -16,7 +16,7 @@ impl Integrator {
         func: impl Fn(&PrimaryState) -> State,
         state: &State,
         stepsize: f64,
-    ) -> PrimaryState {
+    ) -> State {
         match self {
             Integrator::RK4 => {
                 let state_vec = runge_kutta::RK4.step(
@@ -26,7 +26,8 @@ impl Integrator {
                     state.to_primary_vec(),
                     stepsize,
                 );
-                (state.time + stepsize, state_vec).into()
+                let primary_state = (state.time + stepsize, state_vec).into();
+                func(&primary_state)
             }
         }
     }
