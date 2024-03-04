@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 01.03.24
+// Last modified by Tibor Völcker on 04.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use std::f64::consts::PI;
@@ -66,6 +66,7 @@ impl Vehicle {
     }
 }
 
+#[derive(Default)]
 pub struct State {
     pub time: f64,
     pub position: Vector3<f64>,

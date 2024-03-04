@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 01.03.24
+// Last modified by Tibor Völcker on 04.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 // allow dead code for now, as it's still WIP
@@ -23,7 +23,7 @@ pub use steering::Steering;
 pub use vehicle::Vehicle;
 
 pub struct Simulation {
-    pub state: PrimaryState,
+    pub state: State,
     vehicle: Vehicle,
     steering: Steering,
     planet: Planet,
@@ -35,7 +35,7 @@ pub struct Simulation {
 impl Simulation {
     pub fn new(vehicle: Vehicle, planet: Planet, stepsize: f64) -> Self {
         Simulation {
-            state: PrimaryState::new(),
+            state: State::new(),
             vehicle,
             steering: Steering::new(),
             planet,
@@ -67,10 +67,12 @@ impl Simulation {
         self.vehicle.force(&state)
     }
 
-    pub fn step(&mut self) -> &PrimaryState {
-        self.state = self
+    pub fn step(&mut self) -> &State {
+        let state = self
             .integrator
             .step(|state| self.system(state), &self.state, self.stepsize);
+        self.state = self.system(&state);
+
         &self.state
     }
 }

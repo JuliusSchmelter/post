@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 26.01.24
-// Last modified by Tibor Völcker on 01.03.24
+// Last modified by Tibor Völcker on 04.03.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{vector, SVector, Vector3};
@@ -13,24 +13,14 @@ pub struct PrimaryState {
     pub mass: f64,
 }
 
-impl Default for PrimaryState {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl PrimaryState {
+impl State {
     pub fn new() -> Self {
         Self {
-            time: 0.,
-            position: Vector3::zeros(),
-            velocity: Vector3::zeros(),
             mass: 1.,
+            ..Default::default()
         }
     }
-}
 
-impl State {
     pub fn differentials(self) -> SVector<f64, 7> {
         vector![
             self.velocity[0],
@@ -42,18 +32,16 @@ impl State {
             self.massflow,
         ]
     }
-}
 
-impl From<&PrimaryState> for SVector<f64, 7> {
-    fn from(val: &PrimaryState) -> Self {
+    pub fn to_primary_vec(&self) -> SVector<f64, 7> {
         vector![
-            val.position[0],
-            val.position[1],
-            val.position[2],
-            val.velocity[0],
-            val.velocity[1],
-            val.velocity[2],
-            val.mass,
+            self.position[0],
+            self.position[1],
+            self.position[2],
+            self.velocity[0],
+            self.velocity[1],
+            self.velocity[2],
+            self.mass,
         ]
     }
 }
