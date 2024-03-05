@@ -1,7 +1,8 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.11.23
-// Last modified by Tibor Völcker on 01.03.24
+// Last modified by Tibor Völcker on 05.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
+use derive_more::{Deref, DerefMut};
 use nalgebra::{vector, Rotation3, Vector3};
 use utils::constants::*;
 
@@ -49,28 +50,25 @@ pub const EARTH_SMITHSONIAN: Planet = Planet {
     launch: [0., 0., 0.],
 };
 
+#[derive(Default, Deref, DerefMut)]
 pub struct EnvState {
-    pub time: f64,
-    pub position: Vector3<f64>,
-    pub velocity: Vector3<f64>,
+    #[deref]
+    #[deref_mut]
+    child_state: PrimaryState,
     pub inertial_to_launch: Rotation3<f64>,
-    pub mass: f64,
     pub altitude: f64,
     pub geopotential_altitude: f64,
     pub rel_velocity: Vector3<f64>,
 }
 
 impl Planet {
-    pub fn environment(&self, state: &PrimaryState) -> EnvState {
+    pub fn environment(&self, state: PrimaryState) -> EnvState {
         EnvState {
-            time: state.time,
-            position: state.position,
-            velocity: state.velocity,
             inertial_to_launch: inertial_to_launch(self.launch[0], self.launch[1], self.launch[2]),
-            mass: state.mass,
             altitude: self.altitude(state.position),
             geopotential_altitude: self.geopotational_altitude(state.position),
             rel_velocity: self.rel_velocity(state.position, state.velocity),
+            child_state: state,
         }
     }
 
@@ -96,48 +94,19 @@ impl Planet {
     }
 }
 
+#[derive(Default, Deref, DerefMut)]
 pub struct ForceState {
-    pub time: f64,
-    pub position: Vector3<f64>,
-    pub velocity: Vector3<f64>,
-    pub mass: f64,
-    pub altitude: f64,
-    pub geopotential_altitude: f64,
-    pub rel_velocity: Vector3<f64>,
-    pub atmos_rel_velocity: Vector3<f64>,
-    pub temperature: f64,
-    pub pressure: f64,
-    pub density: f64,
-    pub speed_of_sound: f64,
-    pub mach_number: f64,
-    pub dynamic_pressure: f64,
-    pub euler_angles: [f64; 3],
-    pub inertial_to_body: Rotation3<f64>,
-    pub body_to_inertial: Rotation3<f64>,
+    #[deref]
+    #[deref_mut]
+    child_state: SteeringState,
     pub gravity_acceleration: Vector3<f64>,
 }
 
 impl Planet {
-    pub fn force(&self, state: &SteeringState) -> ForceState {
+    pub fn force(&self, state: SteeringState) -> ForceState {
         ForceState {
-            time: state.time,
-            position: state.position,
-            velocity: state.velocity,
-            mass: state.mass,
-            altitude: state.altitude,
-            geopotential_altitude: state.geopotential_altitude,
-            rel_velocity: state.rel_velocity,
-            atmos_rel_velocity: state.atmos_rel_velocity,
-            temperature: state.temperature,
-            pressure: state.pressure,
-            density: state.density,
-            speed_of_sound: state.speed_of_sound,
-            mach_number: state.mach_number,
-            dynamic_pressure: state.dynamic_pressure,
-            euler_angles: state.euler_angles,
-            inertial_to_body: state.inertial_to_body,
-            body_to_inertial: state.body_to_inertial,
             gravity_acceleration: self.gravity(state.position),
+            child_state: state,
         }
     }
 

@@ -52,16 +52,16 @@ impl Phase {
         self
     }
 
-    fn system(&self, state: &PrimaryState) -> State {
+    fn system(&self, state: PrimaryState) -> State {
         let state = self.planet.environment(state);
 
-        let state = self.atmosphere.environment(&state);
+        let state = self.atmosphere.environment(state);
 
-        let state = self.steering.steering(&state);
+        let state = self.steering.steering(state);
 
-        let state = self.planet.force(&state);
+        let state = self.planet.force(state);
 
-        self.vehicle.force(&state)
+        self.vehicle.force(state)
     }
 
     pub fn step(&mut self) {

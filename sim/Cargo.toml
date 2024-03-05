@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 utils = { path = "../utils" }
 nalgebra = "0.32.3"
+derive_more = "0.99.17"
 
 [dev-dependencies]
 lazy_static = "1.4.0"

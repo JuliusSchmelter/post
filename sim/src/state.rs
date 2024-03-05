@@ -1,11 +1,12 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 26.01.24
-// Last modified by Tibor Völcker on 04.03.24
+// Last modified by Tibor Völcker on 05.03.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{vector, SVector, Vector3};
 
 pub use crate::vehicle::State;
 
+#[derive(Default)]
 pub struct PrimaryState {
     pub time: f64,
     pub position: Vector3<f64>,
@@ -15,10 +16,9 @@ pub struct PrimaryState {
 
 impl State {
     pub fn new() -> Self {
-        Self {
-            mass: 1.,
-            ..Default::default()
-        }
+        let mut s = Self::default();
+        s.mass = 1.;
+        s
     }
 
     pub fn differentials(self) -> SVector<f64, 7> {
