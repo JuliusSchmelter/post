@@ -14,6 +14,17 @@ pub struct PrimaryState {
     pub mass: f64,
 }
 
+impl PrimaryState {
+    pub fn from_vec(time: f64, state: SVector<f64, 7>) -> Self {
+        Self {
+            time,
+            position: vector![state[0], state[1], state[2]],
+            velocity: vector![state[3], state[4], state[5]],
+            mass: state[6],
+        }
+    }
+}
+
 impl State {
     pub fn new() -> Self {
         let mut s = Self::default();
@@ -43,16 +54,5 @@ impl State {
             self.velocity[2],
             self.mass,
         ]
-    }
-}
-
-impl From<(f64, SVector<f64, 7>)> for PrimaryState {
-    fn from(val: (f64, SVector<f64, 7>)) -> Self {
-        Self {
-            time: val.0,
-            position: vector![val.1[0], val.1[1], val.1[2]],
-            velocity: vector![val.1[3], val.1[4], val.1[5]],
-            mass: val.1[6],
-        }
     }
 }

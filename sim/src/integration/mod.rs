@@ -21,12 +21,12 @@ impl Integrator {
             Integrator::RK4 => {
                 let state_vec = runge_kutta::RK4.step(
                     // convert states to vectors and back
-                    |time, &state| func((time, state).into()).differentials(),
+                    |time, &state| func(PrimaryState::from_vec(time, state)).differentials(),
                     state.time,
                     state.to_primary_vec(),
                     stepsize,
                 );
-                let primary_state = (state.time + stepsize, state_vec).into();
+                let primary_state = PrimaryState::from_vec(state.time + stepsize, state_vec);
                 func(primary_state)
             }
         }
