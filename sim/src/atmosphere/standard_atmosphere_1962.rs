@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 23.02.24
+// Last modified by Tibor Völcker on 05.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use utils::constants::*;
@@ -58,16 +58,15 @@ fn get_table_row(geopotational_alt: f64) -> (f64, f64, f64, f64) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::example_data::example_data;
+    use crate::example_data::DATA_POINTS;
     use crate::EARTH_SPHERICAL;
     use utils::assert_almost_eq_rel;
 
     #[test]
     fn test_example_data() {
-        let data = example_data();
         const EPSILON: f64 = 0.001;
 
-        for data_point in data.iter() {
+        for data_point in DATA_POINTS.iter() {
             print!("Testing {} km altitude ... ", data_point.altitude);
             let alt = EARTH_SPHERICAL.geopotational_altitude(data_point.position);
             assert_almost_eq_rel!(temperature(alt), data_point.temperature, EPSILON);

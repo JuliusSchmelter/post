@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 04.03.24
+// Last modified by Tibor Völcker on 05.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use std::f64::consts::PI;
@@ -250,14 +250,12 @@ impl Engine {
 
 #[cfg(test)]
 mod tests {
-    use crate::example_data::example_data;
+    use crate::example_data::DATA_POINTS;
     use utils::{assert_almost_eq, assert_almost_eq_rel};
 
     #[test]
     fn test_thrust() {
-        let data = example_data();
-
-        for data_point in data {
+        for data_point in DATA_POINTS.iter() {
             print!("Testing {} km altitude ... ", data_point.altitude);
             let throttle = data_point.vehicle.auto_throttle(
                 data_point.mass,
@@ -276,9 +274,7 @@ mod tests {
 
     #[test]
     fn cd() {
-        let data = example_data();
-
-        for data_point in data {
+        for data_point in DATA_POINTS.iter() {
             print!("Testing {} km altitude ... ", data_point.altitude);
             assert_almost_eq!(
                 data_point
@@ -294,9 +290,7 @@ mod tests {
 
     #[test]
     fn cl() {
-        let data = example_data();
-
-        for data_point in data {
+        for data_point in DATA_POINTS.iter() {
             print!("Testing {} km altitude ... ", data_point.altitude);
             assert_almost_eq!(
                 data_point
@@ -312,9 +306,7 @@ mod tests {
 
     #[test]
     fn test_aero() {
-        let data = example_data();
-
-        for data_point in data {
+        for data_point in DATA_POINTS.iter() {
             print!("Testing {} km altitude ... ", data_point.altitude);
             let res = data_point.vehicle.aero_force(
                 data_point.alpha,
