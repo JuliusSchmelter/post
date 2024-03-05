@@ -24,13 +24,14 @@ pub struct Phase {
 
 impl Phase {
     pub fn new(
+        time: f64,
         vehicle: Vehicle,
         planet: Planet,
         stepsize: f64,
         end_criterion: impl Fn(&State) -> f64 + 'static,
     ) -> Self {
         Phase {
-            state: State::new(),
+            state: State::new(time),
             vehicle,
             steering: Steering::new(),
             planet,
@@ -135,7 +136,7 @@ mod tests {
     fn phase_1() {
         let planet = EARTH_SPHERICAL;
         let vehicle = VEHICLES[0].clone();
-        let mut sim = Phase::new(vehicle, planet, 5., |s| 15. - s.time);
+        let mut sim = Phase::new(0., vehicle, planet, 5., |s| 15. - s.time);
         sim.add_atmosphere();
 
         sim.init_geodetic(28.5, 279.4, 90.);
@@ -173,7 +174,7 @@ mod tests {
     fn phase_11() {
         let planet = EARTH_SPHERICAL;
         let vehicle = VEHICLES[1].clone();
-        let mut sim = Phase::new(vehicle, planet, 20., |s| s.propellant_mass);
+        let mut sim = Phase::new(0., vehicle, planet, 20., |s| s.propellant_mass);
         sim.add_steering(2, STEERING_COEFFS[1]);
         sim.add_atmosphere();
 

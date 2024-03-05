@@ -2,6 +2,8 @@
 // Last modified by Tibor Völcker on 05.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
+use nalgebra::vector;
+
 use crate::state::{PrimaryState, State};
 
 mod runge_kutta;
@@ -19,14 +21,14 @@ impl Integrator {
     ) -> State {
         match self {
             Integrator::RK4 => {
-                let state_vec = runge_kutta::RK4.step(
+                let (time_vec, state_vec) = runge_kutta::RK4.step(
                     // convert states to vectors and back
-                    |time, &state| func(PrimaryState::from_vec(time, state)).differentials(),
-                    state.time,
+                    |&t, &s| func(PrimaryState::from_vec(t, s)).differentials(),
+                    vector![state.time, state.time_since_event],
                     state.to_primary_vec(),
                     stepsize,
                 );
-                let primary_state = PrimaryState::from_vec(state.time + stepsize, state_vec);
+                let primary_state = PrimaryState::from_vec(time_vec, state_vec);
                 func(primary_state)
             }
         }

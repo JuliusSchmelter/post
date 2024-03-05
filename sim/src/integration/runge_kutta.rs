@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 22.02.24
+// Last modified by Tibor Völcker on 05.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{matrix, vector, SMatrix, SVector};
@@ -11,24 +11,24 @@ pub struct RungeKutta<const R: usize> {
 }
 
 impl<const R: usize> RungeKutta<R> {
-    pub fn step<const D: usize>(
+    pub fn step<const D_X: usize, const D_Y: usize>(
         &self,
-        f: impl Fn(f64, &SVector<f64, D>) -> SVector<f64, D>,
-        x_n: f64,
-        y_n: SVector<f64, D>,
+        f: impl Fn(&SVector<f64, D_X>, &SVector<f64, D_Y>) -> SVector<f64, D_Y>,
+        x_n: SVector<f64, D_X>,
+        y_n: SVector<f64, D_Y>,
         h: f64,
-    ) -> SVector<f64, D> {
-        let mut k = SMatrix::<f64, D, R>::zeros();
+    ) -> (SVector<f64, D_X>, SVector<f64, D_Y>) {
+        let mut k = SMatrix::<f64, D_Y, R>::zeros();
 
         for i in 0..R {
             // See [1] p. VI-12
             // k_i = h*f(x_n + c_i*h, y_n + SUM[a_ij * k_j])
             let ki = h * f(
-                x_n + self.c[i] * h,
+                &x_n.add_scalar(self.c[i] * h),
                 &(y_n
                     + (0..R)
                         .map(|j| self.a[(i, j)] * k.column(j))
-                        .sum::<SVector<f64, D>>()),
+                        .sum::<SVector<f64, D_Y>>()),
             );
             k.set_column(i, &ki);
         }
@@ -36,9 +36,12 @@ impl<const R: usize> RungeKutta<R> {
         // See [1] p. VI-12
         // y_n+1 = y_n + SUM[b_i * k_i]
         // This could be done in one loop, but would be less readable
-        y_n + (0..R)
-            .map(|i| self.b[i] * k.column(i))
-            .sum::<SVector<f64, D>>()
+        (
+            x_n.add_scalar(h),
+            y_n + (0..R)
+                .map(|i| self.b[i] * k.column(i))
+                .sum::<SVector<f64, D_Y>>(),
+        )
     }
 }
 
@@ -53,7 +56,7 @@ pub const RK4: RungeKutta<4> = RungeKutta {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nalgebra::Vector2;
+    use nalgebra::{Vector1, Vector2};
     use utils::assert_lt;
 
     pub struct Example {
@@ -61,29 +64,31 @@ mod tests {
         y: Vector2<f64>,
     }
 
-    fn initial() -> (f64, Vector2<f64>) {
-        (0., Vector2::new(-0.5, 0.5))
+    fn initial() -> (Vector1<f64>, Vector2<f64>) {
+        (Vector1::new(0.), Vector2::new(-0.5, 0.5))
     }
 
-    fn solution(x: f64) -> Vector2<f64> {
+    fn solution(x: Vector1<f64>) -> Vector2<f64> {
         // y_1 = 1/3*x^3 + x^2 + x - 0.5e^x
         // y_2 = x^2 + 2x + 1 - 0.5e^x
+        let x = x.to_scalar();
         vector![
             1. / 3. * x.powi(3) + x.powi(2) + x - 0.5 * x.exp(),
             x.powi(2) + 2. * x + 1. - 0.5 * x.exp()
         ]
     }
 
-    fn system(x: f64, y: &Vector2<f64>) -> Vector2<f64> {
+    fn system(x: &Vector1<f64>, y: &Vector2<f64>) -> Vector2<f64> {
         // y_0' = y_1
         // y_1' = y_1 - x^2 + 1
+        let x = x.to_scalar();
         vector![y[1], (y[1] - x.powi(2) + 1.)]
     }
 
     #[test]
     /// Tests the Runge Kutta 4th order integrator
     fn rk4_integrate() {
-        const END: f64 = 4.;
+        const END: Vector1<f64> = Vector1::new(4.);
         const H: f64 = 0.5;
         const EPSILON: f64 = 2e-2;
 
@@ -91,8 +96,7 @@ mod tests {
 
         let mut avg_err = 0.;
         while x <= END {
-            y = RK4.step(system, x, y, H);
-            x += H;
+            (x, y) = RK4.step(system, x, y, H);
 
             let err = (solution(x) - y).abs();
             avg_err += err.norm();
@@ -112,7 +116,7 @@ mod tests {
                 y[1],
             );
         }
-        avg_err /= END / H + 1.;
+        avg_err /= END.to_scalar() / H + 1.;
 
         println!("Avg. Error: {avg_err:.2e}");
 
@@ -128,7 +132,7 @@ mod tests {
     #[test]
     /// Tests if a smaller stepsize will increase integration accuracy
     fn rk4_integrate_smaller_stepsize() {
-        const END: f64 = 4.;
+        const END: Vector1<f64> = Vector1::new(4.);
         const H: f64 = 0.1;
         const EPSILON: f64 = 2e-5;
 
@@ -136,13 +140,12 @@ mod tests {
 
         let mut avg_err = 0.;
         while x <= END {
-            y = RK4.step(system, x, y, H);
-            x += H;
+            (x, y) = RK4.step(system, x, y, H);
 
             let err = (solution(x) - y).abs();
             avg_err += err.norm();
         }
-        avg_err /= END / H + 1.;
+        avg_err /= END.to_scalar() / H + 1.;
 
         assert_lt!(
             avg_err,

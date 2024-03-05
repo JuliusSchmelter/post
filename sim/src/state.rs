@@ -2,22 +2,24 @@
 // Last modified by Tibor Völcker on 05.03.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 
-use nalgebra::{vector, SVector, Vector3};
+use nalgebra::{vector, SVector, Vector2, Vector3};
 
 pub use crate::vehicle::State;
 
 #[derive(Default)]
 pub struct PrimaryState {
     pub time: f64,
+    pub time_since_event: f64,
     pub position: Vector3<f64>,
     pub velocity: Vector3<f64>,
     pub mass: f64,
 }
 
 impl PrimaryState {
-    pub fn from_vec(time: f64, state: SVector<f64, 7>) -> Self {
+    pub fn from_vec(time: Vector2<f64>, state: SVector<f64, 7>) -> Self {
         Self {
-            time,
+            time: time[0],
+            time_since_event: time[1],
             position: vector![state[0], state[1], state[2]],
             velocity: vector![state[3], state[4], state[5]],
             mass: state[6],
@@ -26,8 +28,9 @@ impl PrimaryState {
 }
 
 impl State {
-    pub fn new() -> Self {
+    pub fn new(starting_time: f64) -> Self {
         let mut s = Self::default();
+        s.time = starting_time;
         s.mass = 1.;
         s
     }
