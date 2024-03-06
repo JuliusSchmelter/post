@@ -4,7 +4,7 @@
 
 use super::*;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct Linear;
 impl Interpolator for Linear {}
 
@@ -41,6 +41,13 @@ impl Table1D {
 
 impl Table2D {
     pub fn at(&self, x: f64, y: f64) -> f64 {
+        if self.data.len() == 0 {
+            return f64::NAN;
+        }
+        if self.data.len() == 1 {
+            return self.data[0].at(y);
+        }
+
         let idx1 = {
             let mut idx1 = self.x.partition_point(|val| val < &x);
             if idx1 == self.x.len() {
@@ -61,6 +68,13 @@ impl Table2D {
 
 impl Table3D {
     pub fn at(&self, x: f64, y: f64, z: f64) -> f64 {
+        if self.data.len() == 0 {
+            return f64::NAN;
+        }
+        if self.data.len() == 1 {
+            return self.data[0].at(y, z);
+        }
+
         let idx1 = {
             let mut idx1 = self.x.partition_point(|val| val < &x);
             if idx1 == self.x.len() {

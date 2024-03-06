@@ -16,7 +16,7 @@ where
 
 pub trait Interpolator {}
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct Table<T, I: Interpolator> {
     data: Box<[T]>,
     x: Box<[f64]>,
@@ -38,15 +38,6 @@ impl<I: Interpolator> Table1D<I> {
             interpolator: PhantomData,
         }
     }
-
-    pub fn zeros() -> Self {
-        Self {
-            // TODO: This is very ugly
-            x: Box::new([0., 1.]),
-            data: Box::new([0., 0.]),
-            interpolator: PhantomData,
-        }
-    }
 }
 
 impl<I: Interpolator> Table2D<I> {
@@ -61,14 +52,6 @@ impl<I: Interpolator> Table2D<I> {
         Self {
             x: Box::new(x),
             data: Box::new(data.map(|row| Table1D::new(y, row))),
-            interpolator: PhantomData,
-        }
-    }
-
-    pub fn zeros() -> Self {
-        Self {
-            x: Box::new([0., 1.]),
-            data: Box::new([Table1D::zeros(), Table1D::zeros()]),
             interpolator: PhantomData,
         }
     }
@@ -90,12 +73,14 @@ impl<I: Interpolator> Table3D<I> {
             interpolator: PhantomData,
         }
     }
+}
 
-    pub fn zeros() -> Self {
-        Self {
-            x: Box::new([0., 1.]),
-            data: Box::new([Table2D::zeros(), Table2D::zeros()]),
-            interpolator: PhantomData,
-        }
+#[cfg(test)]
+mod tests {
+    use super::{linear_interpolation::Linear, Table};
+
+    #[test]
+    fn default() {
+        Table::<f64, Linear>::default();
     }
 }

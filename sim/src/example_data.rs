@@ -120,7 +120,7 @@ mod vehicles {
                 4500. * SQUARE_METER_PER_SQUARE_FOOT,
                 Table2D::new(DRAG_TABLE1.0, DRAG_TABLE1.1, DRAG_TABLE1.2),
                 Table2D::new(LIFT_TABLE1.0, LIFT_TABLE1.1, LIFT_TABLE1.2),
-                Table2D::zeros(),
+                Table2D::default(),
                 vec![Engine::new(
                     [0., 0.],
                     5472000.0 * NEWTON_PER_POUND_FORCE,
@@ -134,7 +134,7 @@ mod vehicles {
                 4840. * SQUARE_METER_PER_SQUARE_FOOT,
                 Table2D::new(DRAG_TABLE2.0, DRAG_TABLE2.1, DRAG_TABLE2.2),
                 Table2D::new(LIFT_TABLE2.0, LIFT_TABLE2.1, LIFT_TABLE2.2),
-                Table2D::zeros(),
+                Table2D::default(),
                 vec![Engine::new(
                     [0., 0.],
                     1431000.0 * NEWTON_PER_POUND_FORCE,

@@ -5,7 +5,7 @@
 #![allow(unused_variables)]
 use super::*;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct Cubic;
 impl Interpolator for Cubic {}
 
