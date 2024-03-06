@@ -23,36 +23,6 @@ pub struct Phase {
 }
 
 impl Phase {
-    pub fn new(
-        time: f64,
-        vehicle: Vehicle,
-        planet: Planet,
-        stepsize: f64,
-        end_criterion: impl Fn(&State) -> f64 + 'static,
-    ) -> Self {
-        Phase {
-            state: State::new(time),
-            vehicle,
-            steering: Steering::new(),
-            planet,
-            atmosphere: Atmosphere::new(),
-            integrator: Integrator::RK4,
-            stepsize,
-            end_criterion: Box::new(end_criterion),
-            ended: false,
-        }
-    }
-
-    pub fn update_steering(&mut self, axis: Axis, coeffs: [f64; 3]) -> &Self {
-        self.steering.update_steering(axis, coeffs);
-        self
-    }
-
-    pub fn add_atmosphere(&mut self) -> &Self {
-        self.atmosphere.add_atmosphere();
-        self
-    }
-
     fn system(&self, state: PrimaryState) -> State {
         let state = self.planet.environment(state);
 
@@ -87,7 +57,33 @@ impl Phase {
     }
 }
 
+// Initializations
 impl Phase {
+    pub fn new(
+        time: f64,
+        vehicle: Vehicle,
+        planet: Planet,
+        stepsize: f64,
+        end_criterion: impl Fn(&State) -> f64 + 'static,
+    ) -> Self {
+        Phase {
+            state: State::new(time),
+            vehicle,
+            steering: Steering::new(),
+            planet,
+            atmosphere: Atmosphere::new(),
+            integrator: Integrator::RK4,
+            stepsize,
+            end_criterion: Box::new(end_criterion),
+            ended: false,
+        }
+    }
+
+    pub fn add_atmosphere(&mut self) -> &mut Self {
+        self.atmosphere.add_atmosphere();
+        self
+    }
+
     pub fn init_mass(&mut self, mass: f64) -> &mut Self {
         self.state.mass = mass;
         self
@@ -135,6 +131,24 @@ impl Phase {
     }
 }
 
+// Modifications
+impl Phase {
+    pub fn update_vehicle(&mut self, vehicle: Vehicle) -> &mut Self {
+        self.vehicle = vehicle;
+        self
+    }
+
+    pub fn update_steering(&mut self, axis: Axis, coeffs: [f64; 3]) -> &mut Self {
+        self.steering.update_steering(axis, coeffs);
+        self
+    }
+
+    pub fn limit_acceleration(&mut self, max_acceleration: f64) -> &mut Self {
+        self.vehicle.max_acceleration = max_acceleration;
+        self
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -146,7 +160,8 @@ mod tests {
     fn phase_1() {
         let planet = EARTH_SPHERICAL;
         let vehicle = VEHICLES[0].clone();
-        let mut phase = Phase::new(0., vehicle, planet, 5., |s| 15. - s.time)
+        let mut phase = Phase::new(0., vehicle, planet, 5., |s| 15. - s.time);
+        phase
             .add_atmosphere()
             .init_geodetic(28.5, 279.4, 90.)
             .init_mass(DATA_POINTS[0].mass);
@@ -183,7 +198,8 @@ mod tests {
     fn phase_11() {
         let planet = EARTH_SPHERICAL;
         let vehicle = VEHICLES[1].clone();
-        let mut phase = Phase::new(0., vehicle, planet, 20., |s| s.propellant_mass)
+        let mut phase = Phase::new(0., vehicle, planet, 20., |s| s.propellant_mass);
+        phase
             .add_atmosphere()
             .init_geodetic(28.5, 279.4, 90.)
             .init_inertial(DATA_POINTS[2].position, DATA_POINTS[2].velocity)
