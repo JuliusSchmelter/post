@@ -1,10 +1,10 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 06.01.24
-// Last modified by Tibor Völcker on 17.01.24
+// Last modified by Tibor Völcker on 06.03.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use super::*;
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Linear;
 impl Interpolator for Linear {}
 

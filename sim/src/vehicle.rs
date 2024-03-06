@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 05.03.24
+// Last modified by Tibor Völcker on 06.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use derive_more::{Deref, DerefMut};
@@ -37,7 +37,7 @@ fn side_side_angle(a: f64, b: f64, alpha: f64) -> Option<f64> {
     Some(a * gamma.sin() / alpha.sin())
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Vehicle {
     mass: f64,
     reference_area: f64,
@@ -70,7 +70,7 @@ impl Vehicle {
     }
 }
 
-#[derive(Default, Deref, DerefMut)]
+#[derive(Debug, Default, Deref, DerefMut)]
 pub struct State {
     #[deref]
     #[deref_mut]
@@ -194,7 +194,7 @@ impl Vehicle {
     }
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Engine {
     // [pitch, yaw]
     incidence: [f64; 2],

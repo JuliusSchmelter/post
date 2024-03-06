@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 14.12.23
-// Last modified by Tibor Völcker on 17.01.24
+// Last modified by Tibor Völcker on 06.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use std::marker::PhantomData;
@@ -16,7 +16,7 @@ where
 
 pub trait Interpolator {}
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Table<T, I: Interpolator> {
     data: Box<[T]>,
     x: Box<[f64]>,

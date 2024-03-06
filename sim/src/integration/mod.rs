@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 14.11.23
-// Last modified by Tibor Völcker on 05.03.24
+// Last modified by Tibor Völcker on 06.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::vector;
@@ -8,6 +8,7 @@ use crate::state::{PrimaryState, State};
 
 mod runge_kutta;
 
+#[derive(Debug)]
 pub enum Integrator {
     RK4,
 }

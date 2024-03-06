@@ -2,6 +2,8 @@
 // Last modified by Tibor Völcker on 06.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
+use std::fmt;
+
 use crate::atmosphere::Atmosphere;
 use crate::integration::Integrator;
 use crate::planet::Planet;
@@ -20,6 +22,21 @@ pub struct Phase {
     stepsize: f64,
     end_criterion: Box<dyn Fn(&State) -> f64>,
     pub ended: bool,
+}
+
+impl fmt::Debug for Phase {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct("State")
+            .field("state", &self.state)
+            .field("vehicle", &self.vehicle)
+            .field("steering", &self.steering)
+            .field("planet", &self.planet)
+            .field("atmosphere", &self.atmosphere)
+            .field("integrator", &self.integrator)
+            .field("stepsize", &self.stepsize)
+            .field("ended", &self.ended)
+            .finish()
+    }
 }
 
 impl Phase {

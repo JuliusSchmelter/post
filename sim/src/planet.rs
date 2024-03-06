@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.11.23
-// Last modified by Tibor Völcker on 05.03.24
+// Last modified by Tibor Völcker on 06.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use derive_more::{Deref, DerefMut};
@@ -10,6 +10,7 @@ use crate::{
     state::PrimaryState, steering::State as SteeringState, transformations::inertial_to_launch,
 };
 
+#[derive(Debug)]
 pub struct Planet {
     pub equatorial_radius: f64,
     pub polar_radius: f64,
@@ -50,7 +51,7 @@ pub const EARTH_SMITHSONIAN: Planet = Planet {
     launch: [0., 0., 0.],
 };
 
-#[derive(Default, Deref, DerefMut)]
+#[derive(Debug, Default, Deref, DerefMut)]
 pub struct EnvState {
     #[deref]
     #[deref_mut]
@@ -94,7 +95,7 @@ impl Planet {
     }
 }
 
-#[derive(Default, Deref, DerefMut)]
+#[derive(Debug, Default, Deref, DerefMut)]
 pub struct ForceState {
     #[deref]
     #[deref_mut]
