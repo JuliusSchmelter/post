@@ -26,12 +26,12 @@ impl Steering {
     }
 
     pub fn update_steering(&mut self, axis: Axis, coeffs: [f64; 3]) -> &Self {
-        let mut s = match axis {
-            Axis::Roll => self.roll,
-            Axis::Pitch => self.pitch,
-            Axis::Yaw => self.yaw,
+        let s = match axis {
+            Axis::Roll => &mut self.roll,
+            Axis::Pitch => &mut self.pitch,
+            Axis::Yaw => &mut self.yaw,
         };
-        s[1..].copy_from_slice(&coeffs);
+        (*s)[1..].copy_from_slice(&coeffs);
         self
     }
 
@@ -64,20 +64,20 @@ impl Steering {
     }
 
     pub fn steering(&self, state: AtmosState) -> State {
-        let euler_angles = Vector3::new(
+        let euler_angles = [
             Self::calc_coeff(state.time_since_event, self.roll),
             Self::calc_coeff(state.time_since_event, self.pitch),
             Self::calc_coeff(state.time_since_event, self.yaw),
-        );
+        ];
 
         let inertial_to_body = launch_to_body(
-            euler_angles.x.to_radians(),
-            euler_angles.y.to_radians(),
-            euler_angles.z.to_radians(),
+            euler_angles[0].to_radians(),
+            euler_angles[1].to_radians(),
+            euler_angles[2].to_radians(),
         ) * state.inertial_to_launch;
 
         State {
-            euler_angles: euler_angles.into(),
+            euler_angles,
             inertial_to_body,
             body_to_inertial: inertial_to_body.transpose(),
             child_state: state,
@@ -93,9 +93,9 @@ mod tests {
     fn angular_polynomials() {
         let mut steering = Steering::new();
         steering.init(Vector3::new(0., 4., 0.));
-        steering.update_steering(Axis::Roll, [3., 2., 1.]);
+        steering.update_steering(Axis::Pitch, [3., 2., 1.]);
         let mut state = AtmosState::default();
-        state.time = 2.;
+        state.time_since_event = 2.;
 
         assert_eq!(
             steering.steering(state).euler_angles[1],
