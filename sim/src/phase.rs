@@ -88,23 +88,23 @@ impl Phase {
 }
 
 impl Phase {
-    pub fn init_mass(&mut self, mass: f64) -> &Self {
+    pub fn init_mass(&mut self, mass: f64) -> &mut Self {
         self.state.mass = mass;
         self
     }
 
-    pub fn init_inertial(&mut self, position: Vector3<f64>, velocity: Vector3<f64>) -> &Self {
+    pub fn init_inertial(&mut self, position: Vector3<f64>, velocity: Vector3<f64>) -> &mut Self {
         self.state.position = position;
         self.state.velocity = velocity;
         self
     }
 
-    pub fn init_steering(&mut self, euler_anges: Vector3<f64>) -> &Self {
+    pub fn init_steering(&mut self, euler_anges: Vector3<f64>) -> &mut Self {
         self.steering.init(euler_anges);
         self
     }
 
-    pub fn init_geodetic(&mut self, latitude: f64, longitude: f64, azimuth: f64) -> &Self {
+    pub fn init_geodetic(&mut self, latitude: f64, longitude: f64, azimuth: f64) -> &mut Self {
         let (lat, long, az) = (
             latitude.to_radians(),
             longitude.to_radians(),
@@ -146,11 +146,10 @@ mod tests {
     fn phase_1() {
         let planet = EARTH_SPHERICAL;
         let vehicle = VEHICLES[0].clone();
-        let mut sim = Phase::new(0., vehicle, planet, 5., |s| 15. - s.time);
-        sim.add_atmosphere();
-
-        sim.init_geodetic(28.5, 279.4, 90.);
-        sim.init_mass(DATA_POINTS[0].mass);
+        let mut sim = Phase::new(0., vehicle, planet, 5., |s| 15. - s.time)
+            .add_atmosphere()
+            .init_geodetic(28.5, 279.4, 90.)
+            .init_mass(DATA_POINTS[0].mass);
 
         assert_almost_eq_rel!(sim.state.position[0], DATA_POINTS[0].position[0], 0.001);
         assert_almost_eq_rel!(sim.state.position[1], DATA_POINTS[0].position[1], 0.001);
@@ -184,14 +183,13 @@ mod tests {
     fn phase_11() {
         let planet = EARTH_SPHERICAL;
         let vehicle = VEHICLES[1].clone();
-        let mut sim = Phase::new(0., vehicle, planet, 20., |s| s.propellant_mass);
-        sim.add_atmosphere();
-
-        sim.init_geodetic(28.5, 279.4, 90.);
-        sim.init_inertial(DATA_POINTS[2].position, DATA_POINTS[2].velocity);
-        sim.init_steering(DATA_POINTS[2].euler_angles);
-        sim.init_mass(DATA_POINTS[2].mass);
-        sim.update_steering(Axis::Pitch, [DATA_POINTS[2].pitch_rate, 0., 0.]);
+        let mut sim = Phase::new(0., vehicle, planet, 20., |s| s.propellant_mass)
+            .add_atmosphere()
+            .init_geodetic(28.5, 279.4, 90.)
+            .init_inertial(DATA_POINTS[2].position, DATA_POINTS[2].velocity)
+            .init_steering(DATA_POINTS[2].euler_angles)
+            .init_mass(DATA_POINTS[2].mass)
+            .update_steering(Axis::Pitch, [DATA_POINTS[2].pitch_rate, 0., 0.]);
 
         println!(
             "Time: {:.0}\nPosition: {:.0}\nVelocity: {:.0}",
