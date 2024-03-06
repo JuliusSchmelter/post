@@ -1,12 +1,12 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 05.03.24
+// Last modified by Tibor Völcker on 06.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use crate::atmosphere::Atmosphere;
 use crate::integration::Integrator;
 use crate::planet::Planet;
 use crate::state::{PrimaryState, State};
-use crate::steering::Steering;
+use crate::steering::{Axis, Steering};
 use crate::vehicle::Vehicle;
 use nalgebra::{vector, Vector3};
 
@@ -43,8 +43,8 @@ impl Phase {
         }
     }
 
-    pub fn add_steering(&mut self, idx: usize, polynomials: [f64; 4]) -> &Self {
-        self.steering.add_steering(idx, polynomials);
+    pub fn update_steering(&mut self, axis: Axis, coeffs: [f64; 3]) -> &Self {
+        self.steering.update_steering(axis, coeffs);
         self
     }
 
@@ -94,6 +94,11 @@ impl Phase {
         self
     }
 
+    pub fn init_steering(&mut self, euler_anges: Vector3<f64>) -> &Self {
+        self.steering.init(euler_anges);
+        self
+    }
+
     pub fn init_geodetic(&mut self, latitude: f64, longitude: f64, azimuth: f64) -> &Self {
         let (lat, long, az) = (
             latitude.to_radians(),
@@ -128,7 +133,7 @@ impl Phase {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::example_data::{DATA_POINTS, STEERING_COEFFS, VEHICLES};
+    use crate::example_data::{DATA_POINTS, VEHICLES};
     use crate::planet::EARTH_SPHERICAL;
     use utils::assert_almost_eq_rel;
 
@@ -175,12 +180,13 @@ mod tests {
         let planet = EARTH_SPHERICAL;
         let vehicle = VEHICLES[1].clone();
         let mut sim = Phase::new(0., vehicle, planet, 20., |s| s.propellant_mass);
-        sim.add_steering(2, STEERING_COEFFS[1]);
         sim.add_atmosphere();
 
         sim.init_geodetic(28.5, 279.4, 90.);
         sim.init_inertial(DATA_POINTS[2].position, DATA_POINTS[2].velocity);
+        sim.init_steering(DATA_POINTS[2].euler_angles);
         sim.state.mass = DATA_POINTS[2].mass;
+        sim.update_steering(Axis::Pitch, [DATA_POINTS[2].pitch_rate, 0., 0.]);
 
         println!(
             "Time: {:.0}\nPosition: {:.0}\nVelocity: {:.0}",

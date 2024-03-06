@@ -1,9 +1,9 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.01.24
-// Last modified by Tibor Völcker on 05.03.24
+// Last modified by Tibor Völcker on 06.03.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 #![cfg(test)]
 pub use data::DATA_POINTS;
-pub use steering::STEERING_COEFFS;
+pub use steering::PITCH_RATES;
 pub use vehicles::VEHICLES;
 
 mod vehicles {
@@ -148,8 +148,16 @@ mod vehicles {
 }
 
 mod steering {
-    pub static STEERING_COEFFS: [[f64; 4]; 2] =
-        [[0., 0., 0., 0.], [-9.66287352e1, -1.16711775e-1, 0., 0.]];
+    pub static PITCH_RATES: [f64; 8] = [
+        -4.02959110e-1,
+        -4.55853620e-1,
+        -1.67888963e-1,
+        -6.77243251e-1,
+        -2.87672429e-1,
+        -6.85708451e-2,
+        -1.30635729e-1,
+        -1.16711775e-1,
+    ];
 }
 
 mod data {
@@ -159,7 +167,7 @@ mod data {
     use crate::Vehicle;
     use utils::constants::*;
 
-    use super::{STEERING_COEFFS, VEHICLES};
+    use super::{PITCH_RATES, VEHICLES};
 
     pub struct DataPoint {
         pub time: f64,
@@ -167,6 +175,7 @@ mod data {
         pub position: Vector3<f64>,
         pub velocity: Vector3<f64>,
         pub altitude: f64,
+        pub euler_angles: Vector3<f64>,
         pub temperature: f64,
         pub pressure: f64,
         pub density: f64,
@@ -179,7 +188,7 @@ mod data {
         pub dynamic_pressure: f64,
         pub aero: Vector3<f64>,
         pub vehicle: Vehicle,
-        pub steering_coeffs: [f64; 4],
+        pub pitch_rate: f64,
     }
 
     lazy_static! {
@@ -190,6 +199,7 @@ mod data {
                 position: Vector3::new(3.00354800e6, -1.81429627e7, 9.98490063e6) * METER_PER_FOOT,
                 velocity: Vector3::new(1.32300480e3, 2.19022024e2, 0.) * METER_PER_FOOT,
                 altitude: -4.76837158e-7 * METER_PER_FOOT,
+                euler_angles: Vector3::new(0., 0., 0.),
                 temperature: 5.18670000e2 * KELVIN_PER_RANKIN,
                 pressure: 2.11621660e3 * PASCAL_PER_PSF,
                 density: 2.37690697e-3 * KILOGRAM_PER_SLUG / CUBIC_METER_PER_CUBIC_FOOT,
@@ -202,7 +212,7 @@ mod data {
                 dynamic_pressure: 0. * PASCAL_PER_PSF,
                 aero: Vector3::new(-0., 0., -0.) * NEWTON_PER_POUND_FORCE,
                 vehicle: VEHICLES[0].clone(),
-                steering_coeffs: STEERING_COEFFS[0],
+                pitch_rate: 0.,
             },
             DataPoint {
                 time: 1.50000000e1,
@@ -210,6 +220,7 @@ mod data {
                 position: Vector3::new(3.02352433e6, -1.81404764e7, 9.98534136e6) * METER_PER_FOOT,
                 velocity: Vector3::new(1.34110394e3, 1.07998292e2, 6.10765341e1) * METER_PER_FOOT,
                 altitude: 9.33310129e2 * METER_PER_FOOT,
+                euler_angles: Vector3::new(0., 0., 0.),
                 temperature: 5.15341815e2 * KELVIN_PER_RANKIN,
                 pressure: 2.04581341e3 * PASCAL_PER_PSF,
                 density: 2.31267089e-3 * KILOGRAM_PER_SLUG / CUBIC_METER_PER_CUBIC_FOOT,
@@ -222,7 +233,7 @@ mod data {
                 dynamic_pressure: 1.93297185e1 * PASCAL_PER_PSF,
                 aero: Vector3::new(-1.59202357e4, 0., -1.09857008e3) * NEWTON_PER_POUND_FORCE,
                 vehicle: VEHICLES[0].clone(),
-                steering_coeffs: STEERING_COEFFS[0],
+                pitch_rate: 0.,
             },
             DataPoint {
                 time: 0.,
@@ -230,6 +241,7 @@ mod data {
                 position: Vector3::new(7.02620764e6, -1.73942758e7, 9.94057977e6) * METER_PER_FOOT,
                 velocity: Vector3::new(2.23048738e4, 7.85391572e3, -2.22909900e3) * METER_PER_FOOT,
                 altitude: 3.04960868e5 * METER_PER_FOOT,
+                euler_angles: Vector3::new(0., -9.66287352e1, 0.),
                 temperature: 3.41188380e2 * KELVIN_PER_RANKIN,
                 pressure: 2.01763300e-3 * PASCAL_PER_PSF,
                 density: 3.44501515e-9 * KILOGRAM_PER_SLUG / CUBIC_METER_PER_CUBIC_FOOT,
@@ -242,7 +254,7 @@ mod data {
                 dynamic_pressure: 8.63665574e-1 * PASCAL_PER_PSF,
                 aero: Vector3::new(-1.66106776e2, 0., -6.28680574e2) * NEWTON_PER_POUND_FORCE,
                 vehicle: VEHICLES[1].clone(),
-                steering_coeffs: STEERING_COEFFS[1],
+                pitch_rate: PITCH_RATES[7],
             },
             DataPoint {
                 time: 2.18072658e1,
@@ -250,6 +262,7 @@ mod data {
                 position: Vector3::new(7.53212452e6, -1.72106460e7, 9.88707980e6) * METER_PER_FOOT,
                 velocity: Vector3::new(2.40870305e4, 8.99928739e3, -2.68459504e3) * METER_PER_FOOT,
                 altitude: 3.03804044e5 * METER_PER_FOOT,
+                euler_angles: Vector3::new(0., -9.91738999e1, 0.),
                 temperature: 3.39250012e2 * KELVIN_PER_RANKIN,
                 pressure: 2.14880703e-3 * PASCAL_PER_PSF,
                 density: 3.68995220e-9 * KILOGRAM_PER_SLUG / CUBIC_METER_PER_CUBIC_FOOT,
@@ -262,7 +275,7 @@ mod data {
                 dynamic_pressure: 1.10682128e0 * PASCAL_PER_PSF,
                 aero: Vector3::new(-2.13216514e2, 0., -6.17695942e2) * NEWTON_PER_POUND_FORCE,
                 vehicle: VEHICLES[1].clone(),
-                steering_coeffs: STEERING_COEFFS[1],
+                pitch_rate: PITCH_RATES[7],
             },
         ];
     }

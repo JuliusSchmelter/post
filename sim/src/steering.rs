@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 06.12.23
-// Last modified by Tibor Völcker on 05.03.24
+// Last modified by Tibor Völcker on 06.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use derive_more::{Deref, DerefMut};
@@ -7,16 +7,17 @@ use nalgebra::{Rotation3, Vector3};
 
 use crate::{atmosphere::State as AtmosState, transformations::launch_to_body};
 
-#[derive(Default)]
-pub struct Steering {
-    steering: [SteeringModel; 3],
+pub enum Axis {
+    Roll,
+    Pitch,
+    Yaw,
 }
 
 #[derive(Default)]
-enum SteeringModel {
-    #[default]
-    NoSteering,
-    AngularPolynomials([f64; 4]),
+pub struct Steering {
+    roll: [f64; 4],
+    pitch: [f64; 4],
+    yaw: [f64; 4],
 }
 
 impl Steering {
@@ -24,8 +25,21 @@ impl Steering {
         Self::default()
     }
 
-    pub fn add_steering(&mut self, idx: usize, polynomials: [f64; 4]) -> &Self {
-        self.steering[idx] = SteeringModel::AngularPolynomials(polynomials);
+    pub fn update_steering(&mut self, axis: Axis, coeffs: [f64; 3]) -> &Self {
+        let mut s = match axis {
+            Axis::Roll => self.roll,
+            Axis::Pitch => self.pitch,
+            Axis::Yaw => self.yaw,
+        };
+        s[1..].copy_from_slice(&coeffs);
+        self
+    }
+
+    pub fn init(&mut self, euler_angles: Vector3<f64>) -> &Self {
+        self.roll[0] = euler_angles.x;
+        self.pitch[0] = euler_angles.y;
+        self.yaw[0] = euler_angles.z;
+
         self
     }
 }
@@ -41,15 +55,20 @@ pub struct State {
 }
 
 impl Steering {
+    fn calc_coeff(var: f64, coeffs: [f64; 4]) -> f64 {
+        coeffs
+            .iter()
+            .enumerate()
+            .map(|(i, coeff)| coeff * var.powi(i.try_into().unwrap()))
+            .sum()
+    }
+
     pub fn steering(&self, state: AtmosState) -> State {
-        let euler_angles = Vector3::from_iterator(self.steering.iter().map(|steering_model| {
-            match steering_model {
-                SteeringModel::AngularPolynomials(coeffs) => (0..4)
-                    .map(|i| coeffs[i] * state.time.powi(i.try_into().unwrap()))
-                    .sum(),
-                SteeringModel::NoSteering => 0.,
-            }
-        }));
+        let euler_angles = Vector3::new(
+            Self::calc_coeff(state.time_since_event, self.roll),
+            Self::calc_coeff(state.time_since_event, self.pitch),
+            Self::calc_coeff(state.time_since_event, self.yaw),
+        );
 
         let inertial_to_body = launch_to_body(
             euler_angles.x.to_radians(),
@@ -73,7 +92,8 @@ mod tests {
     #[test]
     fn angular_polynomials() {
         let mut steering = Steering::new();
-        steering.add_steering(1, [4., 3., 2., 1.]);
+        steering.init(Vector3::new(0., 4., 0.));
+        steering.update_steering(Axis::Roll, [3., 2., 1.]);
         let mut state = AtmosState::default();
         state.time = 2.;
 
