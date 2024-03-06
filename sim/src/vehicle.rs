@@ -78,7 +78,6 @@ pub struct State {
     pub acceleration: Vector3<f64>,
     pub propellant_mass: f64,
     pub massflow: f64,
-    pub gravity_acceleration: Vector3<f64>,
     pub vehicle_acceleration: Vector3<f64>,
     pub throttle: f64,
     pub thrust_force: Vector3<f64>,
@@ -99,10 +98,19 @@ impl Vehicle {
             aero_force = vector![0., 0., 0.];
         }
 
-        let throttle = self.auto_throttle(state.mass, state.pressure, aero_force);
-        let thrust_force = self.thrust_force(throttle, state.pressure);
-        let massflow = self.massflow(throttle);
+        let propellant_mass = state.mass - self.mass;
 
+        let throttle = self.auto_throttle(state.mass, state.pressure, aero_force);
+
+        let thrust_force;
+        let massflow;
+        if propellant_mass <= 0. {
+            thrust_force = Vector3::zeros();
+            massflow = 0.;
+        } else {
+            thrust_force = self.thrust_force(throttle, state.pressure);
+            massflow = self.massflow(throttle);
+        }
         let body_acc = (aero_force + thrust_force) / state.mass;
 
         // Intersection would require negative thrust
@@ -115,9 +123,8 @@ impl Vehicle {
 
         State {
             acceleration,
-            propellant_mass: state.mass - self.mass,
+            propellant_mass,
             massflow,
-            gravity_acceleration: state.gravity_acceleration,
             vehicle_acceleration: body_acc,
             throttle,
             thrust_force,
