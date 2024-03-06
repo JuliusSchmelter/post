@@ -88,6 +88,11 @@ impl Phase {
 }
 
 impl Phase {
+    pub fn init_mass(&mut self, mass: f64) -> &Self {
+        self.state.mass = mass;
+        self
+    }
+
     pub fn init_inertial(&mut self, position: Vector3<f64>, velocity: Vector3<f64>) -> &Self {
         self.state.position = position;
         self.state.velocity = velocity;
@@ -145,7 +150,7 @@ mod tests {
         sim.add_atmosphere();
 
         sim.init_geodetic(28.5, 279.4, 90.);
-        sim.state.mass = DATA_POINTS[0].mass;
+        sim.init_mass(DATA_POINTS[0].mass);
 
         assert_almost_eq_rel!(sim.state.position[0], DATA_POINTS[0].position[0], 0.001);
         assert_almost_eq_rel!(sim.state.position[1], DATA_POINTS[0].position[1], 0.001);
@@ -185,7 +190,7 @@ mod tests {
         sim.init_geodetic(28.5, 279.4, 90.);
         sim.init_inertial(DATA_POINTS[2].position, DATA_POINTS[2].velocity);
         sim.init_steering(DATA_POINTS[2].euler_angles);
-        sim.state.mass = DATA_POINTS[2].mass;
+        sim.init_mass(DATA_POINTS[2].mass);
         sim.update_steering(Axis::Pitch, [DATA_POINTS[2].pitch_rate, 0., 0.]);
 
         println!(
