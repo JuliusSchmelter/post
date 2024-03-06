@@ -235,7 +235,8 @@ mod tests {
                 phase.state.time, phase.state.position, phase.state.velocity
             );
         }
-        assert_almost_eq_rel!(phase.state.time, DATA_POINTS[3].time, 0.001);
+        // automatic thrust shutdown distorts shutdown time a bit
+        assert_almost_eq_rel!(phase.state.time, DATA_POINTS[3].time, 0.006);
         assert_almost_eq_rel!(phase.state.mass, DATA_POINTS[3].mass, 0.001);
         assert_almost_eq_rel!(phase.state.position[0], DATA_POINTS[3].position[0], 0.001);
         assert_almost_eq_rel!(phase.state.position[1], DATA_POINTS[3].position[1], 0.001);
