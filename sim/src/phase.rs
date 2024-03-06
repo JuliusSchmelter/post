@@ -146,44 +146,44 @@ mod tests {
     fn phase_1() {
         let planet = EARTH_SPHERICAL;
         let vehicle = VEHICLES[0].clone();
-        let mut sim = Phase::new(0., vehicle, planet, 5., |s| 15. - s.time)
+        let mut phase = Phase::new(0., vehicle, planet, 5., |s| 15. - s.time)
             .add_atmosphere()
             .init_geodetic(28.5, 279.4, 90.)
             .init_mass(DATA_POINTS[0].mass);
 
-        assert_almost_eq_rel!(sim.state.position[0], DATA_POINTS[0].position[0], 0.001);
-        assert_almost_eq_rel!(sim.state.position[1], DATA_POINTS[0].position[1], 0.001);
-        assert_almost_eq_rel!(sim.state.position[2], DATA_POINTS[0].position[2], 0.001);
-        assert_almost_eq_rel!(sim.state.velocity[0], DATA_POINTS[0].velocity[0], 0.001);
-        assert_almost_eq_rel!(sim.state.velocity[1], DATA_POINTS[0].velocity[1], 0.001);
-        assert_almost_eq_rel!(sim.state.velocity[2], DATA_POINTS[0].velocity[2], 0.001);
+        assert_almost_eq_rel!(phase.state.position[0], DATA_POINTS[0].position[0], 0.001);
+        assert_almost_eq_rel!(phase.state.position[1], DATA_POINTS[0].position[1], 0.001);
+        assert_almost_eq_rel!(phase.state.position[2], DATA_POINTS[0].position[2], 0.001);
+        assert_almost_eq_rel!(phase.state.velocity[0], DATA_POINTS[0].velocity[0], 0.001);
+        assert_almost_eq_rel!(phase.state.velocity[1], DATA_POINTS[0].velocity[1], 0.001);
+        assert_almost_eq_rel!(phase.state.velocity[2], DATA_POINTS[0].velocity[2], 0.001);
 
         println!(
             "Time: {:.0}\nPosition: {:.0}\nVelocity: {:.0}",
-            sim.state.time, sim.state.position, sim.state.velocity
+            phase.state.time, phase.state.position, phase.state.velocity
         );
-        while !sim.ended {
-            sim.step();
+        while !phase.ended {
+            phase.step();
             println!(
                 "Time: {:.0}\nPosition: {:.0}\nVelocity: {:.0}",
-                sim.state.time, sim.state.position, sim.state.velocity
+                phase.state.time, phase.state.position, phase.state.velocity
             );
         }
-        assert_eq!(sim.state.time, DATA_POINTS[1].time);
-        assert_almost_eq_rel!(sim.state.mass, DATA_POINTS[1].mass, 0.001);
-        assert_almost_eq_rel!(sim.state.position[0], DATA_POINTS[1].position[0], 0.001);
-        assert_almost_eq_rel!(sim.state.position[1], DATA_POINTS[1].position[1], 0.001);
-        assert_almost_eq_rel!(sim.state.position[2], DATA_POINTS[1].position[2], 0.001);
-        assert_almost_eq_rel!(sim.state.velocity[0], DATA_POINTS[1].velocity[0], 0.001);
-        assert_almost_eq_rel!(sim.state.velocity[1], DATA_POINTS[1].velocity[1], 0.001);
-        assert_almost_eq_rel!(sim.state.velocity[2], DATA_POINTS[1].velocity[2], 0.001);
+        assert_eq!(phase.state.time, DATA_POINTS[1].time);
+        assert_almost_eq_rel!(phase.state.mass, DATA_POINTS[1].mass, 0.001);
+        assert_almost_eq_rel!(phase.state.position[0], DATA_POINTS[1].position[0], 0.001);
+        assert_almost_eq_rel!(phase.state.position[1], DATA_POINTS[1].position[1], 0.001);
+        assert_almost_eq_rel!(phase.state.position[2], DATA_POINTS[1].position[2], 0.001);
+        assert_almost_eq_rel!(phase.state.velocity[0], DATA_POINTS[1].velocity[0], 0.001);
+        assert_almost_eq_rel!(phase.state.velocity[1], DATA_POINTS[1].velocity[1], 0.001);
+        assert_almost_eq_rel!(phase.state.velocity[2], DATA_POINTS[1].velocity[2], 0.001);
     }
 
     #[test]
     fn phase_11() {
         let planet = EARTH_SPHERICAL;
         let vehicle = VEHICLES[1].clone();
-        let mut sim = Phase::new(0., vehicle, planet, 20., |s| s.propellant_mass)
+        let mut phase = Phase::new(0., vehicle, planet, 20., |s| s.propellant_mass)
             .add_atmosphere()
             .init_geodetic(28.5, 279.4, 90.)
             .init_inertial(DATA_POINTS[2].position, DATA_POINTS[2].velocity)
@@ -193,22 +193,22 @@ mod tests {
 
         println!(
             "Time: {:.0}\nPosition: {:.0}\nVelocity: {:.0}",
-            sim.state.time, sim.state.position, sim.state.velocity
+            phase.state.time, phase.state.position, phase.state.velocity
         );
-        while !sim.ended {
-            sim.step();
+        while !phase.ended {
+            phase.step();
             println!(
                 "Time: {:.0}\nPosition: {:.0}\nVelocity: {:.0}",
-                sim.state.time, sim.state.position, sim.state.velocity
+                phase.state.time, phase.state.position, phase.state.velocity
             );
         }
-        assert_almost_eq_rel!(sim.state.time, DATA_POINTS[3].time, 0.001);
-        assert_almost_eq_rel!(sim.state.mass, DATA_POINTS[3].mass, 0.001);
-        assert_almost_eq_rel!(sim.state.position[0], DATA_POINTS[3].position[0], 0.001);
-        assert_almost_eq_rel!(sim.state.position[1], DATA_POINTS[3].position[1], 0.001);
-        assert_almost_eq_rel!(sim.state.position[2], DATA_POINTS[3].position[2], 0.001);
-        assert_almost_eq_rel!(sim.state.velocity[0], DATA_POINTS[3].velocity[0], 0.001);
-        assert_almost_eq_rel!(sim.state.velocity[1], DATA_POINTS[3].velocity[1], 0.001);
-        assert_almost_eq_rel!(sim.state.velocity[2], DATA_POINTS[3].velocity[2], 0.001);
+        assert_almost_eq_rel!(phase.state.time, DATA_POINTS[3].time, 0.001);
+        assert_almost_eq_rel!(phase.state.mass, DATA_POINTS[3].mass, 0.001);
+        assert_almost_eq_rel!(phase.state.position[0], DATA_POINTS[3].position[0], 0.001);
+        assert_almost_eq_rel!(phase.state.position[1], DATA_POINTS[3].position[1], 0.001);
+        assert_almost_eq_rel!(phase.state.position[2], DATA_POINTS[3].position[2], 0.001);
+        assert_almost_eq_rel!(phase.state.velocity[0], DATA_POINTS[3].velocity[0], 0.001);
+        assert_almost_eq_rel!(phase.state.velocity[1], DATA_POINTS[3].velocity[1], 0.001);
+        assert_almost_eq_rel!(phase.state.velocity[2], DATA_POINTS[3].velocity[2], 0.001);
     }
 }
