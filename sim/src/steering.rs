@@ -9,15 +9,15 @@ use crate::{atmosphere::State as AtmosState, transformations::launch_to_body};
 
 pub enum Axis {
     Roll,
-    Pitch,
     Yaw,
+    Pitch,
 }
 
 #[derive(Debug, Default)]
 pub struct Steering {
     roll: [f64; 4],
-    pitch: [f64; 4],
     yaw: [f64; 4],
+    pitch: [f64; 4],
 }
 
 impl Steering {
@@ -28,8 +28,8 @@ impl Steering {
     pub fn update_steering(&mut self, axis: Axis, coeffs: [f64; 3]) -> &Self {
         let s = match axis {
             Axis::Roll => &mut self.roll,
-            Axis::Pitch => &mut self.pitch,
             Axis::Yaw => &mut self.yaw,
+            Axis::Pitch => &mut self.pitch,
         };
         (*s)[1..].copy_from_slice(&coeffs);
         self
@@ -37,8 +37,8 @@ impl Steering {
 
     pub fn init(&mut self, euler_angles: Vector3<f64>) -> &Self {
         self.roll[0] = euler_angles.x;
-        self.pitch[0] = euler_angles.y;
-        self.yaw[0] = euler_angles.z;
+        self.yaw[0] = euler_angles.y;
+        self.pitch[0] = euler_angles.z;
 
         self
     }
@@ -66,8 +66,8 @@ impl Steering {
     pub fn steering(&self, state: AtmosState) -> State {
         let euler_angles = [
             Self::calc_coeff(state.time_since_event, self.roll),
-            Self::calc_coeff(state.time_since_event, self.pitch),
             Self::calc_coeff(state.time_since_event, self.yaw),
+            Self::calc_coeff(state.time_since_event, self.pitch),
         ];
 
         let inertial_to_body = launch_to_body(
@@ -92,13 +92,13 @@ mod tests {
     #[test]
     fn angular_polynomials() {
         let mut steering = Steering::new();
-        steering.init(Vector3::new(0., 4., 0.));
+        steering.init(Vector3::new(0., 0., 4.));
         steering.update_steering(Axis::Pitch, [3., 2., 1.]);
         let mut state = AtmosState::default();
         state.time_since_event = 2.;
 
         assert_eq!(
-            steering.steering(state).euler_angles[1],
+            steering.steering(state).euler_angles[2],
             4. + 3. * 2. + 2. * 2_f64.powi(2) + 1. * 2_f64.powi(3)
         )
     }
