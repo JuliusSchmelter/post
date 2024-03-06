@@ -13,7 +13,7 @@ pub enum Axis {
     Pitch,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct Steering {
     roll: [f64; 4],
     yaw: [f64; 4],
@@ -44,7 +44,7 @@ impl Steering {
     }
 }
 
-#[derive(Debug, Default, Deref, DerefMut)]
+#[derive(Debug, Default, Deref, DerefMut, Clone)]
 pub struct State {
     #[deref]
     #[deref_mut]

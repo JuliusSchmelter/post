@@ -10,13 +10,13 @@ use nalgebra::Vector3;
 
 use crate::planet::EnvState as PlanetState;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct Atmosphere {
     wind: Vector3<f64>,
     model: AtmosphereModel,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub enum AtmosphereModel {
     #[default]
     NoAtmosphere,
@@ -34,7 +34,7 @@ impl Atmosphere {
     }
 }
 
-#[derive(Debug, Default, Deref, DerefMut)]
+#[derive(Debug, Default, Deref, DerefMut, Clone)]
 pub struct State {
     #[deref]
     #[deref_mut]

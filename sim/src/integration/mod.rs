@@ -8,7 +8,7 @@ use crate::state::{PrimaryState, State};
 
 mod runge_kutta;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Integrator {
     RK4,
 }

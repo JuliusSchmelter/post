@@ -6,7 +6,7 @@ use nalgebra::{vector, SVector, Vector2, Vector3};
 
 pub use crate::vehicle::State;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct PrimaryState {
     pub time: f64,
     pub time_since_event: f64,

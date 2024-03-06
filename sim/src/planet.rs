@@ -10,7 +10,7 @@ use crate::{
     state::PrimaryState, steering::State as SteeringState, transformations::inertial_to_launch,
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Planet {
     pub equatorial_radius: f64,
     pub polar_radius: f64,
@@ -51,7 +51,7 @@ pub const EARTH_SMITHSONIAN: Planet = Planet {
     launch: [0., 0., 0.],
 };
 
-#[derive(Debug, Default, Deref, DerefMut)]
+#[derive(Debug, Default, Deref, DerefMut, Clone)]
 pub struct EnvState {
     #[deref]
     #[deref_mut]
@@ -95,7 +95,7 @@ impl Planet {
     }
 }
 
-#[derive(Debug, Default, Deref, DerefMut)]
+#[derive(Debug, Default, Deref, DerefMut, Clone)]
 pub struct ForceState {
     #[deref]
     #[deref_mut]

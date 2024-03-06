@@ -70,7 +70,7 @@ impl Vehicle {
     }
 }
 
-#[derive(Debug, Default, Deref, DerefMut)]
+#[derive(Debug, Default, Deref, DerefMut, Clone)]
 pub struct State {
     #[deref]
     #[deref_mut]
