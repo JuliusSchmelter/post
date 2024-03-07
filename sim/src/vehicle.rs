@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 06.03.24
+// Last modified by Tibor Völcker on 07.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use derive_more::{Deref, DerefMut};
@@ -92,11 +92,7 @@ impl Vehicle {
                 .inertial_to_body
                 .transform_vector(&state.atmos_rel_velocity),
         );
-        let mut aero_force = self.aero_force(alpha, state.mach_number, state.dynamic_pressure);
-
-        if aero_force.norm().is_nan() {
-            aero_force = vector![0., 0., 0.];
-        }
+        let aero_force = self.aero_force(alpha, state.mach_number, state.dynamic_pressure);
 
         let propellant_mass = state.mass - self.mass;
 
@@ -190,7 +186,15 @@ impl Vehicle {
         let ca = alpha.to_radians().cos() * cd - alpha.to_radians().sin() * cl;
         let cn = alpha.to_radians().sin() * cd + alpha.to_radians().cos() * cl;
 
-        dynamic_pressure * self.reference_area * vector![-ca, cy, -cn]
+        let mut aero_force = dynamic_pressure * self.reference_area * vector![-ca, cy, -cn];
+
+        // Convert NANs to zeros
+        aero_force
+            .iter_mut()
+            .filter(|i| i.is_nan())
+            .for_each(|i| *i = 0.);
+
+        aero_force
     }
 }
 

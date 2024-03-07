@@ -14,6 +14,13 @@ pub type Table3D = super::Table3D<Linear>;
 
 impl Table1D {
     pub fn at(&self, x: f64) -> f64 {
+        if self.data.len() == 0 {
+            return f64::NAN;
+        }
+        if self.data.len() == 1 {
+            return self.data[0];
+        }
+
         let idx1 = {
             let mut idx1 = self.x.partition_point(|val| val < &x);
             if idx1 == self.x.len() {
@@ -75,6 +82,25 @@ impl Table3D {
 #[cfg(test)]
 mod tests {
     use super::linear_interpolation::*;
+
+    #[test]
+    fn empty_table() {
+        let table = Table1D::new([], []);
+        assert!(table.at(1.).is_nan());
+    }
+
+    #[test]
+    fn one_entry() {
+        let table = Table1D::new([0.], [1.34]);
+        assert_eq!(table.at(0.), 1.34);
+        assert_eq!(table.at(999.), 1.34);
+    }
+
+    #[test]
+    #[should_panic(expected = "Data must be sorted by indexing value")]
+    fn not_sorted() {
+        Table1D::new([0., 0.], [10., 20.]);
+    }
 
     #[test]
     fn extrapolate_below() {
