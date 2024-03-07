@@ -63,7 +63,6 @@ impl Phase {
     }
 }
 
-// Initializations
 impl Default for Phase {
     fn default() -> Self {
         Self {
@@ -84,13 +83,53 @@ impl Phase {
         Self::default()
     }
 
+    pub fn update_planet(&mut self, planet: Planet) -> &mut Self {
+        self.planet = planet;
+        self
+    }
+
     pub fn add_atmosphere(&mut self) -> &mut Self {
         self.atmosphere.add_atmosphere();
         self
     }
 
-    pub fn init_mass(&mut self, mass: f64) -> &mut Self {
+    pub fn add_vehicle(&mut self, vehicle: Vehicle) -> &mut Self {
+        self.vehicle = vehicle;
+        self
+    }
+
+    pub fn limit_acceleration(&mut self, max_acceleration: f64) -> &mut Self {
+        self.vehicle.max_acceleration = max_acceleration;
+        self
+    }
+
+    pub fn init_steering(&mut self, euler_anges: Vector3<f64>) -> &mut Self {
+        self.steering.init(euler_anges);
+        self
+    }
+
+    pub fn update_steering(&mut self, axis: Axis, coeffs: [f64; 3]) -> &mut Self {
+        self.steering.update_steering(axis, coeffs);
+        self
+    }
+
+    pub fn set_mass(&mut self, mass: f64) -> &mut Self {
         self.state.mass = mass;
+        self
+    }
+
+    pub fn set_time(&mut self, time: f64) -> &mut Self {
+        self.state.time = time;
+        self
+    }
+
+    pub fn set_stepsize(&mut self, stepsize: f64) -> &mut Self {
+        self.stepsize = stepsize;
+        self
+    }
+
+    pub fn update_termination(&mut self, end_criterion: fn(&State) -> f64) -> &mut Self {
+        self.end_criterion = end_criterion;
         self
     }
 
@@ -100,12 +139,7 @@ impl Phase {
         self
     }
 
-    pub fn init_steering(&mut self, euler_anges: Vector3<f64>) -> &mut Self {
-        self.steering.init(euler_anges);
-        self
-    }
-
-    pub fn init_geodetic(&mut self, latitude: f64, longitude: f64, azimuth: f64) -> &mut Self {
+    pub fn init_launch(&mut self, latitude: f64, longitude: f64, azimuth: f64) -> &mut Self {
         let (lat, long, az) = (
             latitude.to_radians(),
             longitude.to_radians(),
@@ -136,29 +170,6 @@ impl Phase {
     }
 }
 
-// Modifications
-impl Phase {
-    pub fn update_vehicle(&mut self, vehicle: Vehicle) -> &mut Self {
-        self.vehicle = vehicle;
-        self
-    }
-
-    pub fn update_steering(&mut self, axis: Axis, coeffs: [f64; 3]) -> &mut Self {
-        self.steering.update_steering(axis, coeffs);
-        self
-    }
-
-    pub fn limit_acceleration(&mut self, max_acceleration: f64) -> &mut Self {
-        self.vehicle.max_acceleration = max_acceleration;
-        self
-    }
-
-    pub fn update_termination(&mut self, end_criterion: fn(&State) -> f64) -> &mut Self {
-        self.end_criterion = end_criterion;
-        self
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -170,10 +181,10 @@ mod tests {
         let vehicle = VEHICLES[0].clone();
         let mut phase = Phase::new();
         phase
-            .update_vehicle(vehicle)
+            .add_vehicle(vehicle)
             .add_atmosphere()
-            .init_geodetic(28.5, 279.4, 90.)
-            .init_mass(DATA_POINTS[0].mass)
+            .init_launch(28.5, 279.4, 90.)
+            .set_mass(DATA_POINTS[0].mass)
             .update_termination(|s| 15. - s.time);
 
         assert_almost_eq_rel!(phase.state.position[0], DATA_POINTS[0].position[0], 0.001);
@@ -209,12 +220,12 @@ mod tests {
         let vehicle = VEHICLES[1].clone();
         let mut phase = Phase::new();
         phase
-            .update_vehicle(vehicle)
+            .add_vehicle(vehicle)
             .add_atmosphere()
-            .init_geodetic(28.5, 279.4, 90.)
+            .init_launch(28.5, 279.4, 90.)
             .init_inertial(DATA_POINTS[2].position, DATA_POINTS[2].velocity)
             .init_steering(DATA_POINTS[2].euler_angles)
-            .init_mass(DATA_POINTS[2].mass)
+            .set_mass(DATA_POINTS[2].mass)
             .update_steering(Axis::Pitch, [DATA_POINTS[2].pitch_rate, 0., 0.])
             .update_termination(|s| s.propellant_mass);
 
