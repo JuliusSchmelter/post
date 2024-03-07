@@ -113,7 +113,7 @@ impl Phase {
         self
     }
 
-    pub fn init_steering(&mut self, euler_anges: Vector3<f64>) -> &mut Self {
+    pub fn init_steering(&mut self, euler_anges: [f64; 3]) -> &mut Self {
         self.steering.init(euler_anges);
         self
     }

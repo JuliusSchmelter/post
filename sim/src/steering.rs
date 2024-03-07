@@ -1,9 +1,9 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 06.12.23
-// Last modified by Tibor Völcker on 06.03.24
+// Last modified by Tibor Völcker on 07.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use derive_more::{Deref, DerefMut};
-use nalgebra::{Rotation3, Vector3};
+use nalgebra::Rotation3;
 
 use crate::{atmosphere::State as AtmosState, transformations::launch_to_body};
 
@@ -35,10 +35,10 @@ impl Steering {
         self
     }
 
-    pub fn init(&mut self, euler_angles: Vector3<f64>) -> &Self {
-        self.roll[0] = euler_angles.x;
-        self.yaw[0] = euler_angles.y;
-        self.pitch[0] = euler_angles.z;
+    pub fn init(&mut self, euler_angles: [f64; 3]) -> &Self {
+        self.roll[0] = euler_angles[0];
+        self.yaw[0] = euler_angles[1];
+        self.pitch[0] = euler_angles[2];
 
         self
     }
@@ -92,7 +92,7 @@ mod tests {
     #[test]
     fn angular_polynomials() {
         let mut steering = Steering::new();
-        steering.init(Vector3::new(0., 0., 4.));
+        steering.init([0., 0., 4.]);
         steering.update_steering(Axis::Pitch, [3., 2., 1.]);
         let mut state = AtmosState::default();
         state.time_since_event = 2.;

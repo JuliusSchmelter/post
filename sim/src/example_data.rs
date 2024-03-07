@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.01.24
-// Last modified by Tibor Völcker on 06.03.24
+// Last modified by Tibor Völcker on 07.03.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 #![cfg(test)]
 pub use data::DATA_POINTS;
@@ -175,7 +175,7 @@ mod data {
         pub position: Vector3<f64>,
         pub velocity: Vector3<f64>,
         pub altitude: f64,
-        pub euler_angles: Vector3<f64>,
+        pub euler_angles: [f64; 3],
         pub temperature: f64,
         pub pressure: f64,
         pub density: f64,
@@ -199,7 +199,7 @@ mod data {
                 position: Vector3::new(3.00354800e6, -1.81429627e7, 9.98490063e6) * METER_PER_FOOT,
                 velocity: Vector3::new(1.32300480e3, 2.19022024e2, 0.) * METER_PER_FOOT,
                 altitude: -4.76837158e-7 * METER_PER_FOOT,
-                euler_angles: Vector3::new(0., 0., 0.),
+                euler_angles: [0., 0., 0.],
                 temperature: 5.18670000e2 * KELVIN_PER_RANKIN,
                 pressure: 2.11621660e3 * PASCAL_PER_PSF,
                 density: 2.37690697e-3 * KILOGRAM_PER_SLUG / CUBIC_METER_PER_CUBIC_FOOT,
@@ -220,7 +220,7 @@ mod data {
                 position: Vector3::new(3.02352433e6, -1.81404764e7, 9.98534136e6) * METER_PER_FOOT,
                 velocity: Vector3::new(1.34110394e3, 1.07998292e2, 6.10765341e1) * METER_PER_FOOT,
                 altitude: 9.33310129e2 * METER_PER_FOOT,
-                euler_angles: Vector3::new(0., 0., 0.),
+                euler_angles: [0., 0., 0.],
                 temperature: 5.15341815e2 * KELVIN_PER_RANKIN,
                 pressure: 2.04581341e3 * PASCAL_PER_PSF,
                 density: 2.31267089e-3 * KILOGRAM_PER_SLUG / CUBIC_METER_PER_CUBIC_FOOT,
@@ -241,7 +241,7 @@ mod data {
                 position: Vector3::new(7.02620764e6, -1.73942758e7, 9.94057977e6) * METER_PER_FOOT,
                 velocity: Vector3::new(2.23048738e4, 7.85391572e3, -2.22909900e3) * METER_PER_FOOT,
                 altitude: 3.04960868e5 * METER_PER_FOOT,
-                euler_angles: Vector3::new(0., 0., -9.66287352e1),
+                euler_angles: [0., 0., -9.66287352e1],
                 temperature: 3.41188380e2 * KELVIN_PER_RANKIN,
                 pressure: 2.01763300e-3 * PASCAL_PER_PSF,
                 density: 3.44501515e-9 * KILOGRAM_PER_SLUG / CUBIC_METER_PER_CUBIC_FOOT,
@@ -262,7 +262,7 @@ mod data {
                 position: Vector3::new(7.53212452e6, -1.72106460e7, 9.88707980e6) * METER_PER_FOOT,
                 velocity: Vector3::new(2.40870305e4, 8.99928739e3, -2.68459504e3) * METER_PER_FOOT,
                 altitude: 3.03804044e5 * METER_PER_FOOT,
-                euler_angles: Vector3::new(0., 0., -9.91738999e1),
+                euler_angles: [0., 0., -9.91738999e1],
                 temperature: 3.39250012e2 * KELVIN_PER_RANKIN,
                 pressure: 2.14880703e-3 * PASCAL_PER_PSF,
                 density: 3.68995220e-9 * KILOGRAM_PER_SLUG / CUBIC_METER_PER_CUBIC_FOOT,
