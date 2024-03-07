@@ -61,6 +61,16 @@ impl Phase {
 
         self.state = state;
     }
+
+    fn run(&mut self) {
+        while !self.ended {
+            self.step();
+            println!(
+                "Time: {:.0}\nPosition: {:.0}\nVelocity: {:.0}",
+                self.state.time, self.state.position, self.state.velocity
+            );
+        }
+    }
 }
 
 impl Default for Phase {
@@ -194,17 +204,8 @@ mod tests {
         assert_almost_eq_rel!(phase.state.velocity[1], DATA_POINTS[0].velocity[1], 0.001);
         assert_almost_eq_rel!(phase.state.velocity[2], DATA_POINTS[0].velocity[2], 0.001);
 
-        println!(
-            "Time: {:.0}\nPosition: {:.0}\nVelocity: {:.0}",
-            phase.state.time, phase.state.position, phase.state.velocity
-        );
-        while !phase.ended {
-            phase.step();
-            println!(
-                "Time: {:.0}\nPosition: {:.0}\nVelocity: {:.0}",
-                phase.state.time, phase.state.position, phase.state.velocity
-            );
-        }
+        phase.run();
+
         assert_eq!(phase.state.time, DATA_POINTS[1].time);
         assert_almost_eq_rel!(phase.state.mass, DATA_POINTS[1].mass, 0.001);
         assert_almost_eq_rel!(phase.state.position[0], DATA_POINTS[1].position[0], 0.001);
@@ -233,13 +234,8 @@ mod tests {
             "Time: {:.0}\nPosition: {:.0}\nVelocity: {:.0}",
             phase.state.time, phase.state.position, phase.state.velocity
         );
-        while !phase.ended {
-            phase.step();
-            println!(
-                "Time: {:.0}\nPosition: {:.0}\nVelocity: {:.0}",
-                phase.state.time, phase.state.position, phase.state.velocity
-            );
-        }
+        phase.run();
+
         // automatic thrust shutdown distorts shutdown time a bit
         assert_almost_eq_rel!(phase.state.time, DATA_POINTS[3].time, 0.006);
         assert_almost_eq_rel!(phase.state.mass, DATA_POINTS[3].mass, 0.001);
