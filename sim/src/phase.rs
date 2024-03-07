@@ -96,6 +96,7 @@ impl Phase {
     pub fn reset(&mut self) -> &mut Self {
         self.state.time_since_event = 0.;
         self.init_steering(self.state.euler_angles);
+        self.ended = false;
         self
     }
 
