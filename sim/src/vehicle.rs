@@ -37,7 +37,7 @@ fn side_side_angle(a: f64, b: f64, alpha: f64) -> Option<f64> {
     Some(a * gamma.sin() / alpha.sin())
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct Vehicle {
     mass: f64,
     reference_area: f64,

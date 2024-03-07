@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 06.03.24
+// Last modified by Tibor Völcker on 07.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use crate::atmosphere::Atmosphere;
@@ -8,6 +8,7 @@ use crate::planet::Planet;
 use crate::state::{PrimaryState, State};
 use crate::steering::{Axis, Steering};
 use crate::vehicle::Vehicle;
+use crate::EARTH_SPHERICAL;
 use nalgebra::{vector, Vector3};
 
 #[derive(Debug, Clone)]
@@ -63,25 +64,24 @@ impl Phase {
 }
 
 // Initializations
-impl Phase {
-    pub fn new(
-        time: f64,
-        vehicle: Vehicle,
-        planet: Planet,
-        stepsize: f64,
-        end_criterion: fn(&State) -> f64,
-    ) -> Self {
-        Phase {
-            state: State::new(time),
-            vehicle,
+impl Default for Phase {
+    fn default() -> Self {
+        Self {
+            state: State::new(),
+            vehicle: Vehicle::default(),
             steering: Steering::new(),
-            planet,
+            planet: EARTH_SPHERICAL,
             atmosphere: Atmosphere::new(),
             integrator: Integrator::RK4,
-            stepsize,
-            end_criterion,
+            stepsize: 1.,
+            end_criterion: |_| 0.,
             ended: false,
         }
+    }
+}
+impl Phase {
+    pub fn new() -> Self {
+        Self::default()
     }
 
     pub fn add_atmosphere(&mut self) -> &mut Self {
@@ -152,24 +152,29 @@ impl Phase {
         self.vehicle.max_acceleration = max_acceleration;
         self
     }
+
+    pub fn update_termination(&mut self, end_criterion: fn(&State) -> f64) -> &mut Self {
+        self.end_criterion = end_criterion;
+        self
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::example_data::{DATA_POINTS, VEHICLES};
-    use crate::planet::EARTH_SPHERICAL;
     use utils::assert_almost_eq_rel;
 
     #[test]
     fn phase_1() {
-        let planet = EARTH_SPHERICAL;
         let vehicle = VEHICLES[0].clone();
-        let mut phase = Phase::new(0., vehicle, planet, 5., |s| 15. - s.time);
+        let mut phase = Phase::new();
         phase
+            .update_vehicle(vehicle)
             .add_atmosphere()
             .init_geodetic(28.5, 279.4, 90.)
-            .init_mass(DATA_POINTS[0].mass);
+            .init_mass(DATA_POINTS[0].mass)
+            .update_termination(|s| 15. - s.time);
 
         assert_almost_eq_rel!(phase.state.position[0], DATA_POINTS[0].position[0], 0.001);
         assert_almost_eq_rel!(phase.state.position[1], DATA_POINTS[0].position[1], 0.001);
@@ -201,16 +206,17 @@ mod tests {
 
     #[test]
     fn phase_11() {
-        let planet = EARTH_SPHERICAL;
         let vehicle = VEHICLES[1].clone();
-        let mut phase = Phase::new(0., vehicle, planet, 20., |s| s.propellant_mass);
+        let mut phase = Phase::new();
         phase
+            .update_vehicle(vehicle)
             .add_atmosphere()
             .init_geodetic(28.5, 279.4, 90.)
             .init_inertial(DATA_POINTS[2].position, DATA_POINTS[2].velocity)
             .init_steering(DATA_POINTS[2].euler_angles)
             .init_mass(DATA_POINTS[2].mass)
-            .update_steering(Axis::Pitch, [DATA_POINTS[2].pitch_rate, 0., 0.]);
+            .update_steering(Axis::Pitch, [DATA_POINTS[2].pitch_rate, 0., 0.])
+            .update_termination(|s| s.propellant_mass);
 
         println!(
             "Time: {:.0}\nPosition: {:.0}\nVelocity: {:.0}",

@@ -28,9 +28,8 @@ impl PrimaryState {
 }
 
 impl State {
-    pub fn new(starting_time: f64) -> Self {
+    pub fn new() -> Self {
         let mut s = Self::default();
-        s.time = starting_time;
         s.mass = 1.;
         s
     }
