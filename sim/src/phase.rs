@@ -62,7 +62,7 @@ impl Phase {
         self.state = state;
     }
 
-    fn run(&mut self) {
+    pub fn run(&mut self) {
         while !self.ended {
             self.step();
             println!(
