@@ -93,6 +93,12 @@ impl Phase {
         Self::default()
     }
 
+    pub fn reset(&mut self) -> &mut Self {
+        self.state.time_since_event = 0.;
+        self.init_steering(self.state.euler_angles);
+        self
+    }
+
     pub fn update_planet(&mut self, planet: Planet) -> &mut Self {
         self.planet = planet;
         self
