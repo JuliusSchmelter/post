@@ -1,18 +1,30 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 26.01.24
-// Last modified by Tibor Völcker on 06.03.24
+// Last modified by Tibor Völcker on 07.03.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{vector, SVector, Vector2, Vector3};
 
 pub use crate::vehicle::State;
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Clone)]
 pub struct PrimaryState {
     pub time: f64,
     pub time_since_event: f64,
     pub position: Vector3<f64>,
     pub velocity: Vector3<f64>,
     pub mass: f64,
+}
+
+impl Default for PrimaryState {
+    fn default() -> Self {
+        Self {
+            time: 0.,
+            time_since_event: 0.,
+            position: Vector3::zeros(),
+            velocity: Vector3::zeros(),
+            mass: 1.,
+        }
+    }
 }
 
 impl PrimaryState {
@@ -29,9 +41,7 @@ impl PrimaryState {
 
 impl State {
     pub fn new() -> Self {
-        let mut s = Self::default();
-        s.mass = 1.;
-        s
+        Self::default()
     }
 
     pub fn differentials(self) -> SVector<f64, 7> {
