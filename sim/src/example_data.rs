@@ -127,7 +127,7 @@ mod vehicles {
                     439.0,
                     232.5 * SQUARE_METER_PER_SQUARE_FOOT,
                 )],
-                3. * STD_GRAVITY,
+                f64::INFINITY,
             ),
             Vehicle::new(
                 (3.57822526e5 - 4.75414027e4) * KILOGRAM_PER_POUND,
