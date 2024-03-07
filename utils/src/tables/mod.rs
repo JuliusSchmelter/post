@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 14.12.23
-// Last modified by Tibor Völcker on 06.03.24
+// Last modified by Tibor Völcker on 07.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use std::marker::PhantomData;
@@ -26,8 +26,6 @@ pub struct Table<T, I: Interpolator> {
 type Table1D<I> = Table<f64, I>;
 type Table2D<I> = Table<Table1D<I>, I>;
 type Table3D<I> = Table<Table2D<I>, I>;
-
-// TODO: Table fail if length is smaller than 2 or x and data don't have the same length
 
 impl<I: Interpolator> Table1D<I> {
     pub fn new<const X: usize>(x: [f64; X], data: [f64; X]) -> Self {

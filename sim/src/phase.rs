@@ -38,7 +38,7 @@ impl Phase {
 
     pub fn step(&mut self) {
         if self.ended {
-            panic!("Phase already has ended!")
+            panic!("Phase already has ended")
         }
 
         let state = self
@@ -48,6 +48,10 @@ impl Phase {
         if (self.end_criterion)(&state) < 0. {
             // The stepsize was too big. Try again with half the stepsize.
             self.stepsize /= 2.;
+            if self.stepsize < 1e-10 {
+                panic!("Could not reach end condition")
+            }
+
             return self.step();
         } else if (self.end_criterion)(&state) < 1e-3 {
             // We found a good last stepsize. Phase has ended.
