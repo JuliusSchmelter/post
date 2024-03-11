@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 07.03.24
+// Last modified by Tibor Völcker on 11.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use crate::atmosphere::Atmosphere;
@@ -68,8 +68,11 @@ impl Phase {
         while !self.ended {
             self.step();
             println!(
-                "Time: {:.0}\nPosition: {:.0}\nVelocity: {:.0}",
-                self.state.time, self.state.position, self.state.velocity
+                "Time: {:.0}\nPosition: {:.0}\nVelocity: {:.0}\nAltitude: {:.0}\n",
+                self.state.time,
+                self.state.position_planet,
+                self.state.velocity,
+                self.state.altitude
             );
         }
     }

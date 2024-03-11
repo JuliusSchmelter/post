@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.11.23
-// Last modified by Tibor Völcker on 06.03.24
+// Last modified by Tibor Völcker on 07.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use derive_more::{Deref, DerefMut};
@@ -7,7 +7,9 @@ use nalgebra::{vector, Rotation3, Vector3};
 use utils::constants::*;
 
 use crate::{
-    state::PrimaryState, steering::State as SteeringState, transformations::inertial_to_launch,
+    state::PrimaryState,
+    steering::State as SteeringState,
+    transformations::{inertial_to_launch, inertial_to_planet},
 };
 
 #[derive(Debug, Clone)]
@@ -56,6 +58,7 @@ pub struct EnvState {
     #[deref]
     #[deref_mut]
     child_state: PrimaryState,
+    pub position_planet: Vector3<f64>,
     pub inertial_to_launch: Rotation3<f64>,
     pub altitude: f64,
     pub geopotential_altitude: f64,
@@ -65,6 +68,8 @@ pub struct EnvState {
 impl Planet {
     pub fn environment(&self, state: PrimaryState) -> EnvState {
         EnvState {
+            position_planet: inertial_to_planet(state.time, self.rotation_rate)
+                .transform_vector(&state.position),
             inertial_to_launch: inertial_to_launch(self.launch[0], self.launch[1], self.launch[2]),
             altitude: self.altitude(state.position),
             geopotential_altitude: self.geopotational_altitude(state.position),
