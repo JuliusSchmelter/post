@@ -238,7 +238,7 @@ mod tests {
     #[test]
     fn test_thrust() {
         for data_point in DATA_POINTS.iter() {
-            print!("Testing {} km altitude ... ", data_point.altitude);
+            print!("Testing {} m altitude ... ", data_point.altitude);
             let throttle = data_point.vehicle.auto_throttle(
                 data_point.mass,
                 data_point.pressure,
@@ -257,7 +257,7 @@ mod tests {
     #[test]
     fn cd() {
         for data_point in DATA_POINTS.iter() {
-            print!("Testing {} km altitude ... ", data_point.altitude);
+            print!("Testing {} m altitude ... ", data_point.altitude);
             assert_almost_eq!(
                 data_point
                     .vehicle
@@ -273,7 +273,7 @@ mod tests {
     #[test]
     fn cl() {
         for data_point in DATA_POINTS.iter() {
-            print!("Testing {} km altitude ... ", data_point.altitude);
+            print!("Testing {} m altitude ... ", data_point.altitude);
             assert_almost_eq!(
                 data_point
                     .vehicle
@@ -289,7 +289,7 @@ mod tests {
     #[test]
     fn test_aero() {
         for data_point in DATA_POINTS.iter() {
-            print!("Testing {} km altitude ... ", data_point.altitude);
+            print!("Testing {} m altitude ... ", data_point.altitude);
             let res = data_point.vehicle.aero_force(
                 data_point.alpha,
                 data_point.mach,

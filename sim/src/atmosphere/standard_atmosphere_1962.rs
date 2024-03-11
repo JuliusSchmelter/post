@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 05.03.24
+// Last modified by Tibor Völcker on 11.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use utils::constants::*;
@@ -67,7 +67,7 @@ mod tests {
         const EPSILON: f64 = 0.001;
 
         for data_point in DATA_POINTS.iter() {
-            print!("Testing {} km altitude ... ", data_point.altitude);
+            print!("Testing {} m altitude ... ", data_point.altitude);
             let alt = EARTH_SPHERICAL.geopotational_altitude(data_point.position);
             assert_almost_eq_rel!(temperature(alt), data_point.temperature, EPSILON);
             assert_almost_eq_rel!(pressure(alt), data_point.pressure, EPSILON);
