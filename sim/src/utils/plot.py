@@ -1,20 +1,35 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 # Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.12.23
-# Last modified by Tibor Völcker on 27.12.23
+# Last modified by Tibor Völcker on 11.03.24
 # Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
-import io
 import re
+import sys
 
-import matplotlib.pyplot as plt
 import numpy as np
+import pyvista
+from pyvista import examples
 
 
-def read_test_output():
-    # Read piped test output
-    pipe = io.open(0, encoding="utf-8")
-    content = pipe.read()
+def read_stdin():
+    print("Reading from STDIN...", end="")
+    content = sys.stdin.read()
+    print(" Done.")
+    return content
 
+
+def read_file():
+    if len(sys.argv) < 2:
+        return False
+
+    filename = sys.argv[1]
+    print(f"Reading from file {filename}...", end="")
+    content = open(filename, "r", encoding="utf-8").read()
+    print(" Done.")
+    return content
+
+
+def parse_test_output(content):
     # Define regular expressions for extracting time, position, and velocity
     time_pattern = re.compile(r"Time: (\d+)")
     position_pattern = re.compile(
@@ -47,27 +62,30 @@ def plot_earth(axes):
     z = radius * np.outer(np.ones(np.size(u)), np.cos(v))
 
     # Plot the surface
-    axes.plot_surface(x, y, z, color=(1, 1, 1, 0.5))
+    axes.plot_surface(x, y, z, color=(1, 1, 1, 0))
 
     # Plot spin axis
     z = np.linspace(-7000000, 7000000, 100)
-    axes.plot(np.zeros_like(z), np.zeros_like(z), z, color="gray")
+    axes.plot(np.zeros_like(z), np.zeros_like(z), z, color="red")
 
 
 if __name__ == "__main__":
-    t, pos, vel = read_test_output()
+    content = read_file()
+    if not content:
+        content = read_stdin()
 
-    fig = plt.figure()
-    ax = fig.add_subplot(projection="3d")
+    t, pos, vel = parse_test_output(content)
 
-    # Plot earth
-    plot_earth(ax)
+    traj = pyvista.MultipleLines(pos)
 
-    # Plot the trajectory
-    ax.plot(pos[:, 0], pos[:, 1], pos[:, 2], label="Trajectory")
+    earth = examples.planets.load_earth(radius=6378166)
+    earth_texture = examples.load_globe_texture()
 
-    # Set an equal aspect ratio
-    ax.set_aspect("equal")
+    pl = pyvista.Plotter(lighting="none")
 
-    # Show the plot
-    plt.show()
+    pl.add_mesh(earth, texture=earth_texture)
+    pl.add_mesh(traj, color="r", line_width=10)
+
+    pl.set_focus(pos[0])
+
+    pl.show()
