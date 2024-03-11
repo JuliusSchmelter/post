@@ -20,6 +20,7 @@ pub struct Phase {
     atmosphere: Atmosphere,
     integrator: Integrator,
     stepsize: f64,
+    base_stepsize: f64,
     end_criterion: fn(&State) -> f64,
     pub ended: bool,
 }
@@ -49,7 +50,8 @@ impl Phase {
         if (self.end_criterion)(&state) < 0. {
             // The stepsize was too big. Try again with half the stepsize.
             self.stepsize /= 2.;
-            if self.stepsize < 1e-10 {
+            // Stop after 10 tries
+            if self.base_stepsize / self.stepsize > 2_f64.powi(10) {
                 panic!("Could not reach end condition")
             }
 
@@ -83,6 +85,7 @@ impl Default for Phase {
             atmosphere: Atmosphere::new(),
             integrator: Integrator::RK4,
             stepsize: 1.,
+            base_stepsize: 1.,
             end_criterion: |_| 0.,
             ended: false,
         }
@@ -95,6 +98,7 @@ impl Phase {
 
     pub fn reset(&mut self) -> &mut Self {
         self.state.time_since_event = 0.;
+        self.stepsize = self.base_stepsize;
         self.init_steering(self.state.euler_angles);
         self.ended = false;
         self
@@ -142,6 +146,7 @@ impl Phase {
 
     pub fn set_stepsize(&mut self, stepsize: f64) -> &mut Self {
         self.stepsize = stepsize;
+        self.base_stepsize = stepsize;
         self
     }
 
