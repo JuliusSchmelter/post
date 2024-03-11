@@ -233,6 +233,7 @@ mod tests {
             .init_launch(28.5, 279.4, 90.)
             .init_inertial(DATA_POINTS[2].position, DATA_POINTS[2].velocity)
             .init_steering(DATA_POINTS[2].euler_angles)
+            .set_time(4.37456932e2)
             .set_mass(DATA_POINTS[2].mass)
             .update_steering(Axis::Pitch, [DATA_POINTS[2].pitch_rate, 0., 0.])
             .update_termination(|s| s.propellant_mass);
@@ -245,6 +246,11 @@ mod tests {
 
         // automatic thrust shutdown distorts shutdown time a bit
         assert_almost_eq_rel!(phase.state.time, DATA_POINTS[3].time, 0.006);
+        assert_almost_eq_rel!(
+            phase.state.time_since_event,
+            DATA_POINTS[3].time_since_event,
+            0.006
+        );
         assert_almost_eq_rel!(phase.state.mass, DATA_POINTS[3].mass, 0.001);
         assert_almost_eq_rel!(phase.state.position[0], DATA_POINTS[3].position[0], 0.001);
         assert_almost_eq_rel!(phase.state.position[1], DATA_POINTS[3].position[1], 0.001);

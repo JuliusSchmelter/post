@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.01.24
-// Last modified by Tibor Völcker on 07.03.24
+// Last modified by Tibor Völcker on 11.03.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 #![cfg(test)]
 pub use data::DATA_POINTS;
@@ -171,6 +171,7 @@ mod data {
 
     pub struct DataPoint {
         pub time: f64,
+        pub time_since_event: f64,
         pub mass: f64,
         pub position: Vector3<f64>,
         pub velocity: Vector3<f64>,
@@ -195,6 +196,7 @@ mod data {
         pub static ref DATA_POINTS: [DataPoint; 4] = [
             DataPoint {
                 time: 0.,
+                time_since_event: 0.,
                 mass: 4.03328112e6 * KILOGRAM_PER_POUND,
                 position: Vector3::new(3.00354800e6, -1.81429627e7, 9.98490063e6) * METER_PER_FOOT,
                 velocity: Vector3::new(1.32300480e3, 2.19022024e2, 0.) * METER_PER_FOOT,
@@ -216,6 +218,7 @@ mod data {
             },
             DataPoint {
                 time: 1.50000000e1,
+                time_since_event: 1.50000000e1,
                 mass: 3.84631074e6 * KILOGRAM_PER_POUND,
                 position: Vector3::new(3.02352433e6, -1.81404764e7, 9.98534136e6) * METER_PER_FOOT,
                 velocity: Vector3::new(1.34110394e3, 1.07998292e2, 6.10765341e1) * METER_PER_FOOT,
@@ -236,7 +239,8 @@ mod data {
                 pitch_rate: 0.,
             },
             DataPoint {
-                time: 0.,
+                time: 4.37456932e2,
+                time_since_event: 0.,
                 mass: 3.57822526e5 * KILOGRAM_PER_POUND,
                 position: Vector3::new(7.02620764e6, -1.73942758e7, 9.94057977e6) * METER_PER_FOOT,
                 velocity: Vector3::new(2.23048738e4, 7.85391572e3, -2.22909900e3) * METER_PER_FOOT,
@@ -257,7 +261,8 @@ mod data {
                 pitch_rate: PITCH_RATES[7],
             },
             DataPoint {
-                time: 2.18072658e1,
+                time: 4.59264198e2,
+                time_since_event: 2.18072658e1,
                 mass: 3.10281123e5 * KILOGRAM_PER_POUND,
                 position: Vector3::new(7.53212452e6, -1.72106460e7, 9.88707980e6) * METER_PER_FOOT,
                 velocity: Vector3::new(2.40870305e4, 8.99928739e3, -2.68459504e3) * METER_PER_FOOT,
