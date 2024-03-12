@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 06.03.24
+// Last modified by Tibor Völcker on 12.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 pub mod standard_atmosphere_1962;
@@ -106,5 +106,41 @@ impl Atmosphere {
 
     pub fn atmos_rel_velocity(&self, state: &PlanetState) -> Vector3<f64> {
         state.rel_velocity - self.wind
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::ops::Deref;
+    use utils::assert_almost_eq_rel;
+
+    use super::*;
+    use crate::example_data::DATA_POINTS;
+
+    #[test]
+    fn test_environment() {
+        const EPSILON: f64 = 0.001;
+
+        let mut atm = Atmosphere::new();
+        atm.add_atmosphere();
+
+        for data_point in DATA_POINTS.iter() {
+            print!("Testing {} m altitude ... ", data_point.altitude);
+
+            let state = data_point.to_state();
+            let target = state.deref().deref().deref();
+            let input = target.deref();
+
+            let output = atm.environment(input.clone());
+
+            assert_almost_eq_rel!(output.temperature, target.temperature, EPSILON);
+            assert_almost_eq_rel!(output.pressure, target.pressure, EPSILON);
+            assert_almost_eq_rel!(output.density, target.density, EPSILON);
+            assert_almost_eq_rel!(output.speed_of_sound, target.speed_of_sound, EPSILON);
+            assert_almost_eq_rel!(output.mach_number, target.mach_number, EPSILON);
+            assert_almost_eq_rel!(output.dynamic_pressure, target.dynamic_pressure, EPSILON);
+
+            println!("ok");
+        }
     }
 }

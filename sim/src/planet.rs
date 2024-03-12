@@ -122,7 +122,7 @@ impl Planet {
 
     #[allow(non_snake_case)]
     pub fn gravity(&self, position: Vector3<f64>) -> Vector3<f64> {
-        let r: f64 = position.norm();
+        let r = position.norm();
         let R = self.equatorial_radius / r;
         let Z = position.z / r;
         let J = 3. / 2. * self.gravitational_parameters[1];
@@ -148,4 +148,52 @@ impl Planet {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use std::ops::Deref;
+    use utils::assert_almost_eq_rel;
+
+    use super::*;
+    use crate::example_data::DATA_POINTS;
+
+    #[test]
+    fn test_environment() {
+        const EPSILON: f64 = 0.001;
+
+        for data_point in DATA_POINTS.iter() {
+            print!("Testing {} m altitude ... ", data_point.altitude);
+
+            let state = data_point.to_state();
+            let target = state.deref().deref().deref().deref();
+            let input = target.deref();
+
+            let output = EARTH_SPHERICAL.environment(input.clone());
+
+            assert_almost_eq_rel!(output.altitude, target.altitude, EPSILON);
+
+            println!("ok");
+        }
+    }
+
+    #[test]
+    fn test_force() {
+        const EPSILON: f64 = 0.001;
+
+        for data_point in DATA_POINTS.iter() {
+            print!("Testing {} m altitude ... ", data_point.altitude);
+
+            let state = data_point.to_state();
+            let target = state.deref();
+            let input = target.deref();
+
+            let output = EARTH_SPHERICAL.force(input.clone());
+
+            assert_almost_eq_rel!(
+                vec output.gravity_acceleration,
+                target.gravity_acceleration,
+                EPSILON
+            );
+
+            println!("ok");
+        }
+    }
+}

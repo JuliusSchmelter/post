@@ -233,69 +233,30 @@ impl Engine {
 #[cfg(test)]
 mod tests {
     use crate::example_data::DATA_POINTS;
-    use utils::{assert_almost_eq_abs, assert_almost_eq_rel};
+    use std::ops::Deref;
+    use utils::assert_almost_eq_rel;
 
     #[test]
-    fn test_thrust() {
+    fn test_force() {
+        const EPSILON: f64 = 0.001;
+
         for data_point in DATA_POINTS.iter() {
             print!("Testing {} m altitude ... ", data_point.altitude);
-            let throttle = data_point.vehicle.auto_throttle(
-                data_point.mass,
-                data_point.pressure,
-                data_point.aero,
-            );
-            assert_almost_eq_rel!(throttle, data_point.auto_throttle, 0.001);
 
-            let thrust = data_point
-                .vehicle
-                .thrust_force(throttle, data_point.pressure);
-            assert_almost_eq_rel!(thrust.norm(), data_point.thrust, 0.001);
-            println!("ok");
-        }
-    }
+            let target = data_point.to_state();
+            let input = target.deref();
 
-    #[test]
-    fn cd() {
-        for data_point in DATA_POINTS.iter() {
-            print!("Testing {} m altitude ... ", data_point.altitude);
-            assert_almost_eq_abs!(
-                data_point
-                    .vehicle
-                    .drag_coeff
-                    .at(data_point.alpha, data_point.mach),
-                data_point.cd,
-                1e-9
-            );
-            println!("ok");
-        }
-    }
+            let output = data_point.vehicle.force(input.clone());
 
-    #[test]
-    fn cl() {
-        for data_point in DATA_POINTS.iter() {
-            print!("Testing {} m altitude ... ", data_point.altitude);
-            assert_almost_eq_abs!(
-                data_point
-                    .vehicle
-                    .lift_coeff
-                    .at(data_point.alpha, data_point.mach),
-                data_point.cl,
-                1e-9
-            );
-            println!("ok");
-        }
-    }
+            assert_almost_eq_rel!(vec output.acceleration, target.acceleration, EPSILON);
+            assert_almost_eq_rel!(output.propellant_mass, target.propellant_mass, EPSILON);
+            assert_almost_eq_rel!(output.massflow, target.massflow, EPSILON);
+            assert_almost_eq_rel!(vec output.vehicle_acceleration, target.vehicle_acceleration, EPSILON);
+            assert_almost_eq_rel!(output.throttle, target.throttle, EPSILON);
+            assert_almost_eq_rel!(vec output.thrust_force, target.thrust_force, EPSILON);
+            assert_almost_eq_rel!(vec output.aero_force, target.aero_force, EPSILON);
+            assert_almost_eq_rel!(output.alpha, target.alpha, EPSILON);
 
-    #[test]
-    fn test_aero() {
-        for data_point in DATA_POINTS.iter() {
-            print!("Testing {} m altitude ... ", data_point.altitude);
-            let res = data_point.vehicle.aero_force(
-                data_point.alpha,
-                data_point.mach,
-                data_point.dynamic_pressure,
-            );
-            assert_almost_eq_rel!(vec res, data_point.aero, 0.0001);
             println!("ok");
         }
     }

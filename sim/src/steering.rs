@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 06.12.23
-// Last modified by Tibor Völcker on 07.03.24
+// Last modified by Tibor Völcker on 12.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use derive_more::{Deref, DerefMut};
@@ -87,19 +87,37 @@ impl Steering {
 
 #[cfg(test)]
 mod tests {
+    use nalgebra::Vector3;
+    use std::ops::Deref;
+    use utils::assert_almost_eq_rel;
+
     use super::*;
+    use crate::example_data::DATA_POINTS;
 
     #[test]
-    fn angular_polynomials() {
-        let mut steering = Steering::new();
-        steering.init([0., 0., 4.]);
-        steering.update_steering(Axis::Pitch, [3., 2., 1.]);
-        let mut state = AtmosState::default();
-        state.time_since_event = 2.;
+    fn test_steering() {
+        const EPSILON: f64 = 0.001;
 
-        assert_eq!(
-            steering.steering(state).euler_angles[2],
-            4. + 3. * 2. + 2. * 2_f64.powi(2) + 1. * 2_f64.powi(3)
-        )
+        let mut steer = Steering::new();
+
+        for data_point in DATA_POINTS.iter() {
+            print!("Testing {} m altitude ... ", data_point.altitude);
+
+            steer.init([0., 0., data_point.steering_coeffs[0]]);
+            steer.update_steering(Axis::Pitch, [data_point.steering_coeffs[1], 0., 0.]);
+
+            let state = data_point.to_state();
+            let target = state.deref().deref();
+            let input = target.deref();
+
+            let output = steer.steering(input.clone());
+
+            let output_euler = Vector3::from_column_slice(&output.euler_angles);
+            let target_euler = Vector3::from_column_slice(&target.euler_angles);
+
+            assert_almost_eq_rel!(vec output_euler, target_euler, EPSILON);
+
+            println!("ok");
+        }
     }
 }

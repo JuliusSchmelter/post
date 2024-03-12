@@ -237,7 +237,7 @@ mod tests {
             .set_time(4.37456932e2)
             .set_stepsize(20.)
             .set_mass(DATA_POINTS[2].mass)
-            .update_steering(Axis::Pitch, [DATA_POINTS[2].pitch_rate, 0., 0.])
+            .update_steering(Axis::Pitch, [DATA_POINTS[2].steering_coeffs[1], 0., 0.])
             .update_termination(|s| s.propellant_mass);
 
         println!(
