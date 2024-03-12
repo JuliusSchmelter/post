@@ -60,7 +60,6 @@ impl State {
         temperature: f64,
         pressure: f64,
         density: f64,
-        speed_of_sound: f64,
         mach_number: f64,
         dynamic_pressure: f64,
         euler_angles: [f64; 3],
@@ -91,7 +90,6 @@ impl State {
         s.temperature = temperature;
         s.pressure = pressure;
         s.density = density;
-        s.speed_of_sound = speed_of_sound;
         s.mach_number = mach_number;
         s.dynamic_pressure = dynamic_pressure;
         s.euler_angles = euler_angles;

@@ -43,14 +43,12 @@ pub struct State {
     pub temperature: f64,
     pub pressure: f64,
     pub density: f64,
-    pub speed_of_sound: f64,
     pub mach_number: f64,
     pub dynamic_pressure: f64,
 }
 
 impl Atmosphere {
     pub fn environment(&self, state: PlanetState) -> State {
-        let speed_of_sound = self.speed_of_sound(&state);
         let density = self.density(&state);
         let atmos_rel_velocity = self.atmos_rel_velocity(&state);
 
@@ -59,8 +57,7 @@ impl Atmosphere {
             temperature: self.temperature(&state),
             pressure: self.pressure(&state),
             density,
-            speed_of_sound,
-            mach_number: atmos_rel_velocity.norm() / speed_of_sound,
+            mach_number: atmos_rel_velocity.norm() / self.speed_of_sound(&state),
             dynamic_pressure: 0.5 * density * atmos_rel_velocity.norm().powi(2),
             child_state: state,
         }
@@ -136,7 +133,6 @@ mod tests {
             assert_almost_eq_rel!(output.temperature, target.temperature, EPSILON);
             assert_almost_eq_rel!(output.pressure, target.pressure, EPSILON);
             assert_almost_eq_rel!(output.density, target.density, EPSILON);
-            assert_almost_eq_rel!(output.speed_of_sound, target.speed_of_sound, EPSILON);
             assert_almost_eq_rel!(output.mach_number, target.mach_number, EPSILON);
             assert_almost_eq_rel!(output.dynamic_pressure, target.dynamic_pressure, EPSILON);
 

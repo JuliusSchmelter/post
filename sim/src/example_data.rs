@@ -227,7 +227,6 @@ mod data {
                 self.temperature,
                 self.pressure,
                 self.density,
-                rel_velocity.norm() / self.mach_number,
                 self.mach_number,
                 self.dynamic_pressure,
                 self.euler_angles,
