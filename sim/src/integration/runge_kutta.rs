@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 05.03.24
+// Last modified by Tibor Völcker on 12.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{matrix, vector, SMatrix, SVector};
@@ -57,7 +57,6 @@ pub const RK4: RungeKutta<4> = RungeKutta {
 mod tests {
     use super::*;
     use nalgebra::{Vector1, Vector2};
-    use utils::assert_lt;
 
     pub struct Example {
         x: f64,
@@ -120,9 +119,8 @@ mod tests {
 
         println!("Avg. Error: {avg_err:.2e}");
 
-        assert_lt!(
-            avg_err,
-            EPSILON,
+        assert!(
+            avg_err < EPSILON,
             "Average error is too big!\n  {:.2e} > {:.2e}",
             avg_err,
             EPSILON
@@ -147,9 +145,8 @@ mod tests {
         }
         avg_err /= END.to_scalar() / H + 1.;
 
-        assert_lt!(
-            avg_err,
-            EPSILON,
+        assert!(
+            avg_err < EPSILON,
             "Average error is too big!\n  {:.2e} > {:.2e}",
             avg_err,
             EPSILON
