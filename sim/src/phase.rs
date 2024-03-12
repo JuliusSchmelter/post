@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 11.03.24
+// Last modified by Tibor Völcker on 12.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use crate::atmosphere::Atmosphere;
@@ -210,6 +210,7 @@ mod tests {
             .add_atmosphere()
             .init_launch(28.5, 279.4, 90.)
             .set_mass(DATA_POINTS[0].mass)
+            .set_stepsize(5.)
             .update_termination(|s| 15. - s.time);
 
         assert_almost_eq_rel!(phase.state.position[0], DATA_POINTS[0].position[0], 0.001);
@@ -242,6 +243,7 @@ mod tests {
             .init_inertial(DATA_POINTS[2].position, DATA_POINTS[2].velocity)
             .init_steering(DATA_POINTS[2].euler_angles)
             .set_time(4.37456932e2)
+            .set_stepsize(20.)
             .set_mass(DATA_POINTS[2].mass)
             .update_steering(Axis::Pitch, [DATA_POINTS[2].pitch_rate, 0., 0.])
             .update_termination(|s| s.propellant_mass);
