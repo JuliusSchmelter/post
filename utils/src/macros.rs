@@ -22,7 +22,7 @@ macro_rules! assert_almost_eq_abs {
         // Implementation
         assert!(
             ($left - $right).abs() < $eps,
-            "assertion `{}` ≈ {} failed\n  `{}`: {}\n  difference: {} >= {}",
+            "assertion `{}` ≈ {:.5} failed\n  `{}`: {:.5}\n  difference: {:.5} >= {}",
             $disp,
             $right,
             $disp,
@@ -52,12 +52,12 @@ macro_rules! assert_almost_eq_rel {
     };
     ($left: expr, $right: expr, $eps: expr, $disp: expr) => {
         // Implementation
-        if $right.abs() == 0. {
+        if $right.abs() < $crate::NEARLY_ZERO {
             $crate::assert_almost_eq_abs!($left, $right, $eps, $disp);
         } else {
             assert!(
                 (1. - ($left / $right)).abs() < $eps,
-                "assertion `{}` ≈ {} failed\n  `{}`: {}\n  difference: {}% >= {}%",
+                "assertion `{}` ≈ {:.5} failed\n  `{}`: {:.5}\n  difference: {:.3}% >= {}%",
                 $disp,
                 $right,
                 $disp,
