@@ -51,7 +51,7 @@ impl Phase {
             // The stepsize was too big. Try again with half the stepsize.
             self.stepsize /= 2.;
             // Stop after 10 tries
-            if self.base_stepsize / self.stepsize > 2_f64.powi(10) {
+            if self.base_stepsize / self.stepsize > 2_f64.powi(50) {
                 panic!("Could not reach end condition")
             }
 
