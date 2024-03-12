@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 07.03.24
+// Last modified by Tibor Völcker on 12.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use derive_more::{Deref, DerefMut};
@@ -233,7 +233,7 @@ impl Engine {
 #[cfg(test)]
 mod tests {
     use crate::example_data::DATA_POINTS;
-    use utils::{assert_almost_eq, assert_almost_eq_rel};
+    use utils::{assert_almost_eq_abs, assert_almost_eq_rel};
 
     #[test]
     fn test_thrust() {
@@ -258,7 +258,7 @@ mod tests {
     fn cd() {
         for data_point in DATA_POINTS.iter() {
             print!("Testing {} m altitude ... ", data_point.altitude);
-            assert_almost_eq!(
+            assert_almost_eq_abs!(
                 data_point
                     .vehicle
                     .drag_coeff
@@ -274,7 +274,7 @@ mod tests {
     fn cl() {
         for data_point in DATA_POINTS.iter() {
             print!("Testing {} m altitude ... ", data_point.altitude);
-            assert_almost_eq!(
+            assert_almost_eq_abs!(
                 data_point
                     .vehicle
                     .lift_coeff
@@ -295,9 +295,7 @@ mod tests {
                 data_point.mach,
                 data_point.dynamic_pressure,
             );
-            assert_almost_eq_rel!(res[0], data_point.aero[0], 0.0001);
-            assert_almost_eq_rel!(res[1], data_point.aero[1], 0.0001);
-            assert_almost_eq_rel!(res[2], data_point.aero[2], 0.0001);
+            assert_almost_eq_rel!(vec res, data_point.aero, 0.0001);
             println!("ok");
         }
     }

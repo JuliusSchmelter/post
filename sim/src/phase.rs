@@ -213,23 +213,15 @@ mod tests {
             .set_stepsize(5.)
             .update_termination(|s| 15. - s.time);
 
-        assert_almost_eq_rel!(phase.state.position[0], DATA_POINTS[0].position[0], 0.001);
-        assert_almost_eq_rel!(phase.state.position[1], DATA_POINTS[0].position[1], 0.001);
-        assert_almost_eq_rel!(phase.state.position[2], DATA_POINTS[0].position[2], 0.001);
-        assert_almost_eq_rel!(phase.state.velocity[0], DATA_POINTS[0].velocity[0], 0.001);
-        assert_almost_eq_rel!(phase.state.velocity[1], DATA_POINTS[0].velocity[1], 0.001);
-        assert_almost_eq_rel!(phase.state.velocity[2], DATA_POINTS[0].velocity[2], 0.001);
+        assert_almost_eq_rel!(vec phase.state.position, DATA_POINTS[0].position, 0.001);
+        assert_almost_eq_rel!(vec phase.state.velocity, DATA_POINTS[0].velocity, 0.001);
 
         phase.run();
 
         assert_eq!(phase.state.time, DATA_POINTS[1].time);
         assert_almost_eq_rel!(phase.state.mass, DATA_POINTS[1].mass, 0.001);
-        assert_almost_eq_rel!(phase.state.position[0], DATA_POINTS[1].position[0], 0.001);
-        assert_almost_eq_rel!(phase.state.position[1], DATA_POINTS[1].position[1], 0.001);
-        assert_almost_eq_rel!(phase.state.position[2], DATA_POINTS[1].position[2], 0.001);
-        assert_almost_eq_rel!(phase.state.velocity[0], DATA_POINTS[1].velocity[0], 0.001);
-        assert_almost_eq_rel!(phase.state.velocity[1], DATA_POINTS[1].velocity[1], 0.001);
-        assert_almost_eq_rel!(phase.state.velocity[2], DATA_POINTS[1].velocity[2], 0.001);
+        assert_almost_eq_rel!(vec phase.state.position, DATA_POINTS[1].position, 0.001);
+        assert_almost_eq_rel!(vec phase.state.velocity, DATA_POINTS[1].velocity, 0.001);
     }
 
     #[test]
@@ -262,11 +254,7 @@ mod tests {
             0.006
         );
         assert_almost_eq_rel!(phase.state.mass, DATA_POINTS[3].mass, 0.001);
-        assert_almost_eq_rel!(phase.state.position[0], DATA_POINTS[3].position[0], 0.001);
-        assert_almost_eq_rel!(phase.state.position[1], DATA_POINTS[3].position[1], 0.001);
-        assert_almost_eq_rel!(phase.state.position[2], DATA_POINTS[3].position[2], 0.001);
-        assert_almost_eq_rel!(phase.state.velocity[0], DATA_POINTS[3].velocity[0], 0.001);
-        assert_almost_eq_rel!(phase.state.velocity[1], DATA_POINTS[3].velocity[1], 0.001);
-        assert_almost_eq_rel!(phase.state.velocity[2], DATA_POINTS[3].velocity[2], 0.001);
+        assert_almost_eq_rel!(vec phase.state.position, DATA_POINTS[3].position, 0.001);
+        assert_almost_eq_rel!(vec phase.state.velocity, DATA_POINTS[3].velocity, 0.001);
     }
 }
