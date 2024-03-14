@@ -1,12 +1,15 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 12.03.24
+// Last modified by Tibor Völcker on 14.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use derive_more::{Deref, DerefMut};
 use std::f64::consts::PI;
 
 use nalgebra::{vector, Vector3};
-use utils::{constants::STD_GRAVITY, tables::linear_interpolation::Table2D};
+use utils::{
+    constants::{NEARLY_ZERO, STD_GRAVITY},
+    tables::linear_interpolation::Table2D,
+};
 
 use crate::planet::ForceState as PlanetState;
 
@@ -131,8 +134,8 @@ impl Vehicle {
     }
 
     pub fn alpha(&self, velocity: Vector3<f64>) -> f64 {
-        if velocity.x == 0. {
-            if velocity.z == 0. {
+        if velocity.x < NEARLY_ZERO {
+            if velocity.z < NEARLY_ZERO {
                 return 0.;
             }
             return velocity.z.signum() * PI / 2.;

@@ -52,7 +52,7 @@ macro_rules! assert_almost_eq_rel {
     };
     ($left: expr, $right: expr, $eps: expr, $disp: expr) => {
         // Implementation
-        if $right.abs() < $crate::NEARLY_ZERO {
+        if $right.abs() < $crate::constants::NEARLY_ZERO {
             $crate::assert_almost_eq_abs!($left, $right, $eps, $disp);
         } else {
             assert!(
