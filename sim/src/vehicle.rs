@@ -248,14 +248,14 @@ mod tests {
 
             let output = data_point.vehicle.force(input.clone());
 
-            assert_almost_eq_rel!(vec output.acceleration, target.acceleration, EPSILON);
-            assert_almost_eq_rel!(output.propellant_mass, target.propellant_mass, EPSILON);
-            assert_almost_eq_rel!(output.massflow, target.massflow, EPSILON);
-            assert_almost_eq_rel!(vec output.vehicle_acceleration, target.vehicle_acceleration, EPSILON);
             assert_almost_eq_rel!(output.throttle, target.throttle, EPSILON);
+            assert_almost_eq_rel!(output.massflow, target.massflow, EPSILON);
+            assert_almost_eq_rel!(output.propellant_mass, target.propellant_mass, EPSILON);
             assert_almost_eq_rel!(vec output.thrust_force, target.thrust_force, EPSILON);
-            assert_almost_eq_rel!(vec output.aero_force, target.aero_force, EPSILON);
             assert_almost_eq_rel!(output.alpha, target.alpha, EPSILON);
+            assert_almost_eq_rel!(vec output.aero_force, target.aero_force, EPSILON);
+            assert_almost_eq_rel!(vec output.vehicle_acceleration, target.vehicle_acceleration, EPSILON);
+            assert_almost_eq_rel!(vec output.acceleration, target.acceleration, EPSILON);
 
             println!("ok");
         }
