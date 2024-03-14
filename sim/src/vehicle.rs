@@ -179,12 +179,12 @@ impl Vehicle {
     }
 
     pub fn aero_force(&self, alpha: f64, mach: f64, dynamic_pressure: f64) -> Vector3<f64> {
-        let cd = self.drag_coeff.at(alpha, mach);
-        let cl = self.lift_coeff.at(alpha, mach);
-        let cy = self.side_force_coeff.at(alpha, mach);
+        let cd = self.drag_coeff.at(alpha.to_degrees(), mach);
+        let cl = self.lift_coeff.at(alpha.to_degrees(), mach);
+        let cy = self.side_force_coeff.at(alpha.to_degrees(), mach);
 
-        let ca = alpha.to_radians().cos() * cd - alpha.to_radians().sin() * cl;
-        let cn = alpha.to_radians().sin() * cd + alpha.to_radians().cos() * cl;
+        let ca = alpha.cos() * cd - alpha.sin() * cl;
+        let cn = alpha.sin() * cd + alpha.cos() * cl;
 
         let mut aero_force = dynamic_pressure * self.reference_area * vector![-ca, cy, -cn];
 
@@ -252,7 +252,7 @@ mod tests {
             assert_almost_eq_rel!(output.massflow, target.massflow, EPSILON);
             assert_almost_eq_rel!(output.propellant_mass, target.propellant_mass, EPSILON);
             assert_almost_eq_rel!(vec output.thrust_force, target.thrust_force, EPSILON);
-            assert_almost_eq_rel!(output.alpha, target.alpha, EPSILON);
+            assert_almost_eq_rel!(output.alpha.to_degrees(), target.alpha, EPSILON);
             assert_almost_eq_rel!(vec output.aero_force, target.aero_force, EPSILON);
             assert_almost_eq_rel!(vec output.vehicle_acceleration, target.vehicle_acceleration, EPSILON);
             assert_almost_eq_rel!(vec output.acceleration, target.acceleration, EPSILON);
