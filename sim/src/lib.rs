@@ -120,7 +120,7 @@ mod tests {
             phase
                 .add_vehicle(VEHICLES[1].clone())
                 .update_steering(Axis::Pitch, [PITCH_RATES[6], 0., 0.])
-                .limit_acceleration(3.0)
+                .limit_acceleration(3.0 * STD_GRAVITY)
                 .set_stepsize(20.)
                 .update_termination(|s| 100. - s.time_since_event)
         })
