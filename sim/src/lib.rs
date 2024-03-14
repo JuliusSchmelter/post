@@ -49,7 +49,7 @@ impl Simulation {
 
 #[cfg(test)]
 mod tests {
-    use utils::constants::STD_GRAVITY;
+    use utils::constants::{KILOGRAM_PER_POUND, STD_GRAVITY};
 
     use self::{
         example_data::{DATA_POINTS, PITCH_RATES, VEHICLES},
@@ -119,6 +119,7 @@ mod tests {
         .add_phase(|phase| {
             phase
                 .add_vehicle(VEHICLES[1].clone())
+                .update_mass(-665000. * KILOGRAM_PER_POUND)
                 .update_steering(Axis::Pitch, [PITCH_RATES[6], 0., 0.])
                 .limit_acceleration(3.0 * STD_GRAVITY)
                 .set_stepsize(20.)
