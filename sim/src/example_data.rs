@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.01.24
-// Last modified by Tibor Völcker on 12.03.24
+// Last modified by Tibor Völcker on 14.03.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 #![cfg(test)]
 pub use data::DATA_POINTS;
@@ -303,7 +303,7 @@ mod data {
                     -3.61220822e1,
                     1.98788049e1
                 ) * METER_PER_FOOT,
-                vehicle_acceleration: Vector3::new(4.16607773e1, 0., -9.18942751e-1)
+                vehicle_acceleration: Vector3::new(4.16607773e1, 0., -9.18942751e-3)
                     * METER_PER_FOOT
             },
             DataPoint {
@@ -327,7 +327,7 @@ mod data {
                 aero_force: Vector3::new(-1.66106776e2, 0., -6.28680574e2) * NEWTON_PER_POUND_FORCE,
                 vehicle: VEHICLES[1].clone(),
                 steering_coeffs: [-9.66287352e1, PITCH_RATES[7]],
-                propellant_mass: 4.48101073e0 * KILOGRAM_PER_POUND,
+                propellant_mass: 4.754140278e4 * KILOGRAM_PER_POUND,
                 massflow: -2.33907148e3 * KILOGRAM_PER_POUND,
                 vehicle_acceleration_inertial: Vector3::new(
                     9.30045549e1,
