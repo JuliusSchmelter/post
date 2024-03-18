@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 14.03.24
+// Last modified by Tibor Völcker on 18.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use derive_more::{Deref, DerefMut};
@@ -11,7 +11,7 @@ use utils::{
     tables::linear_interpolation::Table2D,
 };
 
-use crate::planet::ForceState as PlanetState;
+use crate::steering::State as SteeringState;
 
 fn side_side_angle(a: f64, b: f64, alpha: f64) -> Option<f64> {
     if alpha == 0. {
@@ -77,7 +77,7 @@ impl Vehicle {
 pub struct State {
     #[deref]
     #[deref_mut]
-    child_state: PlanetState,
+    child_state: SteeringState,
     pub acceleration: Vector3<f64>,
     pub propellant_mass: f64,
     pub massflow: f64,
@@ -89,7 +89,7 @@ pub struct State {
 }
 
 impl Vehicle {
-    pub fn force(&self, state: PlanetState) -> State {
+    pub fn force(&self, state: SteeringState) -> State {
         let alpha = self.alpha(
             state
                 .inertial_to_body

@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 14.03.24
+// Last modified by Tibor Völcker on 18.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use crate::atmosphere::Atmosphere;
@@ -33,8 +33,6 @@ impl Phase {
 
         let state = self.steering.steering(state);
 
-        let state = self.planet.force(state);
-
         self.vehicle.force(state)
     }
 
@@ -50,6 +48,7 @@ impl Phase {
         if (self.end_criterion)(&state) < 0. {
             // The stepsize was too big. Try again with half the stepsize.
             self.stepsize /= 2.;
+
             // Stop after 10 tries
             if self.base_stepsize / self.stepsize > 2_f64.powi(50) {
                 panic!("Could not reach end condition")

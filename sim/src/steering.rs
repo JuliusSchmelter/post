@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 06.12.23
-// Last modified by Tibor Völcker on 12.03.24
+// Last modified by Tibor Völcker on 18.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use derive_more::{Deref, DerefMut};
@@ -107,7 +107,7 @@ mod tests {
             steer.update_steering(Axis::Pitch, [data_point.steering_coeffs[1], 0., 0.]);
 
             let state = data_point.to_state();
-            let target = state.deref().deref();
+            let target = state.deref();
             let input = target.deref();
 
             let output = steer.steering(input.clone());
