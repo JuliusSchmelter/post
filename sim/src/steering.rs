@@ -1,11 +1,8 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 06.12.23
-// Last modified by Tibor Völcker on 18.03.24
+// Last modified by Tibor Völcker on 20.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
-use derive_more::{Deref, DerefMut};
-use nalgebra::Rotation3;
-
-use crate::{atmosphere::State as AtmosState, transformations::launch_to_body};
+use crate::State;
 
 pub enum Axis {
     Roll,
@@ -44,16 +41,6 @@ impl Steering {
     }
 }
 
-#[derive(Debug, Default, Deref, DerefMut, Clone)]
-pub struct State {
-    #[deref]
-    #[deref_mut]
-    child_state: AtmosState,
-    pub euler_angles: [f64; 3],
-    pub inertial_to_body: Rotation3<f64>,
-    pub body_to_inertial: Rotation3<f64>,
-}
-
 impl Steering {
     fn calc_coeff(var: f64, coeffs: [f64; 4]) -> f64 {
         coeffs
@@ -63,32 +50,18 @@ impl Steering {
             .sum()
     }
 
-    pub fn steering(&self, state: AtmosState) -> State {
-        let euler_angles = [
+    pub fn steering(&self, state: &mut State) {
+        state.euler_angles = [
             Self::calc_coeff(state.time_since_event, self.roll),
             Self::calc_coeff(state.time_since_event, self.yaw),
             Self::calc_coeff(state.time_since_event, self.pitch),
         ];
-
-        let inertial_to_body = launch_to_body(
-            euler_angles[0].to_radians(),
-            euler_angles[1].to_radians(),
-            euler_angles[2].to_radians(),
-        ) * state.inertial_to_launch;
-
-        State {
-            euler_angles,
-            inertial_to_body,
-            body_to_inertial: inertial_to_body.transpose(),
-            child_state: state,
-        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use nalgebra::Vector3;
-    use std::ops::Deref;
     use utils::assert_almost_eq_rel;
 
     use super::*;
@@ -107,13 +80,12 @@ mod tests {
             steer.update_steering(Axis::Pitch, [data_point.steering_coeffs[1], 0., 0.]);
 
             let state = data_point.to_state();
-            let target = state.deref();
-            let input = target.deref();
+            let mut input = state.clone();
 
-            let output = steer.steering(input.clone());
+            steer.steering(&mut input);
 
-            let output_euler = Vector3::from_column_slice(&output.euler_angles);
-            let target_euler = Vector3::from_column_slice(&target.euler_angles);
+            let output_euler = Vector3::from_column_slice(&input.euler_angles);
+            let target_euler = Vector3::from_column_slice(&state.euler_angles);
 
             assert_almost_eq_rel!(vec output_euler, target_euler, EPSILON);
 

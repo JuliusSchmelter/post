@@ -1,11 +1,11 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 18.03.24
+// Last modified by Tibor Völcker on 20.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use crate::atmosphere::Atmosphere;
 use crate::integration::Integrator;
 use crate::planet::Planet;
-use crate::state::{PrimaryState, State};
+use crate::state::State;
 use crate::steering::{Axis, Steering};
 use crate::vehicle::Vehicle;
 use crate::EARTH_SPHERICAL;
@@ -26,14 +26,14 @@ pub struct Phase {
 }
 
 impl Phase {
-    fn system(&self, state: PrimaryState) -> State {
-        let state = self.planet.environment(state);
+    fn system(&self, state: &mut State) {
+        self.planet.environment(state);
 
-        let state = self.atmosphere.environment(state);
+        self.atmosphere.environment(state);
 
-        let state = self.steering.steering(state);
+        self.steering.steering(state);
 
-        self.vehicle.force(state)
+        self.vehicle.force(state, self.planet.launch);
     }
 
     pub fn step(&mut self) {
@@ -193,7 +193,7 @@ impl Phase {
 
         self.state.velocity = -self
             .planet
-            .rel_velocity(self.state.position, Vector3::zeros());
+            .velocity_planet(self.state.position, Vector3::zeros());
 
         self
     }

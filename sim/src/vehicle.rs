@@ -1,17 +1,15 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 18.03.24
+// Last modified by Tibor Völcker on 20.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
-use derive_more::{Deref, DerefMut};
 use std::f64::consts::PI;
 
+use crate::{state::State, transformations::inertial_to_body};
 use nalgebra::{vector, Vector3};
 use utils::{
     constants::{NEARLY_ZERO, STD_GRAVITY},
     tables::linear_interpolation::Table2D,
 };
-
-use crate::steering::State as SteeringState;
 
 fn side_side_angle(a: f64, b: f64, alpha: f64) -> Option<f64> {
     if alpha == 0. {
@@ -73,64 +71,42 @@ impl Vehicle {
     }
 }
 
-#[derive(Debug, Default, Deref, DerefMut, Clone)]
-pub struct State {
-    #[deref]
-    #[deref_mut]
-    child_state: SteeringState,
-    pub acceleration: Vector3<f64>,
-    pub propellant_mass: f64,
-    pub massflow: f64,
-    pub vehicle_acceleration: Vector3<f64>,
-    pub throttle: f64,
-    pub thrust_force: Vector3<f64>,
-    pub aero_force: Vector3<f64>,
-    pub alpha: f64,
-}
-
 impl Vehicle {
-    pub fn force(&self, state: SteeringState) -> State {
-        let alpha = self.alpha(
-            state
-                .inertial_to_body
-                .transform_vector(&state.atmos_rel_velocity),
+    pub fn force(&self, state: &mut State, launch: [f64; 3]) {
+        let inertial_to_body = inertial_to_body(
+            launch[0],
+            launch[1],
+            launch[2],
+            state.euler_angles[0].to_radians(),
+            state.euler_angles[1].to_radians(),
+            state.euler_angles[2].to_radians(),
         );
-        let aero_force = self.aero_force(alpha, state.mach_number, state.dynamic_pressure);
+        state.alpha = self.alpha(inertial_to_body.transform_vector(&state.velocity_atmosphere));
+        state.aero_force_body =
+            self.aero_force(state.alpha, state.mach_number, state.dynamic_pressure);
 
-        let propellant_mass = state.mass - self.mass;
+        state.propellant_mass = state.mass - self.mass;
 
-        let throttle = self.auto_throttle(state.mass, state.pressure, aero_force);
+        state.throttle = self.auto_throttle(state.mass, state.pressure, state.aero_force_body);
 
-        let thrust_force;
-        let massflow;
-        if propellant_mass <= 0. {
-            thrust_force = Vector3::zeros();
-            massflow = 0.;
-        } else {
-            thrust_force = self.thrust_force(throttle, state.pressure);
-            massflow = self.massflow(throttle);
+        if state.propellant_mass > 0. {
+            state.thrust_force_body = self.thrust_force(state.throttle, state.pressure);
+            state.massflow = self.massflow(state.throttle);
         }
-        let body_acc = (aero_force + thrust_force) / state.mass;
+        state.vehicle_acceleration_body =
+            (state.aero_force_body + state.thrust_force_body) / state.mass;
 
         // Intersection would require negative thrust
-        if body_acc.norm() > self.max_acceleration * 1.001 || throttle.is_nan() {
+        if state.vehicle_acceleration_body.norm() > self.max_acceleration * 1.001
+            || state.throttle.is_nan()
+        {
             panic!("Could not stay in max. acceleration (check aero forces)")
         }
 
-        let acceleration =
-            state.body_to_inertial.transform_vector(&body_acc) + state.gravity_acceleration;
-
-        State {
-            acceleration,
-            propellant_mass,
-            massflow,
-            vehicle_acceleration: body_acc,
-            throttle,
-            thrust_force,
-            aero_force,
-            alpha,
-            child_state: state,
-        }
+        state.acceleration = inertial_to_body
+            .transpose()
+            .transform_vector(&state.vehicle_acceleration_body)
+            + state.gravity_acceleration;
     }
 
     pub fn alpha(&self, velocity: Vector3<f64>) -> f64 {
@@ -236,7 +212,6 @@ impl Engine {
 #[cfg(test)]
 mod tests {
     use crate::example_data::DATA_POINTS;
-    use std::ops::Deref;
     use utils::assert_almost_eq_rel;
 
     #[test]
@@ -246,19 +221,19 @@ mod tests {
         for data_point in DATA_POINTS[..3].iter() {
             print!("Testing {} m altitude ... ", data_point.altitude);
 
-            let target = data_point.to_state();
-            let input = target.deref();
+            let state = data_point.to_state();
+            let mut input = state.clone();
 
-            let output = data_point.vehicle.force(input.clone());
+            data_point.vehicle.force(&mut input, data_point.launch);
 
-            assert_almost_eq_rel!(output.throttle, target.throttle, EPSILON);
-            assert_almost_eq_rel!(output.massflow, target.massflow, EPSILON);
-            assert_almost_eq_rel!(output.propellant_mass, target.propellant_mass, EPSILON);
-            assert_almost_eq_rel!(vec output.thrust_force, target.thrust_force, EPSILON);
-            assert_almost_eq_rel!(output.alpha.to_degrees(), target.alpha, EPSILON);
-            assert_almost_eq_rel!(vec output.aero_force, target.aero_force, EPSILON);
-            assert_almost_eq_rel!(vec output.vehicle_acceleration, target.vehicle_acceleration, EPSILON);
-            assert_almost_eq_rel!(vec output.acceleration, target.acceleration, EPSILON);
+            assert_almost_eq_rel!(input.throttle, state.throttle, EPSILON);
+            assert_almost_eq_rel!(input.massflow, state.massflow, EPSILON);
+            assert_almost_eq_rel!(input.propellant_mass, state.propellant_mass, EPSILON);
+            assert_almost_eq_rel!(vec input.thrust_force_body, state.thrust_force_body, EPSILON);
+            assert_almost_eq_rel!(input.alpha, state.alpha, EPSILON);
+            assert_almost_eq_rel!(vec input.aero_force_body, state.aero_force_body, EPSILON);
+            assert_almost_eq_rel!(vec input.vehicle_acceleration_body, state.vehicle_acceleration_body, EPSILON);
+            assert_almost_eq_rel!(vec input.acceleration, state.acceleration, EPSILON);
 
             println!("ok");
         }
@@ -267,15 +242,15 @@ mod tests {
         for data_point in DATA_POINTS[3..].iter() {
             print!("Testing {} m altitude ... ", data_point.altitude);
 
-            let target = data_point.to_state();
-            let input = target.deref();
+            let state = data_point.to_state();
+            let mut input = state.clone();
 
-            let output = data_point.vehicle.force(input.clone());
+            data_point.vehicle.force(&mut input, data_point.launch);
 
-            assert_almost_eq_rel!(output.throttle, target.throttle, EPSILON);
-            assert_almost_eq_rel!(output.propellant_mass, target.propellant_mass, EPSILON);
-            assert_almost_eq_rel!(output.alpha.to_degrees(), target.alpha, EPSILON);
-            assert_almost_eq_rel!(vec output.aero_force, target.aero_force, EPSILON);
+            assert_almost_eq_rel!(input.throttle, state.throttle, EPSILON);
+            assert_almost_eq_rel!(input.propellant_mass, state.propellant_mass, EPSILON);
+            assert_almost_eq_rel!(input.alpha, state.alpha, EPSILON);
+            assert_almost_eq_rel!(vec input.aero_force_body, state.aero_force_body, EPSILON);
 
             println!("ok");
         }

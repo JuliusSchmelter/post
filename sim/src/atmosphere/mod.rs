@@ -1,14 +1,12 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 18.03.24
+// Last modified by Tibor Völcker on 20.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 pub mod standard_atmosphere_1962;
 
-use derive_more::{Deref, DerefMut};
-
 use nalgebra::Vector3;
 
-use crate::planet::State as PlanetState;
+use crate::State;
 
 #[derive(Debug, Default, Clone)]
 pub struct Atmosphere {
@@ -34,81 +32,63 @@ impl Atmosphere {
     }
 }
 
-#[derive(Debug, Default, Deref, DerefMut, Clone)]
-pub struct State {
-    #[deref]
-    #[deref_mut]
-    child_state: PlanetState,
-    pub atmos_rel_velocity: Vector3<f64>,
-    pub temperature: f64,
-    pub pressure: f64,
-    pub density: f64,
-    pub mach_number: f64,
-    pub dynamic_pressure: f64,
-}
-
 impl Atmosphere {
-    pub fn environment(&self, state: PlanetState) -> State {
-        let density = self.density(&state);
-        let atmos_rel_velocity = self.atmos_rel_velocity(&state);
+    pub fn environment(&self, state: &mut State) {
+        state.velocity_atmosphere = self.velocity_atmosphere(state);
 
-        State {
-            atmos_rel_velocity,
-            temperature: self.temperature(&state),
-            pressure: self.pressure(&state),
-            density,
-            mach_number: atmos_rel_velocity.norm() / self.speed_of_sound(&state),
-            dynamic_pressure: 0.5 * density * atmos_rel_velocity.norm().powi(2),
-            child_state: state,
-        }
+        state.temperature = self.temperature(state);
+        state.pressure = self.pressure(state);
+        state.density = self.density(state);
+
+        state.mach_number = state.velocity_atmosphere.norm() / self.speed_of_sound(state);
+        state.dynamic_pressure = 0.5 * state.density * state.velocity_atmosphere.norm().powi(2);
     }
 }
 
 impl Atmosphere {
-    pub fn temperature(&self, state: &PlanetState) -> f64 {
+    pub fn temperature(&self, state: &State) -> f64 {
         match self.model {
             AtmosphereModel::StandardAtmosphere1962 => {
-                standard_atmosphere_1962::temperature(state.geopotential_altitude)
+                standard_atmosphere_1962::temperature(state.altitude_geopotential)
             }
             AtmosphereModel::NoAtmosphere => 0.,
         }
     }
 
-    pub fn pressure(&self, state: &PlanetState) -> f64 {
+    pub fn pressure(&self, state: &State) -> f64 {
         match self.model {
             AtmosphereModel::StandardAtmosphere1962 => {
-                standard_atmosphere_1962::pressure(state.geopotential_altitude)
+                standard_atmosphere_1962::pressure(state.altitude_geopotential)
             }
             AtmosphereModel::NoAtmosphere => 0.,
         }
     }
 
-    pub fn density(&self, state: &PlanetState) -> f64 {
+    pub fn density(&self, state: &State) -> f64 {
         match self.model {
             AtmosphereModel::StandardAtmosphere1962 => {
-                standard_atmosphere_1962::density(state.geopotential_altitude)
+                standard_atmosphere_1962::density(state.altitude_geopotential)
             }
             AtmosphereModel::NoAtmosphere => 0.,
         }
     }
 
-    pub fn speed_of_sound(&self, state: &PlanetState) -> f64 {
+    pub fn speed_of_sound(&self, state: &State) -> f64 {
         match self.model {
             AtmosphereModel::StandardAtmosphere1962 => {
-                standard_atmosphere_1962::speed_of_sound(state.geopotential_altitude)
+                standard_atmosphere_1962::speed_of_sound(state.altitude_geopotential)
             }
             AtmosphereModel::NoAtmosphere => 0.,
         }
     }
 
-    pub fn atmos_rel_velocity(&self, state: &PlanetState) -> Vector3<f64> {
-        state.rel_velocity - self.wind
+    pub fn velocity_atmosphere(&self, state: &State) -> Vector3<f64> {
+        state.velocity_planet - self.wind
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use std::ops::Deref;
     use utils::assert_almost_eq_rel;
 
     use super::*;
@@ -125,16 +105,15 @@ mod tests {
             print!("Testing {} m altitude ... ", data_point.altitude);
 
             let state = data_point.to_state();
-            let target = state.deref().deref();
-            let input = target.deref();
+            let mut input = state.clone();
 
-            let output = atm.environment(input.clone());
+            atm.environment(&mut input);
 
-            assert_almost_eq_rel!(output.temperature, target.temperature, EPSILON);
-            assert_almost_eq_rel!(output.pressure, target.pressure, EPSILON);
-            assert_almost_eq_rel!(output.density, target.density, EPSILON);
-            assert_almost_eq_rel!(output.mach_number, target.mach_number, EPSILON);
-            assert_almost_eq_rel!(output.dynamic_pressure, target.dynamic_pressure, EPSILON);
+            assert_almost_eq_rel!(input.temperature, state.temperature, EPSILON);
+            assert_almost_eq_rel!(input.pressure, state.pressure, EPSILON);
+            assert_almost_eq_rel!(input.density, state.density, EPSILON);
+            assert_almost_eq_rel!(input.mach_number, state.mach_number, EPSILON);
+            assert_almost_eq_rel!(input.dynamic_pressure, state.dynamic_pressure, EPSILON);
 
             println!("ok");
         }

@@ -1,15 +1,11 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.11.23
-// Last modified by Tibor Völcker on 18.03.24
+// Last modified by Tibor Völcker on 20.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
-use derive_more::{Deref, DerefMut};
-use nalgebra::{vector, Rotation3, Vector3};
+use nalgebra::{vector, Vector3};
 use utils::constants::*;
 
-use crate::{
-    state::PrimaryState,
-    transformations::{inertial_to_launch, inertial_to_planet},
-};
+use crate::{transformations::inertial_to_planet, State};
 
 #[derive(Debug, Clone)]
 pub struct Planet {
@@ -52,31 +48,15 @@ pub const EARTH_SMITHSONIAN: Planet = Planet {
     launch: [0., 0., 0.],
 };
 
-#[derive(Debug, Default, Deref, DerefMut, Clone)]
-pub struct State {
-    #[deref]
-    #[deref_mut]
-    child_state: PrimaryState,
-    pub position_planet: Vector3<f64>,
-    pub inertial_to_launch: Rotation3<f64>,
-    pub altitude: f64,
-    pub geopotential_altitude: f64,
-    pub rel_velocity: Vector3<f64>,
-    pub gravity_acceleration: Vector3<f64>,
-}
-
 impl Planet {
-    pub fn environment(&self, state: PrimaryState) -> State {
-        State {
-            position_planet: inertial_to_planet(state.time, self.rotation_rate)
-                .transform_vector(&state.position),
-            inertial_to_launch: inertial_to_launch(self.launch[0], self.launch[1], self.launch[2]),
-            altitude: self.altitude(state.position),
-            geopotential_altitude: self.geopotational_altitude(state.position),
-            rel_velocity: self.rel_velocity(state.position, state.velocity),
-            gravity_acceleration: self.gravity(state.position),
-            child_state: state,
-        }
+    pub fn environment(&self, state: &mut State) {
+        state.position_planet =
+            inertial_to_planet(state.time, self.rotation_rate).transform_vector(&state.position);
+        state.velocity_planet = self.velocity_planet(state.position, state.velocity);
+        state.altitude = self.altitude(state.position);
+        state.altitude_geopotential = self.geopotational_altitude(state.position);
+        state.velocity_planet = self.velocity_planet(state.position, state.velocity);
+        state.gravity_acceleration = self.gravity(state.position);
     }
 
     pub fn altitude(&self, position: Vector3<f64>) -> f64 {
@@ -96,7 +76,7 @@ impl Planet {
         avg_altitude * altitude / (avg_altitude + altitude)
     }
 
-    pub fn rel_velocity(&self, position: Vector3<f64>, velocity: Vector3<f64>) -> Vector3<f64> {
+    pub fn velocity_planet(&self, position: Vector3<f64>, velocity: Vector3<f64>) -> Vector3<f64> {
         velocity - vector![0., 0., self.rotation_rate].cross(&position)
     }
 
@@ -133,7 +113,6 @@ impl Planet {
 
 #[cfg(test)]
 mod tests {
-    use std::ops::Deref;
     use utils::assert_almost_eq_rel;
 
     use super::*;
@@ -150,15 +129,14 @@ mod tests {
             print!("Testing {} m altitude ... ", data_point.altitude);
 
             let state = data_point.to_state();
-            let target = state.deref().deref().deref();
-            let input = target.deref();
+            let mut input = state.clone();
 
-            let output = EARTH_SPHERICAL.environment(input.clone());
+            EARTH_SPHERICAL.environment(&mut input);
 
-            assert_almost_eq_rel!(output.altitude, target.altitude, EPSILON);
+            assert_almost_eq_rel!(input.altitude, state.altitude, EPSILON);
             assert_almost_eq_rel!(
-                vec output.gravity_acceleration,
-                target.gravity_acceleration,
+                vec input.gravity_acceleration,
+                state.gravity_acceleration,
                 EPSILON
             );
 
@@ -169,15 +147,14 @@ mod tests {
             print!("Testing {} m altitude ... ", data_point.altitude);
 
             let state = data_point.to_state();
-            let target = state.deref().deref().deref();
-            let input = target.deref();
+            let mut input = state.clone();
 
-            let output = EARTH_SPHERICAL.environment(input.clone());
+            EARTH_SPHERICAL.environment(&mut input);
 
-            assert_almost_eq_rel!(output.altitude, target.altitude, EPSILON);
+            assert_almost_eq_rel!(input.altitude, state.altitude, EPSILON);
             assert_almost_eq_rel!(
-                vec output.gravity_acceleration,
-                target.gravity_acceleration,
+                vec input.gravity_acceleration,
+                state.gravity_acceleration,
                 EPSILON
             );
 

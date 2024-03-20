@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.01.24
-// Last modified by Tibor Völcker on 14.03.24
+// Last modified by Tibor Völcker on 20.03.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 #![cfg(test)]
 pub use data::DATA_POINTS;
@@ -164,10 +164,7 @@ mod data {
     use lazy_static::lazy_static;
     use nalgebra::Vector3;
 
-    use crate::{
-        transformations::{inertial_to_launch, inertial_to_planet, launch_to_body},
-        State, Vehicle, EARTH_SPHERICAL,
-    };
+    use crate::{transformations::inertial_to_planet, State, Vehicle, EARTH_SPHERICAL};
     use utils::constants::*;
 
     use super::{PITCH_RATES, VEHICLES};
@@ -196,51 +193,39 @@ mod data {
         pub alpha: f64,
         pub vehicle: Vehicle,
         pub steering_coeffs: [f64; 2],
+        pub launch: [f64; 3],
     }
 
     impl DataPoint {
         pub fn to_state(&self) -> State {
-            let rel_velocity = EARTH_SPHERICAL.rel_velocity(self.position, self.velocity);
-            let inertial_to_launch = inertial_to_launch(
-                28.5_f64.to_radians(),
-                279.4_f64.to_radians(),
-                90_f64.to_radians(),
-            );
-            let inertial_to_body = launch_to_body(
-                self.euler_angles[0].to_radians(),
-                self.euler_angles[1].to_radians(),
-                self.euler_angles[2].to_radians(),
-            ) * inertial_to_launch;
+            let velocity_planet = EARTH_SPHERICAL.velocity_planet(self.position, self.velocity);
             State::from_values(
                 self.time,
                 self.time_since_event,
                 self.position,
-                self.velocity,
-                self.mass,
                 inertial_to_planet(self.time, EARTH_SPHERICAL.rotation_rate)
                     .transform_vector(&self.position),
-                inertial_to_launch,
                 self.altitude,
                 EARTH_SPHERICAL.geopotational_altitude(self.position),
-                rel_velocity,
-                rel_velocity,
+                self.velocity,
+                velocity_planet,
+                velocity_planet,
+                self.acceleration,
+                self.thrust_force,
+                self.aero_force,
+                self.vehicle_acceleration,
+                self.acceleration - self.vehicle_acceleration_inertial,
+                self.mass,
+                self.propellant_mass,
+                self.massflow,
                 self.temperature,
                 self.pressure,
                 self.density,
                 self.mach_number,
                 self.dynamic_pressure,
+                self.alpha.to_radians(),
                 self.euler_angles,
-                inertial_to_body,
-                inertial_to_body.transpose(),
-                self.acceleration - self.vehicle_acceleration_inertial,
-                self.acceleration,
-                self.propellant_mass,
-                self.massflow,
-                self.vehicle_acceleration,
                 self.throttle,
-                self.thrust_force,
-                self.aero_force,
-                self.alpha,
             )
         }
     }
@@ -274,7 +259,12 @@ mod data {
                     -3.44430413e1,
                     1.89555790e1
                 ) * METER_PER_FOOT,
-                vehicle_acceleration: Vector3::new(3.97259353e1, 0., 0.) * METER_PER_FOOT
+                vehicle_acceleration: Vector3::new(3.97259353e1, 0., 0.) * METER_PER_FOOT,
+                launch: [
+                    28.5_f64.to_radians(),
+                    279.4_f64.to_radians(),
+                    90_f64.to_radians()
+                ]
             },
             DataPoint {
                 time: 1.50000000e1,
@@ -304,7 +294,12 @@ mod data {
                     1.98788049e1
                 ) * METER_PER_FOOT,
                 vehicle_acceleration: Vector3::new(4.16607773e1, 0., -9.18942751e-3)
-                    * METER_PER_FOOT
+                    * METER_PER_FOOT,
+                launch: [
+                    28.5_f64.to_radians(),
+                    279.4_f64.to_radians(),
+                    90_f64.to_radians()
+                ]
             },
             DataPoint {
                 time: 4.37456932e2,
@@ -335,7 +330,12 @@ mod data {
                     -5.28973288e0
                 ) * METER_PER_FOOT,
                 vehicle_acceleration: Vector3::new(9.65219834e1, 0., -5.65284984e-2)
-                    * METER_PER_FOOT
+                    * METER_PER_FOOT,
+                launch: [
+                    28.5_f64.to_radians(),
+                    279.4_f64.to_radians(),
+                    90_f64.to_radians()
+                ]
             },
             DataPoint {
                 time: 4.59264198e2,
@@ -366,7 +366,12 @@ mod data {
                     -7.31256468e0
                 ) * METER_PER_FOOT,
                 vehicle_acceleration: Vector3::new(9.65219787e1, 0., -6.40507842e-2)
-                    * METER_PER_FOOT
+                    * METER_PER_FOOT,
+                launch: [
+                    28.5_f64.to_radians(),
+                    279.4_f64.to_radians(),
+                    90_f64.to_radians()
+                ]
             },
         ];
     }

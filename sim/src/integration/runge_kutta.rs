@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 12.03.24
+// Last modified by Tibor Völcker on 20.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{matrix, vector, SMatrix, SVector};
@@ -13,7 +13,7 @@ pub struct RungeKutta<const R: usize> {
 impl<const R: usize> RungeKutta<R> {
     pub fn step<const D_X: usize, const D_Y: usize>(
         &self,
-        f: impl Fn(&SVector<f64, D_X>, &SVector<f64, D_Y>) -> SVector<f64, D_Y>,
+        f: impl Fn(SVector<f64, D_X>, SVector<f64, D_Y>) -> SVector<f64, D_Y>,
         x_n: SVector<f64, D_X>,
         y_n: SVector<f64, D_Y>,
         h: f64,
@@ -24,11 +24,10 @@ impl<const R: usize> RungeKutta<R> {
             // See [1] p. VI-12
             // k_i = h*f(x_n + c_i*h, y_n + SUM[a_ij * k_j])
             let ki = h * f(
-                &x_n.add_scalar(self.c[i] * h),
-                &(y_n
-                    + (0..R)
-                        .map(|j| self.a[(i, j)] * k.column(j))
-                        .sum::<SVector<f64, D_Y>>()),
+                x_n.add_scalar(self.c[i] * h),
+                y_n + (0..R)
+                    .map(|j| self.a[(i, j)] * k.column(j))
+                    .sum::<SVector<f64, D_Y>>(),
             );
             k.set_column(i, &ki);
         }
@@ -77,7 +76,7 @@ mod tests {
         ]
     }
 
-    fn system(x: &Vector1<f64>, y: &Vector2<f64>) -> Vector2<f64> {
+    fn system(x: Vector1<f64>, y: Vector2<f64>) -> Vector2<f64> {
         // y_0' = y_1
         // y_1' = y_1 - x^2 + 1
         let x = x.to_scalar();
