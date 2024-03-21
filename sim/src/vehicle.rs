@@ -1,15 +1,14 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 20.03.24
+// Last modified by Tibor Völcker on 21.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use std::f64::consts::PI;
 
-use crate::{state::State, transformations::inertial_to_body};
+use crate::constants::{NEARLY_ZERO, STD_GRAVITY};
+use crate::state::State;
+use crate::transformations::inertial_to_body;
+use crate::utils::Table2D;
 use nalgebra::{vector, Vector3};
-use utils::{
-    constants::{NEARLY_ZERO, STD_GRAVITY},
-    tables::linear_interpolation::Table2D,
-};
 
 fn side_side_angle(a: f64, b: f64, alpha: f64) -> Option<f64> {
     if alpha == 0. {
@@ -211,8 +210,8 @@ impl Engine {
 
 #[cfg(test)]
 mod tests {
+    use crate::assert_almost_eq_rel;
     use crate::example_data::DATA_POINTS;
-    use utils::assert_almost_eq_rel;
 
     #[test]
     fn test_force() {

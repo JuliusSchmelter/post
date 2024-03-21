@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 04.03.23
-// Last modified by Tibor Völcker on 14.03.24
+// Last modified by Tibor Völcker on 21.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 // allow dead code for now, as it's still WIP
@@ -13,11 +13,14 @@ mod planet;
 mod state;
 mod steering;
 mod transformations;
+mod utils;
 mod vehicle;
 
 pub use phase::Phase;
 pub use planet::{Planet, EARTH_FISHER_1960, EARTH_SMITHSONIAN, EARTH_SPHERICAL};
 pub use state::State;
+pub use steering::Steering;
+pub use utils::constants;
 pub use vehicle::{Engine, Vehicle};
 
 #[derive(Debug, Default)]

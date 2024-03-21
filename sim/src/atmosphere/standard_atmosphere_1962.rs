@@ -1,8 +1,8 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 12.03.24
+// Last modified by Tibor Völcker on 21.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
-use utils::constants::*;
+use crate::constants::*;
 
 pub fn temperature(alt: f64) -> f64 {
     // T = T_B + L_B * (H_g - H_B)

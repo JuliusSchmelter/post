@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.01.24
-// Last modified by Tibor Völcker on 20.03.24
+// Last modified by Tibor Völcker on 21.03.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 #![cfg(test)]
 pub use data::DATA_POINTS;
@@ -7,11 +7,11 @@ pub use steering::PITCH_RATES;
 pub use vehicles::VEHICLES;
 
 mod vehicles {
+    use crate::constants::*;
+    use crate::utils::Table2D;
     use crate::vehicle::Engine;
     use crate::Vehicle;
     use lazy_static::lazy_static;
-    use utils::constants::*;
-    use utils::tables::linear_interpolation::Table2D;
 
     const DRAG_TABLE1: ([f64; 5], [f64; 12], [[f64; 12]; 5]) = (
         [-20., -5., 0., 5., 20.],
@@ -164,8 +164,8 @@ mod data {
     use lazy_static::lazy_static;
     use nalgebra::Vector3;
 
+    use crate::constants::*;
     use crate::{transformations::inertial_to_planet, State, Vehicle, EARTH_SPHERICAL};
-    use utils::constants::*;
 
     use super::{PITCH_RATES, VEHICLES};
 

@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 20.03.24
+// Last modified by Tibor Völcker on 21.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 pub mod standard_atmosphere_1962;
@@ -89,7 +89,7 @@ impl Atmosphere {
 
 #[cfg(test)]
 mod tests {
-    use utils::assert_almost_eq_rel;
+    use crate::assert_almost_eq_rel;
 
     use super::*;
     use crate::example_data::DATA_POINTS;
