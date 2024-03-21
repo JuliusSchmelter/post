@@ -81,8 +81,7 @@ impl Vehicle {
             state.euler_angles[2].to_radians(),
         );
         state.alpha = self.alpha(inertial_to_body.transform_vector(&state.velocity_atmosphere));
-        state.aero_force_body =
-            self.aero_force(state.alpha, state.mach_number, state.dynamic_pressure);
+        state.aero_force_body = self.aero_force(state);
 
         state.propellant_mass = state.mass - self.mass;
 
@@ -156,15 +155,15 @@ impl Vehicle {
         }
     }
 
-    pub fn aero_force(&self, alpha: f64, mach: f64, dynamic_pressure: f64) -> Vector3<f64> {
-        let cd = self.drag_coeff.at(alpha.to_degrees(), mach);
-        let cl = self.lift_coeff.at(alpha.to_degrees(), mach);
-        let cy = self.side_force_coeff.at(alpha.to_degrees(), mach);
+    pub fn aero_force(&self, state: &State) -> Vector3<f64> {
+        let cd = self.drag_coeff.at_state(state);
+        let cl = self.lift_coeff.at_state(state);
+        let cy = self.side_force_coeff.at_state(state);
 
-        let ca = alpha.cos() * cd - alpha.sin() * cl;
-        let cn = alpha.sin() * cd + alpha.cos() * cl;
+        let ca = state.alpha.cos() * cd - state.alpha.sin() * cl;
+        let cn = state.alpha.sin() * cd + state.alpha.cos() * cl;
 
-        let mut aero_force = dynamic_pressure * self.reference_area * vector![-ca, cy, -cn];
+        let mut aero_force = state.dynamic_pressure * self.reference_area * vector![-ca, cy, -cn];
 
         // Convert NANs to zeros
         aero_force

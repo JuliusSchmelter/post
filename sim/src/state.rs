@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 26.01.24
-// Last modified by Tibor Völcker on 20.03.24
+// Last modified by Tibor Völcker on 21.03.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{vector, SVector, Vector2, Vector3};
@@ -134,6 +134,92 @@ impl State {
             alpha,
             euler_angles,
             throttle,
+        }
+    }
+}
+
+#[derive(Debug, Default, Copy, Clone)]
+pub enum StateVariable {
+    #[default]
+    Time,
+    TimeSinceEvent,
+    Position(usize),
+    PositionNorm,
+    PositionPlanet(usize),
+    PositionPlanetNorm,
+    Altitude,
+    AltitudeGeopotential,
+    Velocity(usize),
+    VelocityNorm,
+    VelocityPlanet(usize),
+    VelocityPlanetNorm,
+    VelocityAtmosphere(usize),
+    VelocityAtmosphereNorm,
+    Acceleration(usize),
+    AccelerationNorm,
+    ThrustForceBody(usize),
+    ThrustForceBodyNorm,
+    AeroForceBody(usize),
+    AeroForceBodyNorm,
+    VehicleAccelerationBody(usize),
+    VehicleAccelerationBodyNorm,
+    GravityAcceleration(usize),
+    GravityAccelerationNorm,
+    Mass,
+    PropellantMass,
+    Massflow,
+    Temperature,
+    Pressure,
+    Density,
+    MachNumber,
+    DynamicPressure,
+    Alpha,
+    EulerAnglesRoll,
+    EulerAnglesYaw,
+    EulerAnglesPitch,
+    Throttle,
+}
+
+impl StateVariable {
+    pub fn get_value(&self, state: &State) -> f64 {
+        match self {
+            StateVariable::Time => state.time,
+            StateVariable::TimeSinceEvent => state.time_since_event,
+            StateVariable::Position(i) => state.position[*i],
+            StateVariable::PositionNorm => state.position.norm(),
+            StateVariable::PositionPlanet(i) => state.position_planet[*i],
+            StateVariable::PositionPlanetNorm => state.position_planet.norm(),
+            StateVariable::Altitude => state.altitude,
+            StateVariable::AltitudeGeopotential => state.altitude_geopotential,
+            StateVariable::Velocity(i) => state.velocity[*i],
+            StateVariable::VelocityNorm => state.velocity.norm(),
+            StateVariable::VelocityPlanet(i) => state.velocity_planet[*i],
+            StateVariable::VelocityPlanetNorm => state.velocity_planet.norm(),
+            StateVariable::VelocityAtmosphere(i) => state.velocity_atmosphere[*i],
+            StateVariable::VelocityAtmosphereNorm => state.velocity_atmosphere.norm(),
+            StateVariable::Acceleration(i) => state.acceleration[*i],
+            StateVariable::AccelerationNorm => state.acceleration.norm(),
+            StateVariable::ThrustForceBody(i) => state.thrust_force_body[*i],
+            StateVariable::ThrustForceBodyNorm => state.thrust_force_body.norm(),
+            StateVariable::AeroForceBody(i) => state.aero_force_body[*i],
+            StateVariable::AeroForceBodyNorm => state.aero_force_body.norm(),
+            StateVariable::VehicleAccelerationBody(i) => state.vehicle_acceleration_body[*i],
+            StateVariable::VehicleAccelerationBodyNorm => state.vehicle_acceleration_body.norm(),
+            StateVariable::GravityAcceleration(i) => state.gravity_acceleration[*i],
+            StateVariable::GravityAccelerationNorm => state.gravity_acceleration.norm(),
+            StateVariable::Mass => state.mass,
+            StateVariable::PropellantMass => state.propellant_mass,
+            StateVariable::Massflow => state.massflow,
+            StateVariable::Temperature => state.temperature,
+            StateVariable::Pressure => state.pressure,
+            StateVariable::Density => state.density,
+            StateVariable::MachNumber => state.mach_number,
+            StateVariable::DynamicPressure => state.dynamic_pressure,
+            StateVariable::Alpha => state.alpha,
+            StateVariable::EulerAnglesRoll => state.euler_angles[0],
+            StateVariable::EulerAnglesYaw => state.euler_angles[1],
+            StateVariable::EulerAnglesPitch => state.euler_angles[2],
+            StateVariable::Throttle => state.throttle,
         }
     }
 }
