@@ -1,12 +1,11 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 14.12.23
-// Last modified by Tibor Völcker on 21.03.24
+// Last modified by Tibor Völcker on 24.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use std::marker::PhantomData;
 
 use crate::state::StateVariable;
 
-pub mod cubic_interpolation;
 pub mod linear_interpolation;
 
 fn is_sorted<T>(data: &[T]) -> bool
