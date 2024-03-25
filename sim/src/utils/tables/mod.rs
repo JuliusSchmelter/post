@@ -1,10 +1,10 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 14.12.23
-// Last modified by Tibor Völcker on 24.03.24
+// Last modified by Tibor Völcker on 25.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use std::marker::PhantomData;
 
-use crate::state::StateVariable;
+use crate::{state::StateVariable, State};
 
 pub mod linear_interpolation;
 
@@ -16,6 +16,10 @@ where
 }
 
 pub trait Interpolator {}
+
+pub trait TableTrait {
+    fn at_state(&self, state: &State) -> f64;
+}
 
 #[derive(Debug, Default, Clone)]
 pub struct Table<T, I: Interpolator> {
