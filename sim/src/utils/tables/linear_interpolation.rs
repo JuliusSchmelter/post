@@ -14,20 +14,29 @@ impl TableTrait for f64 {
 
 impl<T: TableTrait> TableTrait for Table<T> {
     fn at_state(&self, state: &State) -> f64 {
+        // Assumptions:
+        //  1. `self.x` is sorted
+        //  2. `self.x.len() == self.data.len()`
+
         let x = self.variable.get_value(state);
 
         if self.data.len() == 0 {
+            // No data cannot be interpolated.
             return f64::NAN;
         }
         if self.data.len() == 1 {
+            // Interplate single data point with a straight line.
             return self.data[0].at_state(state);
         }
 
+        // Get index of upper base (index of closes bigger number)
         let idx1 = {
             let mut idx1 = self.x.partition_point(|val| val < &x);
             if idx1 == self.x.len() {
+                // No bigger number. Use the last two as bases.
                 idx1 -= 1;
             } else if idx1 == 0 {
+                // All numbers are bigger. Use the first two as bases.
                 idx1 = 1;
             }
             idx1
