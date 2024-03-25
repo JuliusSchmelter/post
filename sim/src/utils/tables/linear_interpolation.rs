@@ -6,14 +6,6 @@ use crate::State;
 
 use super::*;
 
-#[derive(Debug, Default, Clone)]
-pub struct Linear;
-impl Interpolator for Linear {}
-
-pub type Table1D = super::Table1D<Linear>;
-pub type Table2D = super::Table2D<Linear>;
-pub type Table3D = super::Table3D<Linear>;
-
 impl TableTrait for Table1D {
     fn at_state(&self, state: &State) -> f64 {
         let x = self.variable.get_value(state);
@@ -43,7 +35,7 @@ impl TableTrait for Table1D {
     }
 }
 
-impl<T: TableTrait, I: Interpolator> TableTrait for Table<T, I> {
+impl<T: TableTrait> TableTrait for Table<T> {
     fn at_state(&self, state: &State) -> f64 {
         let x = self.variable.get_value(state);
 

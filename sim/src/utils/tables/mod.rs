@@ -2,8 +2,6 @@
 // Last modified by Tibor Völcker on 25.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
-use std::marker::PhantomData;
-
 use crate::{state::StateVariable, State};
 
 pub mod linear_interpolation;
@@ -15,25 +13,29 @@ where
     data.windows(2).all(|w| w[0] < w[1])
 }
 
-pub trait Interpolator {}
+#[derive(Debug, Default, Clone, Copy)]
+pub enum Interpolator {
+    #[default]
+    Linear,
+}
 
 pub trait TableTrait {
     fn at_state(&self, state: &State) -> f64;
 }
 
 #[derive(Debug, Default, Clone)]
-pub struct Table<T, I: Interpolator> {
+pub struct Table<T> {
     data: Box<[T]>,
     x: Box<[f64]>,
-    interpolator: PhantomData<I>,
+    interpolator: Interpolator,
     variable: StateVariable,
 }
 
-type Table1D<I> = Table<f64, I>;
-type Table2D<I> = Table<Table1D<I>, I>;
-type Table3D<I> = Table<Table2D<I>, I>;
+pub type Table1D = Table<f64>;
+pub type Table2D = Table<Table1D>;
+pub type Table3D = Table<Table2D>;
 
-impl<I: Interpolator> Table1D<I> {
+impl Table1D {
     pub fn new<const X: usize>(x: [f64; X], data: [f64; X], variable: StateVariable) -> Self {
         if !is_sorted(&x) {
             panic!("Data must be sorted by indexing value")
@@ -41,13 +43,13 @@ impl<I: Interpolator> Table1D<I> {
         Self {
             x: Box::new(x),
             data: Box::new(data),
-            interpolator: PhantomData,
+            interpolator: Interpolator::Linear,
             variable,
         }
     }
 }
 
-impl<I: Interpolator> Table2D<I> {
+impl Table2D {
     pub fn new<const X: usize, const Y: usize>(
         x: [f64; X],
         y: [f64; Y],
@@ -60,13 +62,13 @@ impl<I: Interpolator> Table2D<I> {
         Self {
             x: Box::new(x),
             data: Box::new(data.map(|row| Table1D::new(y, row, variables[1]))),
-            interpolator: PhantomData,
+            interpolator: Interpolator::Linear,
             variable: variables[0],
         }
     }
 }
 
-impl<I: Interpolator> Table3D<I> {
+impl Table3D {
     pub fn new<const X: usize, const Y: usize, const Z: usize>(
         x: [f64; X],
         y: [f64; Y],
@@ -82,7 +84,7 @@ impl<I: Interpolator> Table3D<I> {
             data: Box::new(
                 data.map(|row| Table2D::new(y, z, row, variables[1..].try_into().unwrap())),
             ),
-            interpolator: PhantomData,
+            interpolator: Interpolator::Linear,
             variable: variables[0],
         }
     }
