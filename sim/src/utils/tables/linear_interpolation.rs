@@ -6,32 +6,9 @@ use crate::State;
 
 use super::*;
 
-impl TableTrait for Table1D {
-    fn at_state(&self, state: &State) -> f64 {
-        let x = self.variable.get_value(state);
-
-        if self.data.len() == 0 {
-            return f64::NAN;
-        }
-        if self.data.len() == 1 {
-            return self.data[0];
-        }
-
-        let idx1 = {
-            let mut idx1 = self.x.partition_point(|val| val < &x);
-            if idx1 == self.x.len() {
-                idx1 -= 1;
-            } else if idx1 == 0 {
-                idx1 = 1;
-            }
-            idx1
-        };
-        let x0 = self.x[idx1 - 1];
-        let x1 = self.x[idx1];
-        let y0 = self.data[idx1 - 1];
-        let y1 = self.data[idx1];
-
-        y0 + (x - x0) * (y1 - y0) / (x1 - x0)
+impl TableTrait for f64 {
+    fn at_state(&self, _state: &State) -> f64 {
+        *self
     }
 }
 
