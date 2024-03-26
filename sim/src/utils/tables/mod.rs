@@ -14,12 +14,12 @@ pub enum Interpolator {
     Linear,
 }
 
-pub trait TableTrait {
+pub trait Table {
     fn at_state(&self, state: &State) -> f64;
 }
 
 #[derive(Debug, Default, Clone)]
-pub struct Table<T> {
+pub struct GenericTable<T> {
     x: (StateVariable, Box<[f64]>),
     data: Box<[T]>,
     interpolator: Interpolator,
@@ -29,9 +29,9 @@ mod init {
     use super::*;
 
     // We define 3 concrete types to make initialization possible
-    pub type Table1D = Table<f64>;
-    pub type Table2D = Table<Table1D>;
-    pub type Table3D = Table<Table2D>;
+    pub type Table1D = GenericTable<f64>;
+    pub type Table2D = GenericTable<Table1D>;
+    pub type Table3D = GenericTable<Table2D>;
 
     fn is_sorted<T>(data: &[T]) -> bool
     where

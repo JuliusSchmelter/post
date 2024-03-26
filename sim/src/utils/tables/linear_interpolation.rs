@@ -6,13 +6,13 @@ use crate::State;
 
 use super::*;
 
-impl TableTrait for f64 {
+impl Table for f64 {
     fn at_state(&self, _state: &State) -> f64 {
         *self
     }
 }
 
-impl<T: TableTrait> TableTrait for Table<T> {
+impl<T: Table> Table for GenericTable<T> {
     fn at_state(&self, state: &State) -> f64 {
         // Assumptions:
         //  1. `self.x` is sorted
