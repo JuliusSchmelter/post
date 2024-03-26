@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.01.24
-// Last modified by Tibor Völcker on 21.03.24
+// Last modified by Tibor Völcker on 26.03.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 #![cfg(test)]
 pub use data::DATA_POINTS;
@@ -148,16 +148,14 @@ mod vehicles {
                 (4.03328112e6 - 2.249e6) * KILOGRAM_PER_POUND,
                 4500. * SQUARE_METER_PER_SQUARE_FOOT,
                 Table2D::new(
-                    DRAG_TABLE1.0,
-                    DRAG_TABLE1.1,
+                    (StateVariable::Alpha, DRAG_TABLE1.0),
+                    (StateVariable::MachNumber, DRAG_TABLE1.1),
                     DRAG_TABLE1.2,
-                    [StateVariable::Alpha, StateVariable::MachNumber]
                 ),
                 Table2D::new(
-                    LIFT_TABLE1.0,
-                    LIFT_TABLE1.1,
+                    (StateVariable::Alpha, LIFT_TABLE1.0),
+                    (StateVariable::MachNumber, LIFT_TABLE1.1),
                     LIFT_TABLE1.2,
-                    [StateVariable::Alpha, StateVariable::MachNumber]
                 ),
                 Table2D::default(),
                 vec![Engine::new(
@@ -172,16 +170,14 @@ mod vehicles {
                 (3.57822526e5 - 4.75414027e4) * KILOGRAM_PER_POUND,
                 4840. * SQUARE_METER_PER_SQUARE_FOOT,
                 Table2D::new(
-                    DRAG_TABLE2.0,
-                    DRAG_TABLE2.1,
+                    (StateVariable::Alpha, DRAG_TABLE2.0),
+                    (StateVariable::MachNumber, DRAG_TABLE2.1),
                     DRAG_TABLE2.2,
-                    [StateVariable::Alpha, StateVariable::MachNumber]
                 ),
                 Table2D::new(
-                    LIFT_TABLE2.0,
-                    LIFT_TABLE2.1,
+                    (StateVariable::Alpha, LIFT_TABLE2.0),
+                    (StateVariable::MachNumber, LIFT_TABLE2.1),
                     LIFT_TABLE2.2,
-                    [StateVariable::Alpha, StateVariable::MachNumber]
                 ),
                 Table2D::default(),
                 vec![Engine::new(

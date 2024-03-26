@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 06.01.24
-// Last modified by Tibor Völcker on 25.03.24
+// Last modified by Tibor Völcker on 26.03.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use crate::State;
@@ -18,7 +18,7 @@ impl<T: TableTrait> TableTrait for Table<T> {
         //  1. `self.x` is sorted
         //  2. `self.x.len() == self.data.len()`
 
-        let x = self.variable.get_value(state);
+        let x = self.x.0.get_value(state);
 
         if self.data.len() == 0 {
             // No data cannot be interpolated.
@@ -31,8 +31,8 @@ impl<T: TableTrait> TableTrait for Table<T> {
 
         // Get index of upper base (index of closes bigger number)
         let idx1 = {
-            let mut idx1 = self.x.partition_point(|val| val < &x);
-            if idx1 == self.x.len() {
+            let mut idx1 = self.x.1.partition_point(|val| val < &x);
+            if idx1 == self.x.1.len() {
                 // No bigger number. Use the last two as bases.
                 idx1 -= 1;
             } else if idx1 == 0 {
@@ -42,8 +42,8 @@ impl<T: TableTrait> TableTrait for Table<T> {
             idx1
         };
 
-        let x0 = self.x[idx1 - 1];
-        let x1 = self.x[idx1];
+        let x0 = self.x.1[idx1 - 1];
+        let x1 = self.x.1[idx1];
         let y0 = self.data[idx1 - 1].at_state(state);
         let y1 = self.data[idx1].at_state(state);
 
@@ -53,7 +53,7 @@ impl<T: TableTrait> TableTrait for Table<T> {
 
 #[cfg(test)]
 mod tests {
-    use super::linear_interpolation::*;
+    use super::*;
 
     #[test]
     fn empty_table() {
@@ -65,7 +65,7 @@ mod tests {
 
     #[test]
     fn one_entry() {
-        let table = Table1D::new([0.], [1.34], StateVariable::Time);
+        let table = Table1D::new((StateVariable::Time, [0.]), [1.34]);
 
         let mut s = State::new();
         assert_eq!(table.at_state(&s), 1.34);
@@ -75,14 +75,11 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Data must be sorted by indexing value")]
-    fn not_sorted() {
-        Table1D::new([0., 0.], [10., 20.], StateVariable::Time);
-    }
-
-    #[test]
     fn extrapolate_below() {
-        let table = Table1D::new([2., 3., 4., 5.], [20., 30., 40., 50.], StateVariable::Time);
+        let table = Table1D::new(
+            (StateVariable::Time, [2., 3., 4., 5.]),
+            [20., 30., 40., 50.],
+        );
 
         let mut s = State::new();
         s.time = 1.;
@@ -91,7 +88,10 @@ mod tests {
 
     #[test]
     fn extrapolate_above() {
-        let table = Table1D::new([2., 3., 4., 5.], [20., 30., 40., 50.], StateVariable::Time);
+        let table = Table1D::new(
+            (StateVariable::Time, [2., 3., 4., 5.]),
+            [20., 30., 40., 50.],
+        );
 
         let mut s = State::new();
         s.time = 6.;
@@ -100,7 +100,10 @@ mod tests {
 
     #[test]
     fn interpolate_included() {
-        let table = Table1D::new([2., 3., 4., 5.], [20., 30., 40., 50.], StateVariable::Time);
+        let table = Table1D::new(
+            (StateVariable::Time, [2., 3., 4., 5.]),
+            [20., 30., 40., 50.],
+        );
 
         let mut s = State::new();
         s.time = 4.;
@@ -109,7 +112,10 @@ mod tests {
 
     #[test]
     fn interpolate_in_between() {
-        let table = Table1D::new([2., 3., 4., 5.], [20., 30., 40., 50.], StateVariable::Time);
+        let table = Table1D::new(
+            (StateVariable::Time, [2., 3., 4., 5.]),
+            [20., 30., 40., 50.],
+        );
 
         let mut s = State::new();
         s.time = 3.5;
@@ -118,7 +124,10 @@ mod tests {
 
     #[test]
     fn interpolate() {
-        let table = Table1D::new([2., 3., 4., 5.], [20., 30., 40., 50.], StateVariable::Time);
+        let table = Table1D::new(
+            (StateVariable::Time, [2., 3., 4., 5.]),
+            [20., 30., 40., 50.],
+        );
 
         let mut s = State::new();
         s.time = 3.125;
@@ -136,10 +145,9 @@ mod tests {
     #[test]
     fn interpolate_2d() {
         let table = Table2D::new(
-            [1., 2.],
-            [10., 20.],
+            (StateVariable::Time, [1., 2.]),
+            (StateVariable::Mass, [10., 20.]),
             [[100., 200.], [300., 400.]],
-            [StateVariable::Time, StateVariable::Mass],
         );
 
         let mut s = State::new();
@@ -159,17 +167,12 @@ mod tests {
     #[test]
     fn interpolate_3d() {
         let table = Table3D::new(
-            [1., 2.],
-            [10., 20.],
-            [100., 200.],
+            (StateVariable::Time, [1., 2.]),
+            (StateVariable::Mass, [10., 20.]),
+            (StateVariable::Altitude, [100., 200.]),
             [
                 [[1000., 2000.], [3000., 4000.]],
                 [[5000., 6000.], [7000., 8000.]],
-            ],
-            [
-                StateVariable::Time,
-                StateVariable::Mass,
-                StateVariable::Altitude,
             ],
         );
 
