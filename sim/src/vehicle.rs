@@ -7,7 +7,7 @@ use std::f64::consts::PI;
 use crate::constants::{NEARLY_ZERO, STD_GRAVITY};
 use crate::state::State;
 use crate::transformations::inertial_to_body;
-use crate::utils::{Table, Table2D};
+use crate::utils::Table;
 use nalgebra::{vector, Vector3};
 
 fn side_side_angle(a: f64, b: f64, alpha: f64) -> Option<f64> {
@@ -41,9 +41,9 @@ fn side_side_angle(a: f64, b: f64, alpha: f64) -> Option<f64> {
 pub struct Vehicle {
     mass: f64,
     reference_area: f64,
-    drag_coeff: Table2D,
-    lift_coeff: Table2D,
-    side_force_coeff: Table2D,
+    drag_coeff: Box<dyn Table>,
+    lift_coeff: Box<dyn Table>,
+    side_force_coeff: Box<dyn Table>,
     engines: Vec<Engine>,
     pub max_acceleration: f64,
 }
@@ -52,18 +52,18 @@ impl Vehicle {
     pub fn new(
         mass: f64,
         reference_area: f64,
-        drag_coeff: Table2D,
-        lift_coeff: Table2D,
-        side_force_coeff: Table2D,
+        drag_coeff: impl Table + 'static,
+        lift_coeff: impl Table + 'static,
+        side_force_coeff: impl Table + 'static,
         engines: Vec<Engine>,
         max_acceleration: f64,
     ) -> Self {
         Self {
             mass,
             reference_area,
-            drag_coeff,
-            lift_coeff,
-            side_force_coeff,
+            drag_coeff: Box::new(drag_coeff),
+            lift_coeff: Box::new(lift_coeff),
+            side_force_coeff: Box::new(side_force_coeff),
             engines,
             max_acceleration,
         }

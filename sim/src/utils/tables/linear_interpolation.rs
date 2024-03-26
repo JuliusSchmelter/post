@@ -12,7 +12,7 @@ impl Table for f64 {
     }
 }
 
-impl<T: Table> Table for GenericTable<T> {
+impl<T: Table + Clone> Table for GenericTable<T> {
     fn at_state(&self, state: &State) -> f64 {
         // Assumptions:
         //  1. `self.x` is sorted

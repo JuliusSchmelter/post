@@ -2,6 +2,9 @@
 // Last modified by Tibor Völcker on 26.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
+use dyn_clone::DynClone;
+use std::fmt::Debug;
+
 use crate::{state::StateVariable, State};
 
 pub mod linear_interpolation;
@@ -14,9 +17,17 @@ pub enum Interpolator {
     Linear,
 }
 
-pub trait Table {
+pub trait Table: Debug + DynClone + Sync {
     fn at_state(&self, state: &State) -> f64;
 }
+
+impl Default for Box<dyn Table> {
+    fn default() -> Self {
+        Box::<Table1D>::default()
+    }
+}
+
+dyn_clone::clone_trait_object!(Table);
 
 #[derive(Debug, Default, Clone)]
 pub struct GenericTable<T> {

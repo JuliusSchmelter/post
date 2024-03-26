@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+dyn-clone = "1.0.17"
 nalgebra = "0.32.3"
 
 [dev-dependencies]
