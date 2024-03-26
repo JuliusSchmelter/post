@@ -3,15 +3,17 @@
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use dyn_clone::DynClone;
+use serde::Deserialize;
 use std::fmt::Debug;
 
 use crate::{state::StateVariable, State};
 
+mod deserialization;
 mod linear_interpolation;
 
 pub use init::{Table1D, Table2D, Table3D};
 
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy, Deserialize)]
 pub enum Interpolator {
     #[default]
     Linear,

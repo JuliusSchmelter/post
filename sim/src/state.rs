@@ -1,8 +1,9 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 26.01.24
-// Last modified by Tibor Völcker on 25.03.24
+// Last modified by Tibor Völcker on 26.03.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{vector, SVector, Vector2, Vector3};
+use serde::Deserialize;
 
 #[derive(Debug, Default, Clone)]
 pub struct State {
@@ -138,7 +139,7 @@ impl State {
     }
 }
 
-#[derive(Debug, Default, Copy, Clone)]
+#[derive(Debug, Default, Copy, Clone, Deserialize)]
 pub enum StateVariable {
     #[default]
     Time,

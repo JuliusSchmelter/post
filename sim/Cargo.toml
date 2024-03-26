@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 dyn-clone = "1.0.17"
 nalgebra = "0.32.3"
+serde = { version = "1.0.197", features = ["derive"] }
 
 [dev-dependencies]
 lazy_static = "1.4.0"
