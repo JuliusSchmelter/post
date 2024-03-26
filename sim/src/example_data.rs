@@ -9,7 +9,7 @@ pub use vehicles::VEHICLES;
 mod vehicles {
     use crate::constants::*;
     use crate::state::StateVariable;
-    use crate::utils::Table2D;
+    use crate::utils::{Interpolator, Table2D};
     use crate::vehicle::Engine;
     use crate::Vehicle;
     use lazy_static::lazy_static;
@@ -147,15 +147,17 @@ mod vehicles {
             Vehicle::new(
                 (4.03328112e6 - 2.249e6) * KILOGRAM_PER_POUND,
                 4500. * SQUARE_METER_PER_SQUARE_FOOT,
-                Table2D::new(
+                Table2D::from_static_data(
                     (StateVariable::Alpha, DRAG_TABLE1.0),
                     (StateVariable::MachNumber, DRAG_TABLE1.1),
                     DRAG_TABLE1.2,
+                    Interpolator::Linear
                 ),
-                Table2D::new(
+                Table2D::from_static_data(
                     (StateVariable::Alpha, LIFT_TABLE1.0),
                     (StateVariable::MachNumber, LIFT_TABLE1.1),
                     LIFT_TABLE1.2,
+                    Interpolator::Linear
                 ),
                 Table2D::default(),
                 vec![Engine::new(
@@ -169,15 +171,17 @@ mod vehicles {
             Vehicle::new(
                 (3.57822526e5 - 4.75414027e4) * KILOGRAM_PER_POUND,
                 4840. * SQUARE_METER_PER_SQUARE_FOOT,
-                Table2D::new(
+                Table2D::from_static_data(
                     (StateVariable::Alpha, DRAG_TABLE2.0),
                     (StateVariable::MachNumber, DRAG_TABLE2.1),
                     DRAG_TABLE2.2,
+                    Interpolator::Linear
                 ),
-                Table2D::new(
+                Table2D::from_static_data(
                     (StateVariable::Alpha, LIFT_TABLE2.0),
                     (StateVariable::MachNumber, LIFT_TABLE2.1),
                     LIFT_TABLE2.2,
+                    Interpolator::Linear
                 ),
                 Table2D::default(),
                 vec![Engine::new(

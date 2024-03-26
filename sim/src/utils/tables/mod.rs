@@ -7,7 +7,7 @@ use std::fmt::Debug;
 
 use crate::{state::StateVariable, State};
 
-pub mod linear_interpolation;
+mod linear_interpolation;
 
 pub use init::{Table1D, Table2D, Table3D};
 
@@ -52,50 +52,107 @@ mod init {
     }
 
     impl Table1D {
-        pub fn new<const X: usize>(x: (StateVariable, [f64; X]), data: [f64; X]) -> Self {
+        pub fn new(
+            x: (StateVariable, Box<[f64]>),
+            data: Box<[f64]>,
+            interpolator: Interpolator,
+        ) -> Self {
             if !is_sorted(&x.1) {
                 panic!("Indices must be sorted by indexing value")
             }
-            Self {
-                x: (x.0, Box::new(x.1)),
-                data: Box::new(data),
-                interpolator: Interpolator::Linear,
+            if x.1.len() != data.len() {
+                panic!("Data has invalid length")
             }
+            Self {
+                x,
+                data,
+                interpolator,
+            }
+        }
+
+        pub fn from_static_data<const X: usize>(
+            x: (StateVariable, [f64; X]),
+            data: [f64; X],
+            interpolator: Interpolator,
+        ) -> Self {
+            Self::new((x.0, x.1.into()), data.into(), interpolator)
         }
     }
 
     impl Table2D {
-        pub fn new<const X: usize, const Y: usize>(
-            x: (StateVariable, [f64; X]),
-            y: (StateVariable, [f64; Y]),
-            data: [[f64; Y]; X],
+        pub fn new(
+            x: (StateVariable, Box<[f64]>),
+            y: (StateVariable, Box<[f64]>),
+            data: &[Box<[f64]>],
+            interpolator: Interpolator,
         ) -> Self {
             if !is_sorted(&x.1) {
                 panic!("Indices must be sorted by indexing value")
             }
-            Self {
-                x: (x.0, Box::new(x.1)),
-                data: Box::new(data.map(|row| Table1D::new(y, row))),
-                interpolator: Interpolator::Linear,
+            if x.1.len() != data.len() {
+                panic!("Data has invalid length")
             }
+            Self {
+                x,
+                data: data
+                    .iter()
+                    .map(|row| Table1D::new(y.clone(), row.clone(), interpolator))
+                    .collect(),
+                interpolator,
+            }
+        }
+
+        pub fn from_static_data<const X: usize, const Y: usize>(
+            x: (StateVariable, [f64; X]),
+            y: (StateVariable, [f64; Y]),
+            data: [[f64; Y]; X],
+            interpolator: Interpolator,
+        ) -> Self {
+            let data: [Box<[f64]>; X] = data.map(|i| i.into());
+            Self::new((x.0, x.1.into()), (y.0, y.1.into()), &data, interpolator)
         }
     }
 
     impl Table3D {
-        pub fn new<const X: usize, const Y: usize, const Z: usize>(
-            x: (StateVariable, [f64; X]),
-            y: (StateVariable, [f64; Y]),
-            z: (StateVariable, [f64; Z]),
-            data: [[[f64; Z]; Y]; X],
+        pub fn new(
+            x: (StateVariable, Box<[f64]>),
+            y: (StateVariable, Box<[f64]>),
+            z: (StateVariable, Box<[f64]>),
+            data: &[Box<[Box<[f64]>]>],
+            interpolator: Interpolator,
         ) -> Self {
             if !is_sorted(&x.1) {
                 panic!("Indices must be sorted by indexing value")
             }
-            Self {
-                x: (x.0, Box::new(x.1)),
-                data: Box::new(data.map(|row| Table2D::new(y, z, row))),
-                interpolator: Interpolator::Linear,
+            if x.1.len() != data.len() {
+                panic!("Data has invalid length")
             }
+            Self {
+                x,
+                data: data
+                    .iter()
+                    .map(|row| Table2D::new(y.clone(), z.clone(), row, interpolator))
+                    .collect(),
+                interpolator,
+            }
+        }
+
+        pub fn from_static_data<const X: usize, const Y: usize, const Z: usize>(
+            x: (StateVariable, [f64; X]),
+            y: (StateVariable, [f64; Y]),
+            z: (StateVariable, [f64; Z]),
+            data: [[[f64; Z]; Y]; X],
+            interpolator: Interpolator,
+        ) -> Self {
+            let data: [[Box<[f64]>; Y]; X] = data.map(|i| i.map(|i| i.into()));
+            let data: [Box<[Box<[f64]>]>; X] = data.map(|i| i.into());
+            Self::new(
+                (x.0, x.1.into()),
+                (y.0, y.1.into()),
+                (z.0, z.1.into()),
+                &data,
+                interpolator,
+            )
         }
     }
 
@@ -106,7 +163,11 @@ mod init {
         #[test]
         #[should_panic(expected = "Indices must be sorted by indexing value")]
         fn not_sorted() {
-            Table1D::new((StateVariable::Time, [0., 0.]), [10., 20.]);
+            Table1D::from_static_data(
+                (StateVariable::Time, [0., 0.]),
+                [10., 20.],
+                Interpolator::default(),
+            );
         }
     }
 }

@@ -65,7 +65,8 @@ mod tests {
 
     #[test]
     fn one_entry() {
-        let table = Table1D::new((StateVariable::Time, [0.]), [1.34]);
+        let table =
+            Table1D::from_static_data((StateVariable::Time, [0.]), [1.34], Interpolator::Linear);
 
         let mut s = State::new();
         assert_eq!(table.at_state(&s), 1.34);
@@ -76,9 +77,10 @@ mod tests {
 
     #[test]
     fn extrapolate_below() {
-        let table = Table1D::new(
+        let table = Table1D::from_static_data(
             (StateVariable::Time, [2., 3., 4., 5.]),
             [20., 30., 40., 50.],
+            Interpolator::Linear,
         );
 
         let mut s = State::new();
@@ -88,9 +90,10 @@ mod tests {
 
     #[test]
     fn extrapolate_above() {
-        let table = Table1D::new(
+        let table = Table1D::from_static_data(
             (StateVariable::Time, [2., 3., 4., 5.]),
             [20., 30., 40., 50.],
+            Interpolator::Linear,
         );
 
         let mut s = State::new();
@@ -100,9 +103,10 @@ mod tests {
 
     #[test]
     fn interpolate_included() {
-        let table = Table1D::new(
+        let table = Table1D::from_static_data(
             (StateVariable::Time, [2., 3., 4., 5.]),
             [20., 30., 40., 50.],
+            Interpolator::Linear,
         );
 
         let mut s = State::new();
@@ -112,9 +116,10 @@ mod tests {
 
     #[test]
     fn interpolate_in_between() {
-        let table = Table1D::new(
+        let table = Table1D::from_static_data(
             (StateVariable::Time, [2., 3., 4., 5.]),
             [20., 30., 40., 50.],
+            Interpolator::Linear,
         );
 
         let mut s = State::new();
@@ -124,9 +129,10 @@ mod tests {
 
     #[test]
     fn interpolate() {
-        let table = Table1D::new(
+        let table = Table1D::from_static_data(
             (StateVariable::Time, [2., 3., 4., 5.]),
             [20., 30., 40., 50.],
+            Interpolator::Linear,
         );
 
         let mut s = State::new();
@@ -144,10 +150,11 @@ mod tests {
 
     #[test]
     fn interpolate_2d() {
-        let table = Table2D::new(
+        let table = Table2D::from_static_data(
             (StateVariable::Time, [1., 2.]),
             (StateVariable::Mass, [10., 20.]),
             [[100., 200.], [300., 400.]],
+            Interpolator::Linear,
         );
 
         let mut s = State::new();
@@ -166,7 +173,7 @@ mod tests {
 
     #[test]
     fn interpolate_3d() {
-        let table = Table3D::new(
+        let table = Table3D::from_static_data(
             (StateVariable::Time, [1., 2.]),
             (StateVariable::Mass, [10., 20.]),
             (StateVariable::Altitude, [100., 200.]),
@@ -174,6 +181,7 @@ mod tests {
                 [[1000., 2000.], [3000., 4000.]],
                 [[5000., 6000.], [7000., 8000.]],
             ],
+            Interpolator::Linear,
         );
 
         let mut s = State::new();
