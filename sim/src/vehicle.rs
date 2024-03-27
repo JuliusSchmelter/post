@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 26.03.24
+// Last modified by Tibor Völcker on 27.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use std::f64::consts::PI;
@@ -41,9 +41,9 @@ fn side_side_angle(a: f64, b: f64, alpha: f64) -> Option<f64> {
 pub struct Vehicle {
     mass: f64,
     reference_area: f64,
-    drag_coeff: Box<dyn Table>,
-    lift_coeff: Box<dyn Table>,
-    side_force_coeff: Box<dyn Table>,
+    drag_coeff: Table,
+    lift_coeff: Table,
+    side_force_coeff: Table,
     engines: Vec<Engine>,
     pub max_acceleration: f64,
 }
@@ -52,18 +52,18 @@ impl Vehicle {
     pub fn new(
         mass: f64,
         reference_area: f64,
-        drag_coeff: impl Table + 'static,
-        lift_coeff: impl Table + 'static,
-        side_force_coeff: impl Table + 'static,
+        drag_coeff: Table,
+        lift_coeff: Table,
+        side_force_coeff: Table,
         engines: Vec<Engine>,
         max_acceleration: f64,
     ) -> Self {
         Self {
             mass,
             reference_area,
-            drag_coeff: Box::new(drag_coeff),
-            lift_coeff: Box::new(lift_coeff),
-            side_force_coeff: Box::new(side_force_coeff),
+            drag_coeff,
+            lift_coeff,
+            side_force_coeff,
             engines,
             max_acceleration,
         }
