@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.01.24
-// Last modified by Tibor Völcker on 27.03.24
+// Last modified by Tibor Völcker on 28.03.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 #![cfg(test)]
 pub use data::DATA_POINTS;
@@ -15,7 +15,7 @@ mod vehicles {
     use lazy_static::lazy_static;
 
     lazy_static! {
-        static ref DRAG_TABLE1: ([f64; 5], [f64; 12], [[f64; 12]; 5]) = (
+        static ref DRAG_TABLE1: ([f64; 5], [f64; 12], [Box<[f64]>; 5]) = (
             [
                 -20_f64.to_radians(),
                 -5_f64.to_radians(),
@@ -27,23 +27,23 @@ mod vehicles {
             [
                 [
                     1.456, 1.585, 1.598, 1.242, 3.157, 2.996, 1.816, 1.301, 0.850, 0.482, 0.382, 0.396,
-                ],
+                ].into(),
                 [
                     0.263, 0.338, 0.110, 0.302, 0.690, 0.671, 0.563, 0.480, 0.383, 0.256, 0.212, 0.210,
-                ],
+                ].into(),
                 [
                     0.180, 0.18, 0.200, 0.251, 0.495, 0.502, 0.485, 0.456, 0.391, 0.272, 0.231, 0.231,
-                ],
+                ].into(),
                 [
                     0.263, 0.338, 0.110, 0.302, 0.690, 0.671, 0.563, 0.480, 0.383, 0.256, 0.212, 0.210,
-                ],
+                ].into(),
                 [
                     1.456, 1.585, 1.598, 1.242, 3.157, 2.996, 1.816, 1.301, 0.850, 0.482, 0.382, 0.396,
-                ],
+                ].into(),
             ],
         );
 
-        static ref LIFT_TABLE1: ([f64; 4], [f64; 12], [[f64; 12]; 4]) = (
+        static ref LIFT_TABLE1: ([f64; 4], [f64; 12], [Box<[f64]>; 4]) = (
             [
                 -20_f64.to_radians(),
                 0.,
@@ -55,20 +55,20 @@ mod vehicles {
                 [
                     -1.010, -1.025, -0.99, -0.815, -1.08, -1.11, -0.895, -0.788, -0.635, -0.480, -0.43,
                     -0.43,
-                ],
+                ].into(),
                 [
                     0.015, 0.04, 0.01, -0.045, 0.08, 0.038, -0.02, -0.108, -0.145, -0.15, -0.15, -0.15,
-                ],
+                ].into(),
                 [
                     0.545, 0.75, 0.53, 0.365, 0.69, 0.638, 0.43, 0.242, 0.11, 0.025, 0.00, 0.00,
-                ],
+                ].into(),
                 [
                     2.135, 2.24, 2.09, 1.595, 2.52, 2.438, 1.78, 1.292, 0.875, 0.55, 0.45, 0.45,
-                ],
+                ].into(),
             ],
         );
 
-        static ref DRAG_TABLE2: ([f64; 7], [f64; 12], [[f64; 12]; 7]) = (
+        static ref DRAG_TABLE2: ([f64; 7], [f64; 12], [Box<[f64]>; 7]) = (
             [
                 -20_f64.to_radians(),
                 -4_f64.to_radians(),
@@ -82,29 +82,29 @@ mod vehicles {
             [
                 [
                     0.024, 0.024, 0.026, 0.028, 0.035, 0.93, 0.122, 0.116, 0.1, 0.092, 0.082, 0.03,
-                ],
+                ].into(),
                 [
                     0.024, 0.024, 0.026, 0.028, 0.035, 0.93, 0.122, 0.116, 0.1, 0.092, 0.082, 0.03,
-                ],
+                ].into(),
                 [
                     0.026, 0.026, 0.026, 0.024, 0.036, 0.092, 0.118, 0.106, 0.091, 0.082, 0.074, 0.022,
-                ],
+                ].into(),
                 [
                     0.042, 0.042, 0.04, 0.042, 0.076, 0.124, 0.142, 0.124, 0.098, 0.088, 0.079, 0.033,
-                ],
+                ].into(),
                 [
                     0.076, 0.076, 0.08, 0.1, 0.13, 0.194, 0.192, 0.165, 0.127, 0.114, 0.095, 0.057,
-                ],
+                ].into(),
                 [
                     0.36, 0.36, 0.362, 0.44, 0.41, 0.39, 0.36, 0.32, 0.242, 0.224, 0.216, 0.238,
-                ],
+                ].into(),
                 [
                     0.36, 0.36, 0.36, 0.44, 0.41, 0.39, 0.36, 0.32, 0.44, 0.418, 0.4, 0.3,
-                ],
+                ].into(),
             ],
         );
 
-        static ref LIFT_TABLE2: ([f64; 7], [f64; 12], [[f64; 12]; 7]) = (
+        static ref LIFT_TABLE2: ([f64; 7], [f64; 12], [Box<[f64]>; 7]) = (
             // The -4 is a 4 in the example. But the tests show, this must be a mistake
             // Otherways, the function does not even work
             [
@@ -120,26 +120,26 @@ mod vehicles {
             [
                 [
                     -0.07, -0.08, -0.12, -0.12, -0.12, -0.12, -0.12, -0.13, -0.14, -0.12, -0.1, -0.14,
-                ],
+                ].into(),
                 [
                     -0.07, -0.08, -0.12, -0.12, -0.12, -0.12, -0.12, -0.13, -0.14, -0.12, -0.1, -0.14,
-                ],
+                ].into(),
                 [
                     // The last entry seems to be an input mistake in the example data
                     0.08, 0.08, 0.08, 0.06, 0.06, 0.07, 0.04, 0.0, -0.02, -0.03, -0.04, 0.03,
-                ],
+                ].into(),
                 [
                     0.29, 0.29, 0.29, 0.28, 0.28, 0.3, 0.24, 0.17, 0.12, 0.09, 0.08, 0.21,
-                ],
+                ].into(),
                 [
                     0.5, 0.6, 0.49, 0.48, 0.52, 0.52, 0.41, 0.33, 0.25, 0.2, 0.15, 0.4,
-                ],
+                ].into(),
                 [
                     0.94, 0.94, 0.92, 0.9, 0.94, 0.89, 0.75, 0.68, 0.67, 0.65, 0.62, 0.76,
-                ],
+                ].into(),
                 [
                     0.94, 0.94, 0.92, 0.9, 0.94, 0.89, 0.75, 0.68, 0.67, 0.65, 0.62, 0.76,
-                ],
+                ].into(),
             ],
         );
 
@@ -148,20 +148,20 @@ mod vehicles {
                 (4.03328112e6 - 2.249e6) * KILOGRAM_PER_POUND,
                 4500. * SQUARE_METER_PER_SQUARE_FOOT,
                 Table::D2(
-                    Table2D::new(
-                        (StateVariable::Alpha, DRAG_TABLE1.0),
-                        (StateVariable::MachNumber, DRAG_TABLE1.1),
-                        DRAG_TABLE1.2,
+                    Table2D::try_new(
+                        (StateVariable::Alpha, &DRAG_TABLE1.0),
+                        (StateVariable::MachNumber, &DRAG_TABLE1.1),
+                        &DRAG_TABLE1.2,
                         Interpolator::Linear
-                    )
+                    ).unwrap()
                 ),
                 Table::D2(
-                    Table2D::new(
-                        (StateVariable::Alpha, LIFT_TABLE1.0),
-                        (StateVariable::MachNumber, LIFT_TABLE1.1),
-                        LIFT_TABLE1.2,
+                    Table2D::try_new(
+                        (StateVariable::Alpha, &LIFT_TABLE1.0),
+                        (StateVariable::MachNumber, &LIFT_TABLE1.1),
+                        &LIFT_TABLE1.2,
                         Interpolator::Linear
-                    )
+                    ).unwrap()
                 ),
                 Table::default(),
                 vec![Engine::new(
@@ -176,20 +176,20 @@ mod vehicles {
                 (3.57822526e5 - 4.75414027e4) * KILOGRAM_PER_POUND,
                 4840. * SQUARE_METER_PER_SQUARE_FOOT,
                 Table::D2(
-                    Table2D::new(
-                        (StateVariable::Alpha, DRAG_TABLE2.0),
-                        (StateVariable::MachNumber, DRAG_TABLE2.1),
-                        DRAG_TABLE2.2,
+                    Table2D::try_new(
+                        (StateVariable::Alpha, &DRAG_TABLE2.0),
+                        (StateVariable::MachNumber, &DRAG_TABLE2.1),
+                        &DRAG_TABLE2.2,
                         Interpolator::Linear
-                    )
+                    ).unwrap()
                 ),
                 Table::D2(
-                    Table2D::new(
-                        (StateVariable::Alpha, LIFT_TABLE2.0),
-                        (StateVariable::MachNumber, LIFT_TABLE2.1),
-                        LIFT_TABLE2.2,
+                    Table2D::try_new(
+                        (StateVariable::Alpha, &LIFT_TABLE2.0),
+                        (StateVariable::MachNumber, &LIFT_TABLE2.1),
+                        &LIFT_TABLE2.2,
                         Interpolator::Linear
-                    )
+                    ).unwrap()
                 ),
                 Table::default(),
                 vec![Engine::new(

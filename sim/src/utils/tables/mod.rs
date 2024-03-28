@@ -1,15 +1,20 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 14.12.23
-// Last modified by Tibor Völcker on 27.03.24
+// Last modified by Tibor Völcker on 28.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use std::fmt::Debug;
 
+use serde::Deserialize;
+
 use crate::{state::StateVariable, State};
 
+mod deserialization;
 mod linear_interpolation;
 
 // Enum needed for generic deserialization
-#[derive(Debug, Clone)]
+// Sadly, untagged enums swallow precise error messages
+#[derive(Debug, Clone, Deserialize, PartialEq)]
+#[serde(untagged)]
 pub enum Table {
     D1(Table1D),
     D2(Table2D),
@@ -32,14 +37,16 @@ impl Table {
     }
 }
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, Deserialize, PartialEq)]
+#[serde(try_from = "deserialization::Table1DUnchecked")]
 pub struct Table1D {
     x: (StateVariable, Box<[f64]>),
     data: Box<[f64]>,
     interpolator: Interpolator,
 }
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, Deserialize, PartialEq)]
+#[serde(try_from = "deserialization::Table2DUnchecked")]
 pub struct Table2D {
     x: (StateVariable, Box<[f64]>),
     y: (StateVariable, Box<[f64]>),
@@ -47,7 +54,8 @@ pub struct Table2D {
     interpolator: Interpolator,
 }
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, Deserialize, PartialEq)]
+#[serde(try_from = "deserialization::Table3DUnchecked")]
 pub struct Table3D {
     x: (StateVariable, Box<[f64]>),
     y: (StateVariable, Box<[f64]>),
@@ -57,7 +65,8 @@ pub struct Table3D {
     interpolator: Interpolator,
 }
 
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy, Deserialize, PartialEq)]
+#[serde(rename_all = "snake_case")]
 pub enum Interpolator {
     #[default]
     Linear,
@@ -109,108 +118,100 @@ mod interpolate {
 
 mod init {
     use super::*;
+    use std::fmt::Display;
+
+    #[derive(Debug, PartialEq)]
+    pub enum TableInitError {
+        NotSortedError,
+        InvalidLengthError,
+    }
+
+    impl Display for TableInitError {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            match self {
+                TableInitError::NotSortedError => {
+                    write!(f, "Table argument values are not sorted")
+                }
+                TableInitError::InvalidLengthError => {
+                    write!(f, "Argument length and data length does not match")
+                }
+            }
+        }
+    }
+
+    fn validate<T>(idx_arr: &[f64], data_arr: &[T]) -> Result<(), TableInitError> {
+        if !idx_arr.windows(2).all(|w| w[0] < w[1]) {
+            Err(TableInitError::NotSortedError)
+        } else if idx_arr.len() != data_arr.len() {
+            Err(TableInitError::InvalidLengthError)
+        } else {
+            Ok(())
+        }
+    }
 
     impl Table1D {
-        pub fn new<const X: usize>(
-            x: (StateVariable, [f64; X]),
-            data: [f64; X],
+        pub fn try_new(
+            x: (StateVariable, &[f64]),
+            data: &[f64],
             interpolator: Interpolator,
-        ) -> Self {
-            Self {
+        ) -> Result<Self, TableInitError> {
+            validate(x.1, data)?;
+
+            Ok(Self {
                 x: (x.0, x.1.into()),
                 data: data.into(),
                 interpolator,
-            }
-            .validate()
+            })
         }
     }
 
     impl Table2D {
-        pub fn new<const X: usize, const Y: usize>(
-            x: (StateVariable, [f64; X]),
-            y: (StateVariable, [f64; Y]),
-            data: [[f64; Y]; X],
+        pub fn try_new(
+            x: (StateVariable, &[f64]),
+            y: (StateVariable, &[f64]),
+            data: &[Box<[f64]>],
             interpolator: Interpolator,
-        ) -> Self {
-            Self {
+        ) -> Result<Self, TableInitError> {
+            validate(x.1, data)?;
+
+            for y_data in data.iter() {
+                validate(y.1, y_data)?;
+            }
+
+            Ok(Self {
                 x: (x.0, x.1.into()),
                 y: (y.0, y.1.into()),
-                data: data.map(|i| i.into()).into(),
+                data: data.into(),
                 interpolator,
-            }
-            .validate()
+            })
         }
     }
 
     impl Table3D {
-        pub fn new<const X: usize, const Y: usize, const Z: usize>(
-            x: (StateVariable, [f64; X]),
-            y: (StateVariable, [f64; Y]),
-            z: (StateVariable, [f64; Z]),
-            data: [[[f64; Z]; Y]; X],
+        pub fn try_new(
+            x: (StateVariable, &[f64]),
+            y: (StateVariable, &[f64]),
+            z: (StateVariable, &[f64]),
+            data: &[Box<[Box<[f64]>]>],
             interpolator: Interpolator,
-        ) -> Self {
-            Self {
-                x: (x.0, x.1.into()),
-                y: (y.0, y.1.into()),
-                z: (z.0, z.1.into()),
-                data: data.map(|i| i.map(|i| i.into()).into()).into(),
-                interpolator,
-            }
-            .validate()
-        }
-    }
-}
+        ) -> Result<Self, TableInitError> {
+            validate(x.1, data)?;
 
-mod validate {
-    use super::*;
-
-    fn validate<T>(idx_arr: &[f64], data_arr: &[T]) {
-        assert!(
-            idx_arr.windows(2).all(|w| w[0] < w[1]),
-            "Indices must be sorted"
-        );
-
-        assert_eq!(
-            idx_arr.len(),
-            data_arr.len(),
-            "Indices must match data length"
-        );
-    }
-
-    impl Table1D {
-        pub fn validate(self) -> Self {
-            validate(&self.x.1, &self.data);
-
-            self
-        }
-    }
-
-    impl Table2D {
-        pub fn validate(self) -> Self {
-            validate(&self.x.1, &self.data);
-
-            for y_data in self.data.iter() {
-                validate(&self.y.1, y_data);
-            }
-
-            self
-        }
-    }
-
-    impl Table3D {
-        pub fn validate(self) -> Self {
-            validate(&self.x.1, &self.data);
-
-            for y_data in self.data.iter() {
-                validate(&self.y.1, y_data);
+            for y_data in data.iter() {
+                validate(y.1, y_data)?;
 
                 for z_data in y_data.iter() {
-                    validate(&self.z.1, z_data);
+                    validate(z.1, z_data)?;
                 }
             }
 
-            self
+            Ok(Self {
+                x: (x.0, x.1.into()),
+                y: (y.0, y.1.into()),
+                z: (z.0, z.1.into()),
+                data: data.into(),
+                interpolator,
+            })
         }
     }
 
@@ -219,61 +220,93 @@ mod validate {
         use super::*;
 
         #[test]
-        #[should_panic(expected = "Indices must be sorted")]
         fn not_sorted() {
-            Table1D::new(
-                (StateVariable::Time, [0., 0.]),
-                [10., 20.],
+            let result = Table1D::try_new(
+                (StateVariable::Time, &[0., 0.]),
+                &[10., 20.],
                 Interpolator::default(),
-            );
+            )
+            .unwrap_err();
+
+            assert_eq!(result, TableInitError::NotSortedError);
         }
 
         #[test]
-        #[should_panic(expected = "Indices must match data length")]
         fn invalid_length() {
-            Table1D {
-                x: (StateVariable::Time, [0., 1.].into()),
-                data: [10., 20., 30.].into(),
-                interpolator: Interpolator::default(),
-            }
-            .validate();
+            let result = Table1D::try_new(
+                (StateVariable::Time, &[0., 1.]),
+                &[10., 20., 30.],
+                Interpolator::default(),
+            )
+            .unwrap_err();
+
+            assert_eq!(result, TableInitError::InvalidLengthError);
         }
 
         #[test]
-        #[should_panic(expected = "Indices must match data length")]
+        fn not_sorted_2d_x() {
+            let result = Table2D::try_new(
+                (StateVariable::Time, &[0., -1.]),
+                (StateVariable::Time, &[0., 1.]),
+                &[[10., 20.].into(), [10., 20.].into()],
+                Interpolator::default(),
+            )
+            .unwrap_err();
+
+            assert_eq!(result, TableInitError::NotSortedError);
+        }
+
+        #[test]
+        fn not_sorted_2d_y() {
+            let result = Table2D::try_new(
+                (StateVariable::Time, &[0., 1.]),
+                (StateVariable::Time, &[0., 0.]),
+                &[[10., 20.].into(), [10., 20.].into()],
+                Interpolator::default(),
+            )
+            .unwrap_err();
+
+            assert_eq!(result, TableInitError::NotSortedError);
+        }
+
+        #[test]
         fn invalid_length_2d_x() {
-            Table2D {
-                x: (StateVariable::Time, [0., 1.].into()),
-                y: (StateVariable::Time, [0., 1.].into()),
-                data: [[10., 20.].into(), [10., 20.].into(), [10., 20.].into()].into(),
-                interpolator: Interpolator::default(),
-            }
-            .validate();
+            let result = Table2D::try_new(
+                (StateVariable::Time, &[0., 1.]),
+                (StateVariable::Time, &[0., 1.]),
+                &[[10., 20.].into(), [10., 20.].into(), [10., 20.].into()],
+                Interpolator::default(),
+            )
+            .unwrap_err();
+
+            assert_eq!(result, TableInitError::InvalidLengthError);
         }
 
         #[test]
-        #[should_panic(expected = "Indices must match data length")]
         fn invalid_length_2d_y() {
-            Table2D {
-                x: (StateVariable::Time, [0., 1.].into()),
-                y: (StateVariable::Time, [0., 1.].into()),
-                data: [[10., 20.].into(), [10., 20., 30.].into()].into(),
-                interpolator: Interpolator::default(),
-            }
-            .validate();
+            let result = Table2D::try_new(
+                (StateVariable::Time, &[0., 1.]),
+                (StateVariable::Time, &[0., 1.]),
+                &[[10., 20.].into(), [10., 20., 30.].into()],
+                Interpolator::default(),
+            )
+            .unwrap_err();
+
+            assert_eq!(result, TableInitError::InvalidLengthError);
         }
 
         #[test]
-        #[should_panic(expected = "Indices must match data length")]
         fn invalid_length_3d_z() {
-            Table3D {
-                x: (StateVariable::Time, [0.].into()),
-                y: (StateVariable::Time, [0., 1.].into()),
-                z: (StateVariable::Time, [0., 1.].into()),
-                data: [[[10., 20., 30.].into(), [10., 20.].into()].into()].into(),
-                interpolator: Interpolator::default(),
-            }
-            .validate();
+            let result = Table3D::try_new(
+                (StateVariable::Time, &[0.]),
+                (StateVariable::Time, &[0., 1.]),
+                (StateVariable::Time, &[0., 1.]),
+                &[[[10., 20., 30.].into(), [10., 20.].into()].into()],
+                Interpolator::default(),
+            )
+            .unwrap_err();
+
+            assert_eq!(result, TableInitError::InvalidLengthError);
         }
     }
 }

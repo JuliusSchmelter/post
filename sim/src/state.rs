@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 26.01.24
-// Last modified by Tibor Völcker on 26.03.24
+// Last modified by Tibor Völcker on 28.03.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{vector, SVector, Vector2, Vector3};
@@ -139,7 +139,8 @@ impl State {
     }
 }
 
-#[derive(Debug, Default, Copy, Clone, Deserialize)]
+#[derive(Debug, Default, Copy, Clone, Deserialize, PartialEq)]
+#[serde(rename_all = "snake_case")]
 pub enum StateVariable {
     #[default]
     Time,

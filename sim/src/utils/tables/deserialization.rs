@@ -1,148 +1,156 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 25.03.24
-// Last modified by Tibor Völcker on 26.03.24
+// Last modified by Tibor Völcker on 28.03.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 
+use super::init::TableInitError;
 use super::*;
-use serde::{de, Deserialize};
+use serde::Deserialize;
 
-fn get_var<'de, A>(map: &mut A) -> Result<(StateVariable, Box<[f64]>), A::Error>
-where
-    A: de::MapAccess<'de>,
-{
-    if let Some((key, value)) = map.next_entry()? {
-        Ok((key, value))
-    } else {
-        Err(de::Error::missing_field("variable name"))
+#[derive(Deserialize)]
+pub struct Table1DUnchecked {
+    x: (StateVariable, Box<[f64]>),
+    data: Box<[f64]>,
+    #[serde(default)]
+    interpolator: Interpolator,
+}
+
+impl TryFrom<Table1DUnchecked> for Table1D {
+    type Error = TableInitError;
+
+    fn try_from(value: Table1DUnchecked) -> Result<Self, Self::Error> {
+        Self::try_new((value.x.0, &value.x.1), &value.data, value.interpolator)
     }
 }
 
-fn get_data<'de, A, T: Deserialize<'de>>(map: &mut A) -> Result<T, A::Error>
-where
-    A: de::MapAccess<'de>,
-{
-    if let Some((key, value)) = map.next_entry()? {
-        if key != "data" {
-            return Err(de::Error::unknown_field(key, &["data"]));
-        }
-        Ok(value)
-    } else {
-        Err(de::Error::missing_field("data"))
+#[derive(Deserialize)]
+pub struct Table2DUnchecked {
+    x: (StateVariable, Box<[f64]>),
+    y: (StateVariable, Box<[f64]>),
+    data: Box<[Box<[f64]>]>,
+    #[serde(default)]
+    interpolator: Interpolator,
+}
+
+impl TryFrom<Table2DUnchecked> for Table2D {
+    type Error = TableInitError;
+
+    fn try_from(value: Table2DUnchecked) -> Result<Self, Self::Error> {
+        Self::try_new(
+            (value.x.0, &value.x.1),
+            (value.y.0, &value.y.1),
+            &value.data,
+            value.interpolator,
+        )
     }
 }
 
-fn get_interpolator<'de, A>(map: &mut A) -> Result<Interpolator, A::Error>
-where
-    A: de::MapAccess<'de>,
-{
-    if let Some((key, value)) = map.next_entry()? {
-        if key != "interpolator" {
-            return Err(de::Error::unknown_field(key, &["interpolator"]));
-        }
-        Ok(value)
-    } else {
-        Ok(Interpolator::default())
+#[derive(Deserialize)]
+pub struct Table3DUnchecked {
+    x: (StateVariable, Box<[f64]>),
+    y: (StateVariable, Box<[f64]>),
+    z: (StateVariable, Box<[f64]>),
+    #[allow(clippy::type_complexity)]
+    data: Box<[Box<[Box<[f64]>]>]>,
+    #[serde(default)]
+    interpolator: Interpolator,
+}
+
+impl TryFrom<Table3DUnchecked> for Table3D {
+    type Error = TableInitError;
+
+    fn try_from(value: Table3DUnchecked) -> Result<Self, Self::Error> {
+        Self::try_new(
+            (value.x.0, &value.x.1),
+            (value.y.0, &value.y.1),
+            (value.z.0, &value.z.1),
+            &value.data,
+            value.interpolator,
+        )
     }
 }
 
-impl<'de> de::Deserialize<'de> for Table1D {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: de::Deserializer<'de>,
-    {
-        struct Table1DVisitor;
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-        impl<'de> de::Visitor<'de> for Table1DVisitor {
-            type Value = Table1D;
+    #[test]
+    fn empty_table() {
+        let input = r#"{"x": ["time", []], "data": []}"#;
+        let table: Table = serde_json::from_str(input).unwrap();
 
-            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-                formatter.write_str("1D Table")
-            }
-
-            fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
-            where
-                A: de::MapAccess<'de>,
-            {
-                let x = get_var(&mut map)?;
-
-                let data = get_data(&mut map)?;
-
-                let interpolator = get_interpolator(&mut map)?;
-
-                Ok(Self::Value::new(x, data, interpolator))
-            }
-        }
-
-        deserializer.deserialize_map(Table1DVisitor {})
+        assert_eq!(table, Table::D1(Table1D::default()))
     }
-}
 
-impl<'de> de::Deserialize<'de> for Table2D {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: de::Deserializer<'de>,
-    {
-        struct Table2DVisitor;
+    #[test]
+    fn empty_table_with_interpolator() {
+        let input = r#"{"x": ["time", []], "data": [], "interpolator": "linear"}"#;
+        let table: Table = serde_json::from_str(input).unwrap();
 
-        impl<'de> de::Visitor<'de> for Table2DVisitor {
-            type Value = Table2D;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-                formatter.write_str("2D Table")
-            }
-
-            fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
-            where
-                A: de::MapAccess<'de>,
-            {
-                let x = get_var(&mut map)?;
-
-                let y = get_var(&mut map)?;
-
-                let data: Box<[Box<[f64]>]> = get_data(&mut map)?;
-
-                let interpolator = get_interpolator(&mut map)?;
-
-                Ok(Self::Value::new(x, y, &data, interpolator))
-            }
-        }
-
-        deserializer.deserialize_map(Table2DVisitor {})
+        assert_eq!(table, Table::D1(Table1D::default()))
     }
-}
 
-impl<'de> de::Deserialize<'de> for Table3D {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: de::Deserializer<'de>,
-    {
-        struct Table3DVisitor;
+    #[test]
+    fn invalid_iterator() {
+        let input = r#"{"x": ["time", [0.0]], "data": [0.0], "interpolator": "not_there"}"#;
+        serde_json::from_str::<Table>(input).unwrap_err();
+    }
 
-        impl<'de> de::Visitor<'de> for Table3DVisitor {
-            type Value = Table3D;
+    #[test]
+    fn invalid_length() {
+        let input = r#"{"x": ["time", [0.0, 1.0]], "data": [0.0]}"#;
+        serde_json::from_str::<Table>(input).unwrap_err();
+    }
 
-            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-                formatter.write_str("3D Table")
-            }
+    #[test]
+    fn example_1d() {
+        let input = r#"{"x": ["time", [0.0]], "data": [1.0]}"#;
+        let table: Table = serde_json::from_str(input).unwrap();
 
-            fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
-            where
-                A: de::MapAccess<'de>,
-            {
-                let x = get_var(&mut map)?;
+        assert_eq!(
+            table,
+            Table::D1(
+                Table1D::try_new((StateVariable::Time, &[0.]), &[1.], Interpolator::Linear)
+                    .unwrap()
+            )
+        );
+    }
 
-                let y = get_var(&mut map)?;
+    #[test]
+    fn example_2d() {
+        let input = r#"{"x": ["time", [0.0]], "y": ["mass", [0.0]], "data": [[1.0]]}"#;
+        let table: Table = serde_json::from_str(input).unwrap();
 
-                let z = get_var(&mut map)?;
+        assert_eq!(
+            table,
+            Table::D2(
+                Table2D::try_new(
+                    (StateVariable::Time, &[0.]),
+                    (StateVariable::Mass, &[0.]),
+                    &[[1.].into()],
+                    Interpolator::Linear
+                )
+                .unwrap()
+            )
+        );
+    }
 
-                #[allow(clippy::type_complexity)]
-                let data: Box<[Box<[Box<[f64]>]>]> = get_data(&mut map)?;
+    #[test]
+    fn example_3d() {
+        let input = r#"{"x": ["time", [0.0]], "y": ["mass", [0.0, 1.0]], "z": ["altitude", [0.0]], "data": [[[1.0], [2.0]]]}"#;
+        let table: Table = serde_json::from_str(input).unwrap();
 
-                let interpolator = get_interpolator(&mut map)?;
-
-                Ok(Self::Value::new(x, y, z, &data, interpolator))
-            }
-        }
-
-        deserializer.deserialize_map(Table3DVisitor {})
+        assert_eq!(
+            table,
+            Table::D3(
+                Table3D::try_new(
+                    (StateVariable::Time, &[0.]),
+                    (StateVariable::Mass, &[0., 1.]),
+                    (StateVariable::Altitude, &[0.]),
+                    &[[[1.].into(), [2.].into()].into()],
+                    Interpolator::Linear
+                )
+                .unwrap()
+            )
+        );
     }
 }
