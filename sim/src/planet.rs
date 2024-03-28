@@ -1,11 +1,9 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.11.23
-// Last modified by Tibor Völcker on 21.03.24
+// Last modified by Tibor Völcker on 28.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use crate::constants::*;
 use nalgebra::{vector, Vector3};
-
-use crate::{transformations::inertial_to_planet, State};
 
 #[derive(Debug, Clone)]
 pub struct Planet {
@@ -49,16 +47,6 @@ pub const EARTH_SMITHSONIAN: Planet = Planet {
 };
 
 impl Planet {
-    pub fn environment(&self, state: &mut State) {
-        state.position_planet =
-            inertial_to_planet(state.time, self.rotation_rate).transform_vector(&state.position);
-        state.velocity_planet = self.velocity_planet(state.position, state.velocity);
-        state.altitude = self.altitude(state.position);
-        state.altitude_geopotential = self.geopotational_altitude(state.position);
-        state.velocity_planet = self.velocity_planet(state.position, state.velocity);
-        state.gravity_acceleration = self.gravity(state.position);
-    }
-
     pub fn altitude(&self, position: Vector3<f64>) -> f64 {
         let k = (self.equatorial_radius / self.polar_radius).powi(2);
 
@@ -129,13 +117,14 @@ mod tests {
             print!("Testing {} m altitude ... ", data_point.altitude);
 
             let state = data_point.to_state();
-            let mut input = state.clone();
 
-            EARTH_SPHERICAL.environment(&mut input);
-
-            assert_almost_eq_rel!(input.altitude, state.altitude, EPSILON);
             assert_almost_eq_rel!(
-                vec input.gravity_acceleration,
+                EARTH_SPHERICAL.altitude(state.position),
+                state.altitude,
+                EPSILON
+            );
+            assert_almost_eq_rel!(
+                vec EARTH_SPHERICAL.gravity(state.position),
                 state.gravity_acceleration,
                 EPSILON
             );
@@ -147,13 +136,14 @@ mod tests {
             print!("Testing {} m altitude ... ", data_point.altitude);
 
             let state = data_point.to_state();
-            let mut input = state.clone();
 
-            EARTH_SPHERICAL.environment(&mut input);
-
-            assert_almost_eq_rel!(input.altitude, state.altitude, EPSILON);
             assert_almost_eq_rel!(
-                vec input.gravity_acceleration,
+                EARTH_SPHERICAL.altitude(state.position),
+                state.altitude,
+                EPSILON
+            );
+            assert_almost_eq_rel!(
+                vec EARTH_SPHERICAL.gravity(state.position),
                 state.gravity_acceleration,
                 EPSILON
             );

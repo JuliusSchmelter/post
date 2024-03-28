@@ -1,12 +1,11 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 27.03.24
+// Last modified by Tibor Völcker on 28.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use std::f64::consts::PI;
 
 use crate::constants::{NEARLY_ZERO, STD_GRAVITY};
 use crate::state::State;
-use crate::transformations::inertial_to_body;
 use crate::utils::Table;
 use nalgebra::{vector, Vector3};
 
@@ -39,7 +38,7 @@ fn side_side_angle(a: f64, b: f64, alpha: f64) -> Option<f64> {
 
 #[derive(Debug, Default, Clone)]
 pub struct Vehicle {
-    mass: f64,
+    pub mass: f64,
     reference_area: f64,
     drag_coeff: Table,
     lift_coeff: Table,
@@ -71,42 +70,6 @@ impl Vehicle {
 }
 
 impl Vehicle {
-    pub fn force(&self, state: &mut State, launch: [f64; 3]) {
-        let inertial_to_body = inertial_to_body(
-            launch[0],
-            launch[1],
-            launch[2],
-            state.euler_angles[0].to_radians(),
-            state.euler_angles[1].to_radians(),
-            state.euler_angles[2].to_radians(),
-        );
-        state.alpha = self.alpha(inertial_to_body.transform_vector(&state.velocity_atmosphere));
-        state.aero_force_body = self.aero_force(state);
-
-        state.propellant_mass = state.mass - self.mass;
-
-        state.throttle = self.auto_throttle(state.mass, state.pressure, state.aero_force_body);
-
-        if state.propellant_mass > 0. {
-            state.thrust_force_body = self.thrust_force(state.throttle, state.pressure);
-            state.massflow = self.massflow(state.throttle);
-        }
-        state.vehicle_acceleration_body =
-            (state.aero_force_body + state.thrust_force_body) / state.mass;
-
-        // Intersection would require negative thrust
-        if state.vehicle_acceleration_body.norm() > self.max_acceleration * 1.001
-            || state.throttle.is_nan()
-        {
-            panic!("Could not stay in max. acceleration (check aero forces)")
-        }
-
-        state.acceleration = inertial_to_body
-            .transpose()
-            .transform_vector(&state.vehicle_acceleration_body)
-            + state.gravity_acceleration;
-    }
-
     pub fn alpha(&self, velocity: Vector3<f64>) -> f64 {
         if velocity.x < NEARLY_ZERO {
             if velocity.z < NEARLY_ZERO {
@@ -114,10 +77,7 @@ impl Vehicle {
             }
             return velocity.z.signum() * PI / 2.;
         }
-        // From [1]: sin(alpha) = z / sqrt(x^2 + z^2)
-        //           cos(alpha) = x / sqrt(x^2 + z^2)
-        //               alpha = atan(sin(alpha) / cos(alpha))
-        // As far as I can see, is the 'sqrt(x^2 + z^2) term useless
+
         f64::atan(velocity.z / velocity.x)
     }
 
@@ -211,6 +171,7 @@ impl Engine {
 mod tests {
     use crate::assert_almost_eq_rel;
     use crate::example_data::DATA_POINTS;
+    use crate::transformations::inertial_to_body;
 
     #[test]
     fn test_force() {
@@ -220,18 +181,35 @@ mod tests {
             print!("Testing {} m altitude ... ", data_point.altitude);
 
             let state = data_point.to_state();
-            let mut input = state.clone();
 
-            data_point.vehicle.force(&mut input, data_point.launch);
+            let inertial_to_body = inertial_to_body(data_point.launch, state.euler_angles);
 
-            assert_almost_eq_rel!(input.throttle, state.throttle, EPSILON);
-            assert_almost_eq_rel!(input.massflow, state.massflow, EPSILON);
-            assert_almost_eq_rel!(input.propellant_mass, state.propellant_mass, EPSILON);
-            assert_almost_eq_rel!(vec input.thrust_force_body, state.thrust_force_body, EPSILON);
-            assert_almost_eq_rel!(input.alpha, state.alpha, EPSILON);
-            assert_almost_eq_rel!(vec input.aero_force_body, state.aero_force_body, EPSILON);
-            assert_almost_eq_rel!(vec input.vehicle_acceleration_body, state.vehicle_acceleration_body, EPSILON);
-            assert_almost_eq_rel!(vec input.acceleration, state.acceleration, EPSILON);
+            assert_almost_eq_rel!(
+                data_point
+                    .vehicle
+                    .auto_throttle(state.mass, state.pressure, state.aero_force_body),
+                state.throttle,
+                EPSILON
+            );
+            assert_almost_eq_rel!(
+                data_point.vehicle.massflow(state.throttle),
+                state.massflow,
+                EPSILON
+            );
+            assert_almost_eq_rel!(
+                state.mass - data_point.vehicle.mass,
+                state.propellant_mass,
+                EPSILON
+            );
+            assert_almost_eq_rel!(vec data_point.vehicle.thrust_force(state.throttle, state.pressure), state.thrust_force_body, EPSILON);
+            assert_almost_eq_rel!(
+                data_point
+                    .vehicle
+                    .alpha(inertial_to_body.transform_vector(&state.velocity_atmosphere)),
+                state.alpha,
+                EPSILON
+            );
+            assert_almost_eq_rel!(vec data_point.vehicle.aero_force(&state), state.aero_force_body, EPSILON);
 
             println!("ok");
         }
@@ -241,14 +219,35 @@ mod tests {
             print!("Testing {} m altitude ... ", data_point.altitude);
 
             let state = data_point.to_state();
-            let mut input = state.clone();
 
-            data_point.vehicle.force(&mut input, data_point.launch);
+            let inertial_to_body = inertial_to_body(data_point.launch, state.euler_angles);
 
-            assert_almost_eq_rel!(input.throttle, state.throttle, EPSILON);
-            assert_almost_eq_rel!(input.propellant_mass, state.propellant_mass, EPSILON);
-            assert_almost_eq_rel!(input.alpha, state.alpha, EPSILON);
-            assert_almost_eq_rel!(vec input.aero_force_body, state.aero_force_body, EPSILON);
+            assert_almost_eq_rel!(
+                data_point
+                    .vehicle
+                    .auto_throttle(state.mass, state.pressure, state.aero_force_body),
+                state.throttle,
+                EPSILON
+            );
+            assert_almost_eq_rel!(
+                data_point.vehicle.massflow(state.throttle),
+                state.massflow,
+                EPSILON
+            );
+            assert_almost_eq_rel!(
+                state.mass - data_point.vehicle.mass,
+                state.propellant_mass,
+                EPSILON
+            );
+            assert_almost_eq_rel!(vec data_point.vehicle.thrust_force(state.throttle, state.pressure), state.thrust_force_body, EPSILON);
+            assert_almost_eq_rel!(
+                data_point
+                    .vehicle
+                    .alpha(inertial_to_body.transform_vector(&state.velocity_atmosphere)),
+                state.alpha,
+                EPSILON
+            );
+            assert_almost_eq_rel!(vec data_point.vehicle.aero_force(&state), state.aero_force_body, EPSILON);
 
             println!("ok");
         }

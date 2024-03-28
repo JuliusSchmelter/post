@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.12.23
-// Last modified by Tibor Völcker on 07.03.24
+// Last modified by Tibor Völcker on 28.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{matrix, Rotation3};
@@ -20,15 +20,9 @@ pub fn launch_to_body(roll: f64, yaw: f64, pitch: f64) -> Rotation3<f64> {
     ])
 }
 
-pub fn inertial_to_body(
-    lat: f64,
-    long: f64,
-    az: f64,
-    roll: f64,
-    yaw: f64,
-    pitch: f64,
-) -> Rotation3<f64> {
-    launch_to_body(roll, yaw, pitch) * inertial_to_launch(lat, long, az)
+pub fn inertial_to_body(launch: [f64; 3], euler_angles: [f64; 3]) -> Rotation3<f64> {
+    launch_to_body(euler_angles[0], euler_angles[1], euler_angles[2])
+        * inertial_to_launch(launch[0], launch[1], launch[2])
 }
 
 pub fn inertial_to_planet(time: f64, rotation_rate: f64) -> Rotation3<f64> {

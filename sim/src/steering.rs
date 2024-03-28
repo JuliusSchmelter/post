@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 06.12.23
-// Last modified by Tibor Völcker on 21.03.24
+// Last modified by Tibor Völcker on 28.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use crate::State;
@@ -50,12 +50,12 @@ impl Steering {
             .sum()
     }
 
-    pub fn steering(&self, state: &mut State) {
-        state.euler_angles = [
-            Self::calc_coeff(state.time_since_event, self.roll),
-            Self::calc_coeff(state.time_since_event, self.yaw),
-            Self::calc_coeff(state.time_since_event, self.pitch),
-        ];
+    pub fn euler_angles(&self, state: &State) -> [f64; 3] {
+        [
+            Self::calc_coeff(state.time_since_event, self.roll).to_radians(),
+            Self::calc_coeff(state.time_since_event, self.yaw).to_radians(),
+            Self::calc_coeff(state.time_since_event, self.pitch).to_radians(),
+        ]
     }
 }
 
@@ -80,11 +80,8 @@ mod tests {
             steer.update_steering(Axis::Pitch, [data_point.steering_coeffs[1], 0., 0.]);
 
             let state = data_point.to_state();
-            let mut input = state.clone();
 
-            steer.steering(&mut input);
-
-            let output_euler = Vector3::from_column_slice(&input.euler_angles);
+            let output_euler = Vector3::from_column_slice(&steer.euler_angles(&state));
             let target_euler = Vector3::from_column_slice(&state.euler_angles);
 
             assert_almost_eq_rel!(vec output_euler, target_euler, EPSILON);

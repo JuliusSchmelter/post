@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 21.03.24
+// Last modified by Tibor Völcker on 28.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 pub mod standard_atmosphere_1962;
@@ -33,19 +33,6 @@ impl Atmosphere {
 }
 
 impl Atmosphere {
-    pub fn environment(&self, state: &mut State) {
-        state.velocity_atmosphere = self.velocity_atmosphere(state);
-
-        state.temperature = self.temperature(state);
-        state.pressure = self.pressure(state);
-        state.density = self.density(state);
-
-        state.mach_number = state.velocity_atmosphere.norm() / self.speed_of_sound(state);
-        state.dynamic_pressure = 0.5 * state.density * state.velocity_atmosphere.norm().powi(2);
-    }
-}
-
-impl Atmosphere {
     pub fn temperature(&self, state: &State) -> f64 {
         match self.model {
             AtmosphereModel::StandardAtmosphere1962 => {
@@ -73,13 +60,21 @@ impl Atmosphere {
         }
     }
 
-    pub fn speed_of_sound(&self, state: &State) -> f64 {
+    fn speed_of_sound(&self, state: &State) -> f64 {
         match self.model {
             AtmosphereModel::StandardAtmosphere1962 => {
                 standard_atmosphere_1962::speed_of_sound(state.altitude_geopotential)
             }
             AtmosphereModel::NoAtmosphere => 0.,
         }
+    }
+
+    pub fn mach_number(&self, state: &State) -> f64 {
+        state.velocity_atmosphere.norm() / self.speed_of_sound(state)
+    }
+
+    pub fn dynamic_pressure(&self, state: &State) -> f64 {
+        0.5 * state.density * state.velocity_atmosphere.norm().powi(2)
     }
 
     pub fn velocity_atmosphere(&self, state: &State) -> Vector3<f64> {
@@ -105,15 +100,16 @@ mod tests {
             print!("Testing {} m altitude ... ", data_point.altitude);
 
             let state = data_point.to_state();
-            let mut input = state.clone();
 
-            atm.environment(&mut input);
-
-            assert_almost_eq_rel!(input.temperature, state.temperature, EPSILON);
-            assert_almost_eq_rel!(input.pressure, state.pressure, EPSILON);
-            assert_almost_eq_rel!(input.density, state.density, EPSILON);
-            assert_almost_eq_rel!(input.mach_number, state.mach_number, EPSILON);
-            assert_almost_eq_rel!(input.dynamic_pressure, state.dynamic_pressure, EPSILON);
+            assert_almost_eq_rel!(atm.temperature(&state), state.temperature, EPSILON);
+            assert_almost_eq_rel!(atm.pressure(&state), state.pressure, EPSILON);
+            assert_almost_eq_rel!(atm.density(&state), state.density, EPSILON);
+            assert_almost_eq_rel!(atm.mach_number(&state), state.mach_number, EPSILON);
+            assert_almost_eq_rel!(
+                atm.dynamic_pressure(&state),
+                state.dynamic_pressure,
+                EPSILON
+            );
 
             println!("ok");
         }

@@ -367,7 +367,7 @@ mod data {
                 acceleration: Vector3::new(8.26692668e1, 5.08582088e1, -1.99119531e1)
                     * METER_PER_FOOT,
                 altitude: 3.04960868e5 * METER_PER_FOOT,
-                euler_angles: [0., 0., -9.66287352e1],
+                euler_angles: [0., 0., -9.66287352e1_f64.to_radians()],
                 temperature: 3.41188380e2 * KELVIN_PER_RANKIN,
                 pressure: 2.01763300e-3 * PASCAL_PER_PSF,
                 density: 3.44501515e-9 * KILOGRAM_PER_SLUG / CUBIC_METER_PER_CUBIC_FOOT,
@@ -403,7 +403,7 @@ mod data {
                 acceleration: Vector3::new(8.07369090e1, 5.41723792e1, -2.18585972e1)
                     * METER_PER_FOOT,
                 altitude: 3.03804044e5 * METER_PER_FOOT,
-                euler_angles: [0., 0., -9.91738999e1],
+                euler_angles: [0., 0., -9.91738999e1_f64.to_radians()],
                 temperature: 3.39250012e2 * KELVIN_PER_RANKIN,
                 pressure: 2.14880703e-3 * PASCAL_PER_PSF,
                 density: 3.68995220e-9 * KILOGRAM_PER_SLUG / CUBIC_METER_PER_CUBIC_FOOT,

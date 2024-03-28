@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 21.03.24
+// Last modified by Tibor Völcker on 28.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use crate::atmosphere::Atmosphere;
@@ -7,6 +7,7 @@ use crate::integration::Integrator;
 use crate::planet::Planet;
 use crate::state::State;
 use crate::steering::{Axis, Steering};
+use crate::transformations::{inertial_to_body, inertial_to_planet};
 use crate::vehicle::Vehicle;
 use crate::EARTH_SPHERICAL;
 use nalgebra::{vector, Vector3};
@@ -27,13 +28,63 @@ pub struct Phase {
 
 impl Phase {
     fn system(&self, state: &mut State) {
-        self.planet.environment(state);
+        // Order of calculation is important, as they are dependent on each other
+        // Faulty order will not raise warnings!
 
-        self.atmosphere.environment(state);
+        // Additional primary state values
+        let inertial_to_planet = inertial_to_planet(state.time, self.planet.rotation_rate);
+        state.position_planet = inertial_to_planet.transform_vector(&state.position);
+        state.velocity_planet = self.planet.velocity_planet(state.position, state.velocity);
+        state.altitude = self.planet.altitude(state.position);
+        state.altitude_geopotential = self.planet.geopotational_altitude(state.position);
+        state.velocity_planet = self.planet.velocity_planet(state.position, state.velocity);
 
-        self.steering.steering(state);
+        // Gravity acceleration
+        state.gravity_acceleration = self.planet.gravity(state.position);
 
-        self.vehicle.force(state, self.planet.launch);
+        // Atmospheric data
+        state.velocity_atmosphere = self.atmosphere.velocity_atmosphere(state);
+        state.temperature = self.atmosphere.temperature(state);
+        state.pressure = self.atmosphere.pressure(state);
+        state.density = self.atmosphere.density(state);
+        state.mach_number = self.atmosphere.mach_number(state);
+        state.dynamic_pressure = self.atmosphere.dynamic_pressure(state);
+
+        // Attitude
+        state.euler_angles = self.steering.euler_angles(state);
+        let inertial_to_body = inertial_to_body(self.planet.launch, state.euler_angles);
+
+        // Aerodynamic acceleration
+        state.alpha = self
+            .vehicle
+            .alpha(inertial_to_body.transform_vector(&state.velocity_atmosphere));
+        state.aero_force_body = self.vehicle.aero_force(state);
+
+        // Thrust acceleration
+        state.propellant_mass = state.mass - self.vehicle.mass;
+        state.throttle =
+            self.vehicle
+                .auto_throttle(state.mass, state.pressure, state.aero_force_body);
+        if state.propellant_mass > 0. {
+            state.thrust_force_body = self.vehicle.thrust_force(state.throttle, state.pressure);
+            state.massflow = self.vehicle.massflow(state.throttle);
+        }
+
+        // Vehicle acceleration
+        state.vehicle_acceleration_body =
+            (state.aero_force_body + state.thrust_force_body) / state.mass;
+        if state.vehicle_acceleration_body.norm() > self.vehicle.max_acceleration * 1.001
+            || state.throttle.is_nan()
+        {
+            // Intersection would require negative thrust
+            panic!("Could not stay in max. acceleration (check aero forces)")
+        }
+
+        // Acceleration
+        state.acceleration = inertial_to_body
+            .transpose()
+            .transform_vector(&state.vehicle_acceleration_body)
+            + state.gravity_acceleration;
     }
 
     pub fn step(&mut self) {
