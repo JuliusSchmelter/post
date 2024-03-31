@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 28.03.24
+// Last modified by Tibor Völcker on 31.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use std::f64::consts::PI;
@@ -175,47 +175,9 @@ mod tests {
 
     #[test]
     fn test_force() {
-        const EPSILON: f64 = 0.001;
+        const EPSILON: f64 = 0.0005;
 
-        for data_point in DATA_POINTS[..3].iter() {
-            print!("Testing {} m altitude ... ", data_point.altitude);
-
-            let state = data_point.to_state();
-
-            let inertial_to_body = inertial_to_body(data_point.launch, state.euler_angles);
-
-            assert_almost_eq_rel!(
-                data_point
-                    .vehicle
-                    .auto_throttle(state.mass, state.pressure, state.aero_force_body),
-                state.throttle,
-                EPSILON
-            );
-            assert_almost_eq_rel!(
-                data_point.vehicle.massflow(state.throttle),
-                state.massflow,
-                EPSILON
-            );
-            assert_almost_eq_rel!(
-                state.mass - data_point.vehicle.mass,
-                state.propellant_mass,
-                EPSILON
-            );
-            assert_almost_eq_rel!(vec data_point.vehicle.thrust_force(state.throttle, state.pressure), state.thrust_force_body, EPSILON);
-            assert_almost_eq_rel!(
-                data_point
-                    .vehicle
-                    .alpha(inertial_to_body.transform_vector(&state.velocity_atmosphere)),
-                state.alpha,
-                EPSILON
-            );
-            assert_almost_eq_rel!(vec data_point.vehicle.aero_force(&state), state.aero_force_body, EPSILON);
-
-            println!("ok");
-        }
-
-        // The added logic of zeroing the thrust when propellant is consumed interferes with this test
-        for data_point in DATA_POINTS[3..].iter() {
+        for data_point in DATA_POINTS.iter() {
             print!("Testing {} m altitude ... ", data_point.altitude);
 
             let state = data_point.to_state();
