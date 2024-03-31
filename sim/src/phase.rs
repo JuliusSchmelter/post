@@ -23,6 +23,7 @@ pub struct Phase {
     stepsize: f64,
     base_stepsize: f64,
     end_criterion: fn(&State) -> f64,
+    end_criterion_tries: usize,
     pub ended: bool,
 }
 
@@ -87,6 +88,24 @@ impl Phase {
         state
     }
 
+    fn time_to_go(&self, state: &State) -> f64 {
+        let y_t = (self.end_criterion)(&self.state);
+        let y_t_1 = (self.end_criterion)(state);
+        let dt = self.stepsize;
+
+        -y_t * dt / (y_t_1 - y_t)
+    }
+
+    fn event_is_active(&self, state: &State) -> bool {
+        if (self.end_criterion)(state) < (self.end_criterion)(&self.state) {
+            // Function is going down, so check if function < 0
+            (self.end_criterion)(state) < 0.
+        } else {
+            // Function is going up, check if function > 0
+            (self.end_criterion)(state) > 0.
+        }
+    }
+
     pub fn step(&mut self) {
         if self.ended {
             panic!("Phase already has ended")
@@ -96,22 +115,22 @@ impl Phase {
             .integrator
             .step(|state| self.system(state), &self.state, self.stepsize);
 
-        if (self.end_criterion)(&state) < 0. {
-            // The stepsize was too big. Try again with half the stepsize.
-            self.stepsize /= 2.;
-
-            // Stop after 10 tries
-            if self.base_stepsize / self.stepsize > 2_f64.powi(50) {
-                panic!("Could not reach end condition")
-            }
-
-            return self.step();
-        } else if (self.end_criterion)(&state) < 1e-3 {
+        if (self.end_criterion)(&state).abs() < 1e-3 {
             // We found a good last stepsize. Phase has ended.
             self.ended = true;
-        }
+            self.state = state;
+        } else if self.event_is_active(&state) {
+            // The stepsize was too big, try again.
+            if self.end_criterion_tries > 20 {
+                panic!("Could not find zero crossing of event")
+            }
 
-        self.state = state;
+            self.stepsize = self.time_to_go(&state);
+            self.end_criterion_tries += 1;
+        } else {
+            // Normal step, still more steps to go.
+            self.state = state;
+        }
     }
 
     pub fn run(&mut self) {
@@ -143,6 +162,7 @@ impl Default for Phase {
             stepsize: 1.,
             base_stepsize: 1.,
             end_criterion: |_| 0.,
+            end_criterion_tries: 0,
             ended: false,
         }
     }
@@ -157,6 +177,7 @@ impl Phase {
         self.stepsize = self.base_stepsize;
         self.init_steering(self.state.euler_angles);
         self.ended = false;
+        self.end_criterion_tries = 0;
         self
     }
 
