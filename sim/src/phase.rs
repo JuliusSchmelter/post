@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 28.03.24
+// Last modified by Tibor Völcker on 31.03.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use crate::atmosphere::Atmosphere;
@@ -27,7 +27,7 @@ pub struct Phase {
 }
 
 impl Phase {
-    fn system(&self, state: &mut State) {
+    fn system(&self, mut state: State) -> State {
         // Order of calculation is important, as they are dependent on each other
         // Faulty order will not raise warnings!
 
@@ -43,22 +43,22 @@ impl Phase {
         state.gravity_acceleration = self.planet.gravity(state.position);
 
         // Atmospheric data
-        state.velocity_atmosphere = self.atmosphere.velocity_atmosphere(state);
-        state.temperature = self.atmosphere.temperature(state);
-        state.pressure = self.atmosphere.pressure(state);
-        state.density = self.atmosphere.density(state);
-        state.mach_number = self.atmosphere.mach_number(state);
-        state.dynamic_pressure = self.atmosphere.dynamic_pressure(state);
+        state.velocity_atmosphere = self.atmosphere.velocity_atmosphere(&state);
+        state.temperature = self.atmosphere.temperature(&state);
+        state.pressure = self.atmosphere.pressure(&state);
+        state.density = self.atmosphere.density(&state);
+        state.mach_number = self.atmosphere.mach_number(&state);
+        state.dynamic_pressure = self.atmosphere.dynamic_pressure(&state);
 
         // Attitude
-        state.euler_angles = self.steering.euler_angles(state);
+        state.euler_angles = self.steering.euler_angles(&state);
         let inertial_to_body = inertial_to_body(self.planet.launch, state.euler_angles);
 
         // Aerodynamic acceleration
         state.alpha = self
             .vehicle
             .alpha(inertial_to_body.transform_vector(&state.velocity_atmosphere));
-        state.aero_force_body = self.vehicle.aero_force(state);
+        state.aero_force_body = self.vehicle.aero_force(&state);
 
         // Thrust acceleration
         state.propellant_mass = state.mass - self.vehicle.mass;
@@ -85,6 +85,8 @@ impl Phase {
             .transpose()
             .transform_vector(&state.vehicle_acceleration_body)
             + state.gravity_acceleration;
+
+        state
     }
 
     pub fn step(&mut self) {
@@ -115,6 +117,9 @@ impl Phase {
     }
 
     pub fn run(&mut self) {
+        // Calculate initial full state
+        self.state = self.system(self.state.clone());
+
         while !self.ended {
             self.step();
             println!(
