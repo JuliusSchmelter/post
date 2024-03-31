@@ -65,10 +65,8 @@ impl Phase {
         state.throttle =
             self.vehicle
                 .auto_throttle(state.mass, state.pressure, state.aero_force_body);
-        if state.propellant_mass > 0. {
             state.thrust_force_body = self.vehicle.thrust_force(state.throttle, state.pressure);
             state.massflow = self.vehicle.massflow(state.throttle);
-        }
 
         // Vehicle acceleration
         state.vehicle_acceleration_body =
