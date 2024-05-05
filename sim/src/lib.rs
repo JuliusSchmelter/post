@@ -73,7 +73,7 @@ mod tests {
                 .set_stepsize(5.)
                 .init_launch(28.5, 279.4, 90.)
                 .set_mass(DATA_POINTS[0].mass)
-                .update_termination(|s| 15. - s.time)
+                .update_termination(StateVariable::Time, 15.)
         })
         // 2. Phase
         .add_phase(|phase| {
@@ -83,7 +83,7 @@ mod tests {
                     StateVariable::TimeSinceEvent,
                     [PITCH_RATES[0], 0., 0.],
                 )
-                .update_termination(|s| 25. - s.time)
+                .update_termination(StateVariable::Time, 25.)
         })
         // 3. Phase
         .add_phase(|phase| {
@@ -93,7 +93,7 @@ mod tests {
                     StateVariable::TimeSinceEvent,
                     [PITCH_RATES[1], 0., 0.],
                 )
-                .update_termination(|s| 40. - s.time)
+                .update_termination(StateVariable::Time, 40.)
         })
         // 4. Phase
         .add_phase(|phase| {
@@ -103,7 +103,7 @@ mod tests {
                     StateVariable::TimeSinceEvent,
                     [PITCH_RATES[2], 0., 0.],
                 )
-                .update_termination(|s| 60. - s.time)
+                .update_termination(StateVariable::Time, 60.)
         })
         // 5. Phase
         .add_phase(|phase| {
@@ -114,7 +114,7 @@ mod tests {
                     [PITCH_RATES[3], 0., 0.],
                 )
                 .limit_acceleration(3. * STD_GRAVITY)
-                .update_termination(|s| 120. - s.time)
+                .update_termination(StateVariable::Time, 120.)
         })
         // 6. Phase
         .add_phase(|phase| {
@@ -124,7 +124,7 @@ mod tests {
                     StateVariable::TimeSinceEvent,
                     [PITCH_RATES[4], 0., 0.],
                 )
-                .update_termination(|s| 150. - s.time)
+                .update_termination(StateVariable::Time, 150.)
         })
         // 7. Phase
         .add_phase(|phase| {
@@ -135,13 +135,13 @@ mod tests {
                     [PITCH_RATES[5], 0., 0.],
                 )
                 .set_stepsize(10.)
-                .update_termination(|s| s.propellant_mass)
+                .update_termination(StateVariable::PropellantMass, 0.)
         })
         // 8. Phase
         .add_phase(|phase| {
             phase
                 .limit_acceleration(f64::INFINITY)
-                .update_termination(|s| 7. - s.time_since_event)
+                .update_termination(StateVariable::TimeSinceEvent, 7.)
         })
         // 9. Phase
         .add_phase(|phase| {
@@ -155,7 +155,7 @@ mod tests {
                 )
                 .limit_acceleration(3.0 * STD_GRAVITY)
                 .set_stepsize(20.)
-                .update_termination(|s| 100. - s.time_since_event)
+                .update_termination(StateVariable::TimeSinceEvent, 100.)
         })
         // 10. Phase
         .add_phase(|phase| {
@@ -165,10 +165,10 @@ mod tests {
                     StateVariable::TimeSinceEvent,
                     [PITCH_RATES[7], 0., 0.],
                 )
-                .update_termination(|s| 150. - s.time_since_event)
+                .update_termination(StateVariable::TimeSinceEvent, 150.)
         })
         // 11. Phase
-        .add_phase(|phase| phase.update_termination(|s| s.propellant_mass));
+        .add_phase(|phase| phase.update_termination(StateVariable::PropellantMass, 0.));
 
         sim.run()
     }

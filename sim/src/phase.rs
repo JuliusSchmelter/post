@@ -24,7 +24,7 @@ pub struct Phase {
     integrator: Integrator,
     stepsize: f64,
     base_stepsize: f64,
-    end_criterion: fn(&State) -> f64,
+    end_criterion: (StateVariable, f64),
     end_criterion_tries: usize,
     pub ended: bool,
 }
@@ -94,20 +94,20 @@ impl Phase {
     }
 
     fn time_to_go(&self, state: &State) -> f64 {
-        let y_t = (self.end_criterion)(&self.state);
-        let y_t_1 = (self.end_criterion)(state);
+        let y_t = self.end_criterion.0.get_value(&self.state) - self.end_criterion.1;
+        let y_t_1 = self.end_criterion.0.get_value(state) - self.end_criterion.1;
         let dt = self.stepsize;
 
         -y_t * dt / (y_t_1 - y_t)
     }
 
     fn event_is_active(&self, state: &State) -> bool {
-        if (self.end_criterion)(state) < (self.end_criterion)(&self.state) {
-            // Function is going down, so check if function < 0
-            (self.end_criterion)(state) < 0.
+        if self.end_criterion.0.get_value(state) < self.end_criterion.0.get_value(&self.state) {
+            // Function is going down, so check if function < target
+            self.end_criterion.0.get_value(state) < self.end_criterion.1
         } else {
-            // Function is going up, check if function > 0
-            (self.end_criterion)(state) > 0.
+            // Function is going up, check if function > target
+            self.end_criterion.0.get_value(state) > self.end_criterion.1
         }
     }
 
@@ -120,7 +120,7 @@ impl Phase {
             .integrator
             .step(|state| self.system(state), &self.state, self.stepsize);
 
-        if (self.end_criterion)(&state).abs() < 1e-3 {
+        if (self.end_criterion.0.get_value(&state) - self.end_criterion.1).abs() < 1e-3 {
             // We found a good last stepsize. Phase has ended.
             self.ended = true;
             self.state = state;
@@ -168,7 +168,7 @@ impl Default for Phase {
             integrator: Integrator::RK4,
             stepsize: 1.,
             base_stepsize: 1.,
-            end_criterion: |_| 0.,
+            end_criterion: (StateVariable::TimeSinceEvent, 0.),
             end_criterion_tries: 0,
             ended: false,
         }
@@ -244,8 +244,8 @@ impl Phase {
         self
     }
 
-    pub fn update_termination(&mut self, end_criterion: fn(&State) -> f64) -> &mut Self {
-        self.end_criterion = end_criterion;
+    pub fn update_termination(&mut self, var: StateVariable, target: f64) -> &mut Self {
+        self.end_criterion = (var, target);
         self
     }
 
@@ -303,7 +303,7 @@ mod tests {
             .init_launch(28.5, 279.4, 90.)
             .set_mass(DATA_POINTS[0].mass)
             .set_stepsize(5.)
-            .update_termination(|s| 15. - s.time);
+            .update_termination(StateVariable::Time, 15.);
 
         assert_almost_eq_rel!(vec phase.state.position, DATA_POINTS[0].position, 0.001);
         assert_almost_eq_rel!(vec phase.state.velocity, DATA_POINTS[0].velocity, 0.001);
@@ -335,7 +335,7 @@ mod tests {
                 StateVariable::TimeSinceEvent,
                 [DATA_POINTS[2].steering_coeffs[1], 0., 0.],
             )
-            .update_termination(|s| s.propellant_mass);
+            .update_termination(StateVariable::PropellantMass, 0.);
 
         println!(
             "Time: {:.0}\nPosition: {:.0}\nVelocity: {:.0}",
