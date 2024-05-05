@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.11.23
-// Last modified by Tibor Völcker on 28.03.24
+// Last modified by Tibor Völcker on 05.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use crate::constants::*;
@@ -11,7 +11,6 @@ pub struct Planet {
     pub polar_radius: f64,
     gravitational_parameters: [f64; 4],
     pub rotation_rate: f64,
-    pub launch: [f64; 3],
 }
 
 pub const EARTH_SPHERICAL: Planet = Planet {
@@ -20,7 +19,6 @@ pub const EARTH_SPHERICAL: Planet = Planet {
     // [mu, J_2, J_3, J_4]
     gravitational_parameters: [1.4076539e16 * CUBIC_METER_PER_CUBIC_FOOT, 0., 0., 0.],
     rotation_rate: 7.29211e-5,
-    launch: [0., 0., 0.],
 };
 
 pub const EARTH_FISHER_1960: Planet = Planet {
@@ -29,7 +27,6 @@ pub const EARTH_FISHER_1960: Planet = Planet {
     // [mu, J_2, J_3, J_4]
     gravitational_parameters: [1.4076539e16 * CUBIC_METER_PER_CUBIC_FOOT, 1.0823e-3, 0., 0.],
     rotation_rate: 7.29211e-5,
-    launch: [0., 0., 0.],
 };
 
 pub const EARTH_SMITHSONIAN: Planet = Planet {
@@ -43,7 +40,6 @@ pub const EARTH_SMITHSONIAN: Planet = Planet {
         -1.608e-6,
     ],
     rotation_rate: 7.29211e-5,
-    launch: [0., 0., 0.],
 };
 
 impl Planet {

@@ -19,6 +19,7 @@ pub struct Phase {
     max_acceleration: f64,
     steering: Steering,
     planet: Planet,
+    launch: [f64; 3],
     atmosphere: Atmosphere,
     integrator: Integrator,
     stepsize: f64,
@@ -54,7 +55,7 @@ impl Phase {
 
         // Attitude
         state.euler_angles = self.steering.euler_angles(&state);
-        let inertial_to_body = inertial_to_body(self.planet.launch, state.euler_angles);
+        let inertial_to_body = inertial_to_body(self.launch, state.euler_angles);
 
         // Aerodynamic acceleration
         state.alpha = self
@@ -162,6 +163,7 @@ impl Default for Phase {
             max_acceleration: f64::INFINITY,
             steering: Steering::new(),
             planet: EARTH_SPHERICAL,
+            launch: [0., 0., 0.],
             atmosphere: Atmosphere::new(),
             integrator: Integrator::RK4,
             stepsize: 1.,
@@ -264,7 +266,7 @@ impl Phase {
 
         let geocentric_lat = f64::atan(k.powi(2) * lat.tan());
 
-        self.planet.launch = [geocentric_lat, long, az];
+        self.launch = [geocentric_lat, long, az];
 
         let distance_to_surface =
             self.planet.equatorial_radius / f64::sqrt(1. + (k - 1.) * geocentric_lat.sin().powi(2));
