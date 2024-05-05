@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.01.24
-// Last modified by Tibor Völcker on 28.03.24
+// Last modified by Tibor Völcker on 05.05.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 #![cfg(test)]
 pub use data::DATA_POINTS;
@@ -170,7 +170,6 @@ mod vehicles {
                     439.0,
                     232.5 * SQUARE_METER_PER_SQUARE_FOOT,
                 )],
-                f64::INFINITY,
             ),
             Vehicle::new(
                 (3.57822526e5 - 4.75414027e4) * KILOGRAM_PER_POUND,
@@ -198,7 +197,6 @@ mod vehicles {
                     459.0,
                     154.54 * SQUARE_METER_PER_SQUARE_FOOT,
                 )],
-                3. * STD_GRAVITY,
             ),
         ];
     }
@@ -251,6 +249,7 @@ mod data {
         pub vehicle: Vehicle,
         pub steering_coeffs: [f64; 2],
         pub launch: [f64; 3],
+        pub max_acceleration: f64,
     }
 
     impl DataPoint {
@@ -321,7 +320,8 @@ mod data {
                     28.5_f64.to_radians(),
                     279.4_f64.to_radians(),
                     90_f64.to_radians()
-                ]
+                ],
+                max_acceleration: f64::INFINITY,
             },
             DataPoint {
                 time: 1.50000000e1,
@@ -356,7 +356,8 @@ mod data {
                     28.5_f64.to_radians(),
                     279.4_f64.to_radians(),
                     90_f64.to_radians()
-                ]
+                ],
+                max_acceleration: f64::INFINITY,
             },
             DataPoint {
                 time: 4.37456932e2,
@@ -392,7 +393,8 @@ mod data {
                     28.5_f64.to_radians(),
                     279.4_f64.to_radians(),
                     90_f64.to_radians()
-                ]
+                ],
+                max_acceleration: 3. * STD_GRAVITY,
             },
             DataPoint {
                 time: 4.59264198e2,
@@ -428,7 +430,8 @@ mod data {
                     28.5_f64.to_radians(),
                     279.4_f64.to_radians(),
                     90_f64.to_radians()
-                ]
+                ],
+                max_acceleration: 3. * STD_GRAVITY,
             },
         ];
     }

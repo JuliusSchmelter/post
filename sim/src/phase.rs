@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 31.03.24
+// Last modified by Tibor Völcker on 05.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use crate::atmosphere::Atmosphere;
@@ -16,6 +16,7 @@ use nalgebra::{vector, Vector3};
 pub struct Phase {
     pub state: State,
     vehicle: Vehicle,
+    max_acceleration: f64,
     steering: Steering,
     planet: Planet,
     atmosphere: Atmosphere,
@@ -63,16 +64,19 @@ impl Phase {
 
         // Thrust acceleration
         state.propellant_mass = state.mass - self.vehicle.mass;
-        state.throttle =
-            self.vehicle
-                .auto_throttle(state.mass, state.pressure, state.aero_force_body);
-            state.thrust_force_body = self.vehicle.thrust_force(state.throttle, state.pressure);
-            state.massflow = self.vehicle.massflow(state.throttle);
+        state.throttle = self.vehicle.auto_throttle(
+            self.max_acceleration,
+            state.mass,
+            state.pressure,
+            state.aero_force_body,
+        );
+        state.thrust_force_body = self.vehicle.thrust_force(state.throttle, state.pressure);
+        state.massflow = self.vehicle.massflow(state.throttle);
 
         // Vehicle acceleration
         state.vehicle_acceleration_body =
             (state.aero_force_body + state.thrust_force_body) / state.mass;
-        if state.vehicle_acceleration_body.norm() > self.vehicle.max_acceleration * 1.001
+        if state.vehicle_acceleration_body.norm() > self.max_acceleration * 1.001
             || state.throttle.is_nan()
         {
             // Intersection would require negative thrust
@@ -155,6 +159,7 @@ impl Default for Phase {
         Self {
             state: State::new(),
             vehicle: Vehicle::default(),
+            max_acceleration: f64::INFINITY,
             steering: Steering::new(),
             planet: EARTH_SPHERICAL,
             atmosphere: Atmosphere::new(),
@@ -197,7 +202,7 @@ impl Phase {
     }
 
     pub fn limit_acceleration(&mut self, max_acceleration: f64) -> &mut Self {
-        self.vehicle.max_acceleration = max_acceleration;
+        self.max_acceleration = max_acceleration;
         self
     }
 
@@ -278,6 +283,7 @@ impl Phase {
 mod tests {
     use super::*;
     use crate::assert_almost_eq_rel;
+    use crate::constants::STD_GRAVITY;
     use crate::example_data::{DATA_POINTS, VEHICLES};
 
     #[test]
@@ -309,6 +315,7 @@ mod tests {
         let mut phase = Phase::new();
         phase
             .add_vehicle(vehicle)
+            .limit_acceleration(3. * STD_GRAVITY)
             .add_atmosphere()
             .init_launch(28.5, 279.4, 90.)
             .init_inertial(DATA_POINTS[2].position, DATA_POINTS[2].velocity)

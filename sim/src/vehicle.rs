@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 31.03.24
+// Last modified by Tibor Völcker on 05.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use std::f64::consts::PI;
@@ -44,7 +44,6 @@ pub struct Vehicle {
     lift_coeff: Table,
     side_force_coeff: Table,
     engines: Vec<Engine>,
-    pub max_acceleration: f64,
 }
 
 impl Vehicle {
@@ -55,7 +54,6 @@ impl Vehicle {
         lift_coeff: Table,
         side_force_coeff: Table,
         engines: Vec<Engine>,
-        max_acceleration: f64,
     ) -> Self {
         Self {
             mass,
@@ -64,7 +62,6 @@ impl Vehicle {
             lift_coeff,
             side_force_coeff,
             engines,
-            max_acceleration,
         }
     }
 }
@@ -94,7 +91,13 @@ impl Vehicle {
         throttle * self.engines.iter().map(|eng| eng.massflow()).sum::<f64>()
     }
 
-    pub fn auto_throttle(&self, mass: f64, pressure_atmos: f64, aero: Vector3<f64>) -> f64 {
+    pub fn auto_throttle(
+        &self,
+        max_acceleration: f64,
+        mass: f64,
+        pressure_atmos: f64,
+        aero: Vector3<f64>,
+    ) -> f64 {
         let max_thrust = self.thrust_force(1., pressure_atmos);
 
         if max_thrust == Vector3::zeros() {
@@ -105,7 +108,7 @@ impl Vehicle {
         let angle = PI - aero.angle(&max_thrust);
 
         // Required thrust vector to exactly reach max acceleration
-        let opt_req_thrust = side_side_angle(self.max_acceleration * mass, aero.norm(), angle);
+        let opt_req_thrust = side_side_angle(max_acceleration * mass, aero.norm(), angle);
 
         match opt_req_thrust {
             // The clamping can lead to a throttle which violates the maximum acceleration
@@ -185,9 +188,12 @@ mod tests {
             let inertial_to_body = inertial_to_body(data_point.launch, state.euler_angles);
 
             assert_almost_eq_rel!(
-                data_point
-                    .vehicle
-                    .auto_throttle(state.mass, state.pressure, state.aero_force_body),
+                data_point.vehicle.auto_throttle(
+                    data_point.max_acceleration,
+                    state.mass,
+                    state.pressure,
+                    state.aero_force_body
+                ),
                 state.throttle,
                 EPSILON
             );
