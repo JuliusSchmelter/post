@@ -1,8 +1,8 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 06.12.23
-// Last modified by Tibor Völcker on 28.03.24
+// Last modified by Tibor Völcker on 05.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
-use crate::State;
+use crate::{state::StateVariable, State};
 
 pub enum Axis {
     Roll,
@@ -12,9 +12,9 @@ pub enum Axis {
 
 #[derive(Debug, Default, Clone)]
 pub struct Steering {
-    roll: [f64; 4],
-    yaw: [f64; 4],
-    pitch: [f64; 4],
+    roll: (StateVariable, [f64; 4]),
+    yaw: (StateVariable, [f64; 4]),
+    pitch: (StateVariable, [f64; 4]),
 }
 
 impl Steering {
@@ -22,20 +22,21 @@ impl Steering {
         Self::default()
     }
 
-    pub fn update_steering(&mut self, axis: Axis, coeffs: [f64; 3]) -> &Self {
+    pub fn update_steering(&mut self, axis: Axis, var: StateVariable, coeffs: [f64; 3]) -> &Self {
         let s = match axis {
             Axis::Roll => &mut self.roll,
             Axis::Yaw => &mut self.yaw,
             Axis::Pitch => &mut self.pitch,
         };
-        (*s)[1..].copy_from_slice(&coeffs);
+        s.0 = var;
+        s.1[1..].copy_from_slice(&coeffs);
         self
     }
 
     pub fn init(&mut self, euler_angles: [f64; 3]) -> &Self {
-        self.roll[0] = euler_angles[0];
-        self.yaw[0] = euler_angles[1];
-        self.pitch[0] = euler_angles[2];
+        self.roll.1[0] = euler_angles[0];
+        self.yaw.1[0] = euler_angles[1];
+        self.pitch.1[0] = euler_angles[2];
 
         self
     }
@@ -52,9 +53,9 @@ impl Steering {
 
     pub fn euler_angles(&self, state: &State) -> [f64; 3] {
         [
-            Self::calc_coeff(state.time_since_event, self.roll).to_radians(),
-            Self::calc_coeff(state.time_since_event, self.yaw).to_radians(),
-            Self::calc_coeff(state.time_since_event, self.pitch).to_radians(),
+            Self::calc_coeff(self.roll.0.get_value(state), self.roll.1).to_radians(),
+            Self::calc_coeff(self.yaw.0.get_value(state), self.yaw.1).to_radians(),
+            Self::calc_coeff(self.pitch.0.get_value(state), self.pitch.1).to_radians(),
         ]
     }
 }
@@ -77,7 +78,11 @@ mod tests {
             print!("Testing {} m altitude ... ", data_point.altitude);
 
             steer.init([0., 0., data_point.steering_coeffs[0]]);
-            steer.update_steering(Axis::Pitch, [data_point.steering_coeffs[1], 0., 0.]);
+            steer.update_steering(
+                Axis::Pitch,
+                StateVariable::TimeSinceEvent,
+                [data_point.steering_coeffs[1], 0., 0.],
+            );
 
             let state = data_point.to_state();
 

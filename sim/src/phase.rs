@@ -5,7 +5,7 @@
 use crate::atmosphere::Atmosphere;
 use crate::integration::Integrator;
 use crate::planet::Planet;
-use crate::state::State;
+use crate::state::{State, StateVariable};
 use crate::steering::{Axis, Steering};
 use crate::transformations::{inertial_to_body, inertial_to_planet};
 use crate::vehicle::Vehicle;
@@ -211,8 +211,13 @@ impl Phase {
         self
     }
 
-    pub fn update_steering(&mut self, axis: Axis, coeffs: [f64; 3]) -> &mut Self {
-        self.steering.update_steering(axis, coeffs);
+    pub fn update_steering(
+        &mut self,
+        axis: Axis,
+        var: StateVariable,
+        coeffs: [f64; 3],
+    ) -> &mut Self {
+        self.steering.update_steering(axis, var, coeffs);
         self
     }
 
@@ -323,7 +328,11 @@ mod tests {
             .set_time(4.37456932e2)
             .set_stepsize(20.)
             .set_mass(DATA_POINTS[2].mass)
-            .update_steering(Axis::Pitch, [DATA_POINTS[2].steering_coeffs[1], 0., 0.])
+            .update_steering(
+                Axis::Pitch,
+                StateVariable::TimeSinceEvent,
+                [DATA_POINTS[2].steering_coeffs[1], 0., 0.],
+            )
             .update_termination(|s| s.propellant_mass);
 
         println!(

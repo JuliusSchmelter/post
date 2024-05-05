@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 04.03.23
-// Last modified by Tibor Völcker on 21.03.24
+// Last modified by Tibor Völcker on 05.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 // allow dead code for now, as it's still WIP
@@ -56,6 +56,7 @@ mod tests {
 
     use self::{
         example_data::{DATA_POINTS, PITCH_RATES, VEHICLES},
+        state::StateVariable,
         steering::Axis,
     };
 
@@ -77,38 +78,62 @@ mod tests {
         // 2. Phase
         .add_phase(|phase| {
             phase
-                .update_steering(Axis::Pitch, [PITCH_RATES[0], 0., 0.])
+                .update_steering(
+                    Axis::Pitch,
+                    StateVariable::TimeSinceEvent,
+                    [PITCH_RATES[0], 0., 0.],
+                )
                 .update_termination(|s| 25. - s.time)
         })
         // 3. Phase
         .add_phase(|phase| {
             phase
-                .update_steering(Axis::Pitch, [PITCH_RATES[1], 0., 0.])
+                .update_steering(
+                    Axis::Pitch,
+                    StateVariable::TimeSinceEvent,
+                    [PITCH_RATES[1], 0., 0.],
+                )
                 .update_termination(|s| 40. - s.time)
         })
         // 4. Phase
         .add_phase(|phase| {
             phase
-                .update_steering(Axis::Pitch, [PITCH_RATES[2], 0., 0.])
+                .update_steering(
+                    Axis::Pitch,
+                    StateVariable::TimeSinceEvent,
+                    [PITCH_RATES[2], 0., 0.],
+                )
                 .update_termination(|s| 60. - s.time)
         })
         // 5. Phase
         .add_phase(|phase| {
             phase
-                .update_steering(Axis::Pitch, [PITCH_RATES[3], 0., 0.])
+                .update_steering(
+                    Axis::Pitch,
+                    StateVariable::TimeSinceEvent,
+                    [PITCH_RATES[3], 0., 0.],
+                )
                 .limit_acceleration(3. * STD_GRAVITY)
                 .update_termination(|s| 120. - s.time)
         })
         // 6. Phase
         .add_phase(|phase| {
             phase
-                .update_steering(Axis::Pitch, [PITCH_RATES[4], 0., 0.])
+                .update_steering(
+                    Axis::Pitch,
+                    StateVariable::TimeSinceEvent,
+                    [PITCH_RATES[4], 0., 0.],
+                )
                 .update_termination(|s| 150. - s.time)
         })
         // 7. Phase
         .add_phase(|phase| {
             phase
-                .update_steering(Axis::Pitch, [PITCH_RATES[5], 0., 0.])
+                .update_steering(
+                    Axis::Pitch,
+                    StateVariable::TimeSinceEvent,
+                    [PITCH_RATES[5], 0., 0.],
+                )
                 .set_stepsize(10.)
                 .update_termination(|s| s.propellant_mass)
         })
@@ -123,7 +148,11 @@ mod tests {
             phase
                 .add_vehicle(VEHICLES[1].clone())
                 .update_mass(-665000. * KILOGRAM_PER_POUND)
-                .update_steering(Axis::Pitch, [PITCH_RATES[6], 0., 0.])
+                .update_steering(
+                    Axis::Pitch,
+                    StateVariable::TimeSinceEvent,
+                    [PITCH_RATES[6], 0., 0.],
+                )
                 .limit_acceleration(3.0 * STD_GRAVITY)
                 .set_stepsize(20.)
                 .update_termination(|s| 100. - s.time_since_event)
@@ -131,7 +160,11 @@ mod tests {
         // 10. Phase
         .add_phase(|phase| {
             phase
-                .update_steering(Axis::Pitch, [PITCH_RATES[7], 0., 0.])
+                .update_steering(
+                    Axis::Pitch,
+                    StateVariable::TimeSinceEvent,
+                    [PITCH_RATES[7], 0., 0.],
+                )
                 .update_termination(|s| 150. - s.time_since_event)
         })
         // 11. Phase
