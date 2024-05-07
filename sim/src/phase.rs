@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 05.05.24
+// Last modified by Tibor Völcker on 07.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use crate::atmosphere::Atmosphere;
@@ -64,7 +64,7 @@ impl Phase {
         state.aero_force_body = self.vehicle.aero_force(&state);
 
         // Thrust acceleration
-        state.propellant_mass = state.mass - self.vehicle.mass;
+        state.propellant_mass = state.mass - self.vehicle.structure_mass;
         state.throttle = self.vehicle.auto_throttle(
             self.max_acceleration,
             state.mass,
@@ -145,11 +145,12 @@ impl Phase {
         while !self.ended {
             self.step();
             println!(
-                "Time: {:.0}\nPosition: {:.0}\nVelocity: {:.0}\nAltitude: {:.0}\n",
+                "Time: {:.0}\nPosition: {:.0}\nVelocity: {:.0}\nAltitude: {:.0}\nProp mass: {:.0}\n",
                 self.state.time,
                 self.state.position_planet,
                 self.state.velocity,
-                self.state.altitude
+                self.state.altitude,
+                self.state.propellant_mass
             );
         }
     }
@@ -200,6 +201,7 @@ impl Phase {
 
     pub fn add_vehicle(&mut self, vehicle: Vehicle) -> &mut Self {
         self.vehicle = vehicle;
+        self.state.mass = self.vehicle.structure_mass + self.vehicle.initial_propellant_mass;
         self
     }
 
@@ -220,16 +222,6 @@ impl Phase {
         coeffs: [f64; 3],
     ) -> &mut Self {
         self.steering.update_steering(axis, var, coeffs);
-        self
-    }
-
-    pub fn set_mass(&mut self, mass: f64) -> &mut Self {
-        self.state.mass = mass;
-        self
-    }
-
-    pub fn update_mass(&mut self, delta_mass: f64) -> &mut Self {
-        self.state.mass += delta_mass;
         self
     }
 
@@ -301,10 +293,10 @@ mod tests {
             .add_vehicle(vehicle)
             .add_atmosphere()
             .init_launch(28.5, 279.4, 90.)
-            .set_mass(DATA_POINTS[0].mass)
             .set_stepsize(5.)
             .update_termination(StateVariable::Time, 15.);
 
+        assert_almost_eq_rel!(phase.state.mass, DATA_POINTS[0].mass, 0.001);
         assert_almost_eq_rel!(vec phase.state.position, DATA_POINTS[0].position, 0.001);
         assert_almost_eq_rel!(vec phase.state.velocity, DATA_POINTS[0].velocity, 0.001);
 
@@ -329,26 +321,21 @@ mod tests {
             .init_steering(DATA_POINTS[2].euler_angles)
             .set_time(4.37456932e2)
             .set_stepsize(20.)
-            .set_mass(DATA_POINTS[2].mass)
             .update_steering(
                 Axis::Pitch,
                 StateVariable::TimeSinceEvent,
                 [DATA_POINTS[2].steering_coeffs[1], 0., 0.],
             )
             .update_termination(StateVariable::PropellantMass, 0.);
+        phase.state.mass = DATA_POINTS[2].mass;
 
-        println!(
-            "Time: {:.0}\nPosition: {:.0}\nVelocity: {:.0}",
-            phase.state.time, phase.state.position, phase.state.velocity
-        );
         phase.run();
 
-        // automatic thrust shutdown distorts shutdown time a bit
-        assert_almost_eq_rel!(phase.state.time, DATA_POINTS[3].time, 0.006);
+        assert_almost_eq_rel!(phase.state.time, DATA_POINTS[3].time, 0.001);
         assert_almost_eq_rel!(
             phase.state.time_since_event,
             DATA_POINTS[3].time_since_event,
-            0.006
+            0.001
         );
         assert_almost_eq_rel!(phase.state.mass, DATA_POINTS[3].mass, 0.001);
         assert_almost_eq_rel!(vec phase.state.position, DATA_POINTS[3].position, 0.001);

@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 04.03.23
-// Last modified by Tibor Völcker on 05.05.24
+// Last modified by Tibor Völcker on 07.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 // allow dead code for now, as it's still WIP
@@ -52,10 +52,10 @@ impl Simulation {
 
 #[cfg(test)]
 mod tests {
-    use utils::constants::{KILOGRAM_PER_POUND, STD_GRAVITY};
+    use utils::constants::STD_GRAVITY;
 
     use self::{
-        example_data::{DATA_POINTS, PITCH_RATES, VEHICLES},
+        example_data::{PITCH_RATES, VEHICLES},
         state::StateVariable,
         steering::Axis,
     };
@@ -72,7 +72,6 @@ mod tests {
                 .add_atmosphere()
                 .set_stepsize(5.)
                 .init_launch(28.5, 279.4, 90.)
-                .set_mass(DATA_POINTS[0].mass)
                 .update_termination(StateVariable::Time, 15.)
         })
         // 2. Phase
@@ -147,7 +146,6 @@ mod tests {
         .add_phase(|phase| {
             phase
                 .add_vehicle(VEHICLES[1].clone())
-                .update_mass(-665000. * KILOGRAM_PER_POUND)
                 .update_steering(
                     Axis::Pitch,
                     StateVariable::TimeSinceEvent,

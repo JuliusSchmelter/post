@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.01.24
-// Last modified by Tibor Völcker on 05.05.24
+// Last modified by Tibor Völcker on 07.05.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 #![cfg(test)]
 pub use data::DATA_POINTS;
@@ -145,7 +145,8 @@ mod vehicles {
 
         pub static ref VEHICLES: [Vehicle; 2] = [
             Vehicle::new(
-                (4.03328112e6 - 2.249e6) * KILOGRAM_PER_POUND,
+                (4.03328112e6 - 2249000.) * KILOGRAM_PER_POUND,
+                2249000. * KILOGRAM_PER_POUND,
                 4500. * SQUARE_METER_PER_SQUARE_FOOT,
                 Table::D2(
                     Table2D::try_new(
@@ -172,7 +173,8 @@ mod vehicles {
                 )],
             ),
             Vehicle::new(
-                (3.57822526e5 - 4.75414027e4) * KILOGRAM_PER_POUND,
+                (4.03328112e6 - 2249000. - 809000. - 665000.) * KILOGRAM_PER_POUND,
+                809000. * KILOGRAM_PER_POUND,
                 4840. * SQUARE_METER_PER_SQUARE_FOOT,
                 Table::D2(
                     Table2D::try_new(

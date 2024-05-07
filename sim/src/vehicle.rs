@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 05.05.24
+// Last modified by Tibor Völcker on 07.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use std::f64::consts::PI;
@@ -38,7 +38,8 @@ fn side_side_angle(a: f64, b: f64, alpha: f64) -> Option<f64> {
 
 #[derive(Debug, Default, Clone)]
 pub struct Vehicle {
-    pub mass: f64,
+    pub structure_mass: f64,
+    pub initial_propellant_mass: f64,
     reference_area: f64,
     drag_coeff: Table,
     lift_coeff: Table,
@@ -48,7 +49,8 @@ pub struct Vehicle {
 
 impl Vehicle {
     pub fn new(
-        mass: f64,
+        structure_mass: f64,
+        initial_propellant_mass: f64,
         reference_area: f64,
         drag_coeff: Table,
         lift_coeff: Table,
@@ -56,7 +58,8 @@ impl Vehicle {
         engines: Vec<Engine>,
     ) -> Self {
         Self {
-            mass,
+            structure_mass,
+            initial_propellant_mass,
             reference_area,
             drag_coeff,
             lift_coeff,
@@ -203,7 +206,7 @@ mod tests {
                 EPSILON
             );
             assert_almost_eq_rel!(
-                state.mass - data_point.vehicle.mass,
+                state.mass - data_point.vehicle.structure_mass,
                 state.propellant_mass,
                 EPSILON
             );
