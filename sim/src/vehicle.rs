@@ -1,13 +1,15 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 07.05.24
+// Last modified by Tibor Völcker on 08.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use std::f64::consts::PI;
 
+use crate::config::VehicleConfig;
 use crate::constants::{NEARLY_ZERO, STD_GRAVITY};
 use crate::state::State;
 use crate::utils::Table;
 use nalgebra::{vector, Vector3};
+use serde::Deserialize;
 
 fn side_side_angle(a: f64, b: f64, alpha: f64) -> Option<f64> {
     if alpha == 0. {
@@ -45,6 +47,32 @@ pub struct Vehicle {
     lift_coeff: Table,
     side_force_coeff: Table,
     engines: Vec<Engine>,
+}
+
+impl Vehicle {
+    pub fn update_with_config(&mut self, config: &VehicleConfig) {
+        if let Some(config) = config.structure_mass {
+            self.structure_mass = config;
+        }
+        if let Some(config) = config.propellant_mass {
+            self.initial_propellant_mass = config;
+        }
+        if let Some(config) = config.reference_area {
+            self.reference_area = config;
+        }
+        if let Some(config) = &config.drag_coeff {
+            self.drag_coeff = config.clone();
+        }
+        if let Some(config) = &config.lift_coeff {
+            self.lift_coeff = config.clone();
+        }
+        if let Some(config) = &config.side_force_coeff {
+            self.side_force_coeff = config.clone();
+        }
+        if let Some(config) = &config.engines {
+            self.engines = config.clone();
+        }
+    }
 }
 
 impl Vehicle {
@@ -141,7 +169,8 @@ impl Vehicle {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Engine {
     // [pitch, yaw]
     incidence: [f64; 2],

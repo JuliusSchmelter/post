@@ -1,8 +1,8 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.11.23
-// Last modified by Tibor Völcker on 05.05.24
+// Last modified by Tibor Völcker on 07.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
-use crate::constants::*;
+use crate::{config::PlanetConfig, constants::*};
 use nalgebra::{vector, Vector3};
 
 #[derive(Debug, Clone)]
@@ -13,15 +13,41 @@ pub struct Planet {
     pub rotation_rate: f64,
 }
 
+impl Default for Planet {
+    fn default() -> Self {
+        EARTH_SPHERICAL
+    }
+}
+
+impl Planet {
+    pub fn update_with_config(config: &PlanetConfig) -> Self {
+        match config {
+            PlanetConfig::Spherical => EARTH_SPHERICAL,
+            PlanetConfig::Fisher1960 => EARTH_FISHER_1960,
+            PlanetConfig::Smithsonian => EARTH_SMITHSONIAN,
+            PlanetConfig::Custom {
+                equatorial_radius,
+                polar_radius,
+                gravitational_parameters,
+                rotation_rate,
+            } => Planet {
+                equatorial_radius: *equatorial_radius,
+                polar_radius: *polar_radius,
+                gravitational_parameters: *gravitational_parameters,
+                rotation_rate: *rotation_rate,
+            },
+        }
+    }
+}
+
 pub const EARTH_SPHERICAL: Planet = Planet {
     equatorial_radius: 2.0925741e7 * METER_PER_FOOT,
     polar_radius: 2.0925741e7 * METER_PER_FOOT,
-    // [mu, J_2, J_3, J_4]
     gravitational_parameters: [1.4076539e16 * CUBIC_METER_PER_CUBIC_FOOT, 0., 0., 0.],
     rotation_rate: 7.29211e-5,
 };
 
-pub const EARTH_FISHER_1960: Planet = Planet {
+const EARTH_FISHER_1960: Planet = Planet {
     equatorial_radius: 2.0925741e7 * METER_PER_FOOT,
     polar_radius: 2.0855590e7 * METER_PER_FOOT,
     // [mu, J_2, J_3, J_4]
@@ -29,7 +55,7 @@ pub const EARTH_FISHER_1960: Planet = Planet {
     rotation_rate: 7.29211e-5,
 };
 
-pub const EARTH_SMITHSONIAN: Planet = Planet {
+const EARTH_SMITHSONIAN: Planet = Planet {
     equatorial_radius: 2.0925741e7 * METER_PER_FOOT,
     polar_radius: 2.0855590e7 * METER_PER_FOOT,
     // [mu, J_2, J_3, J_4]

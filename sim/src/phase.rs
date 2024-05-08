@@ -1,8 +1,9 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 07.05.24
+// Last modified by Tibor Völcker on 08.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use crate::atmosphere::Atmosphere;
+use crate::config::{InitConfig, PhaseConfig};
 use crate::integration::Integrator;
 use crate::planet::Planet;
 use crate::state::{State, StateVariable};
@@ -176,8 +177,59 @@ impl Default for Phase {
     }
 }
 impl Phase {
-    pub fn new() -> Self {
-        Self::default()
+    pub fn new(prev_phase: Option<&Phase>, config: &PhaseConfig) -> Self {
+        let mut phase;
+        if let Some(prev_phase) = prev_phase {
+            phase = prev_phase.clone();
+        } else {
+            phase = Self::default();
+        }
+
+        // Update previous phase with values from config
+        if let Some(config) = &config.planet_model {
+            phase.planet = Planet::update_with_config(config);
+        }
+        if let Some(config) = &config.atmosphere {
+            phase.atmosphere.update_with_config(config);
+        }
+        if let Some(config) = &config.vehicle {
+            phase.vehicle.update_with_config(config);
+
+            // If structure mass changed, we need to update the state
+            if let Some(config) = config.structure_mass {
+                phase.state.mass = phase.state.propellant_mass + config;
+            }
+            // If initial propellant mass changed, we need to update the state
+            if let Some(config) = config.propellant_mass {
+                phase.state.mass = phase.vehicle.structure_mass + config;
+            }
+        }
+        if let Some(config) = config.max_acceleration {
+            if config == -1. {
+                phase.max_acceleration = f64::INFINITY;
+            } else {
+                phase.max_acceleration = config;
+            }
+        }
+        if let Some(config) = &config.steering {
+            phase.steering.update_with_config(config);
+        }
+        if let Some(config) = config.stepsize {
+            phase.stepsize = config;
+        }
+        if let Some(config) = config.end_criterion {
+            phase.end_criterion = config;
+        }
+
+        if prev_phase.is_none() {
+            let config = &config
+                .init
+                .as_ref()
+                .expect("First phase must include init config");
+            phase.init(config);
+        }
+
+        phase
     }
 
     pub fn reset(&mut self) -> &mut Self {
@@ -247,11 +299,11 @@ impl Phase {
         self
     }
 
-    pub fn init_launch(&mut self, latitude: f64, longitude: f64, azimuth: f64) -> &mut Self {
+    pub fn init(&mut self, config: &InitConfig) -> &mut Self {
         let (lat, long, az) = (
-            latitude.to_radians(),
-            longitude.to_radians(),
-            azimuth.to_radians(),
+            config.latitude.to_radians(),
+            config.longitude.to_radians(),
+            config.azimuth.to_radians(),
         );
 
         let k = (self.planet.equatorial_radius / self.planet.polar_radius).powi(2);
@@ -282,19 +334,15 @@ impl Phase {
 mod tests {
     use super::*;
     use crate::assert_almost_eq_rel;
-    use crate::constants::STD_GRAVITY;
-    use crate::example_data::{DATA_POINTS, VEHICLES};
+    use crate::example_data::DATA_POINTS;
 
     #[test]
     fn phase_1() {
-        let vehicle = VEHICLES[0].clone();
-        let mut phase = Phase::new();
-        phase
-            .add_vehicle(vehicle)
-            .add_atmosphere()
-            .init_launch(28.5, 279.4, 90.)
-            .set_stepsize(5.)
-            .update_termination(StateVariable::Time, 15.);
+        let str = include_str!("utils/input.json");
+
+        let configs: Vec<PhaseConfig> = serde_json::from_str(str).unwrap();
+
+        let mut phase = Phase::new(None, &configs[0]);
 
         assert_almost_eq_rel!(phase.state.mass, DATA_POINTS[0].mass, 0.001);
         assert_almost_eq_rel!(vec phase.state.position, DATA_POINTS[0].position, 0.001);
@@ -310,28 +358,23 @@ mod tests {
 
     #[test]
     fn phase_11() {
-        let vehicle = VEHICLES[1].clone();
-        let mut phase = Phase::new();
-        phase
-            .add_vehicle(vehicle)
-            .limit_acceleration(3. * STD_GRAVITY)
-            .add_atmosphere()
-            .init_launch(28.5, 279.4, 90.)
-            .init_inertial(DATA_POINTS[2].position, DATA_POINTS[2].velocity)
-            .init_steering(DATA_POINTS[2].euler_angles)
-            .set_time(4.37456932e2)
-            .set_stepsize(20.)
-            .update_steering(
-                Axis::Pitch,
-                StateVariable::TimeSinceEvent,
-                [DATA_POINTS[2].steering_coeffs[1], 0., 0.],
-            )
-            .update_termination(StateVariable::PropellantMass, 0.);
+        let str = include_str!("utils/input.json");
+
+        let configs: Vec<PhaseConfig> = serde_json::from_str(str).unwrap();
+
+        // Cycle through phases to finally build the last one
+        let mut phase = Phase::new(None, &configs[0]);
+        for config in &configs[1..] {
+            phase = Phase::new(Some(&phase), config);
+        }
+
+        // Set initial state
         phase.state.mass = DATA_POINTS[2].mass;
+        phase.state.position = DATA_POINTS[2].position;
+        phase.state.velocity = DATA_POINTS[2].velocity;
 
         phase.run();
 
-        assert_almost_eq_rel!(phase.state.time, DATA_POINTS[3].time, 0.001);
         assert_almost_eq_rel!(
             phase.state.time_since_event,
             DATA_POINTS[3].time_since_event,

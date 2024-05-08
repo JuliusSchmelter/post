@@ -1,8 +1,8 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 06.12.23
-// Last modified by Tibor Völcker on 05.05.24
+// Last modified by Tibor Völcker on 07.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
-use crate::{state::StateVariable, State};
+use crate::{config::SteeringConfig, state::StateVariable, State};
 
 pub enum Axis {
     Roll,
@@ -20,6 +20,21 @@ pub struct Steering {
 impl Steering {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    pub fn update_with_config(&mut self, config: &SteeringConfig) {
+        if let Some(config) = config.roll {
+            self.roll.0 = config.0;
+            self.roll.1[1..].copy_from_slice(&config.1);
+        }
+        if let Some(config) = config.yaw {
+            self.yaw.0 = config.0;
+            self.yaw.1[1..].copy_from_slice(&config.1);
+        }
+        if let Some(config) = config.pitch {
+            self.pitch.0 = config.0;
+            self.pitch.1[1..].copy_from_slice(&config.1);
+        }
     }
 
     pub fn update_steering(&mut self, axis: Axis, var: StateVariable, coeffs: [f64; 3]) -> &Self {

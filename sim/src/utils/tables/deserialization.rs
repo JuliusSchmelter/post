@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 25.03.24
-// Last modified by Tibor Völcker on 28.03.24
+// Last modified by Tibor Völcker on 08.05.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use super::init::TableInitError;
@@ -7,6 +7,7 @@ use super::*;
 use serde::Deserialize;
 
 #[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Table1DUnchecked {
     x: (StateVariable, Box<[f64]>),
     data: Box<[f64]>,
@@ -23,6 +24,7 @@ impl TryFrom<Table1DUnchecked> for Table1D {
 }
 
 #[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Table2DUnchecked {
     x: (StateVariable, Box<[f64]>),
     y: (StateVariable, Box<[f64]>),
@@ -45,6 +47,7 @@ impl TryFrom<Table2DUnchecked> for Table2D {
 }
 
 #[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Table3DUnchecked {
     x: (StateVariable, Box<[f64]>),
     y: (StateVariable, Box<[f64]>),
