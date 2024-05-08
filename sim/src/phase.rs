@@ -7,7 +7,7 @@ use crate::config::{InitConfig, PhaseConfig};
 use crate::integration::Integrator;
 use crate::planet::Planet;
 use crate::state::{State, StateVariable};
-use crate::steering::{Axis, Steering};
+use crate::steering::Steering;
 use crate::transformations::{inertial_to_body, inertial_to_planet};
 use crate::vehicle::Vehicle;
 use crate::EARTH_SPHERICAL;
@@ -241,61 +241,8 @@ impl Phase {
         self
     }
 
-    pub fn update_planet(&mut self, planet: Planet) -> &mut Self {
-        self.planet = planet;
-        self
-    }
-
-    pub fn add_atmosphere(&mut self) -> &mut Self {
-        self.atmosphere.add_atmosphere();
-        self
-    }
-
-    pub fn add_vehicle(&mut self, vehicle: Vehicle) -> &mut Self {
-        self.vehicle = vehicle;
-        self.state.mass = self.vehicle.structure_mass + self.vehicle.initial_propellant_mass;
-        self
-    }
-
-    pub fn limit_acceleration(&mut self, max_acceleration: f64) -> &mut Self {
-        self.max_acceleration = max_acceleration;
-        self
-    }
-
     pub fn init_steering(&mut self, euler_anges: [f64; 3]) -> &mut Self {
         self.steering.init(euler_anges);
-        self
-    }
-
-    pub fn update_steering(
-        &mut self,
-        axis: Axis,
-        var: StateVariable,
-        coeffs: [f64; 3],
-    ) -> &mut Self {
-        self.steering.update_steering(axis, var, coeffs);
-        self
-    }
-
-    pub fn set_time(&mut self, time: f64) -> &mut Self {
-        self.state.time = time;
-        self
-    }
-
-    pub fn set_stepsize(&mut self, stepsize: f64) -> &mut Self {
-        self.stepsize = stepsize;
-        self.base_stepsize = stepsize;
-        self
-    }
-
-    pub fn update_termination(&mut self, var: StateVariable, target: f64) -> &mut Self {
-        self.end_criterion = (var, target);
-        self
-    }
-
-    pub fn init_inertial(&mut self, position: Vector3<f64>, velocity: Vector3<f64>) -> &mut Self {
-        self.state.position = position;
-        self.state.velocity = velocity;
         self
     }
 
