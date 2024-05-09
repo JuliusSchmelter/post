@@ -49,9 +49,9 @@ impl Steering {
     }
 
     pub fn init(&mut self, euler_angles: [f64; 3]) -> &Self {
-        self.roll.1[0] = euler_angles[0];
-        self.yaw.1[0] = euler_angles[1];
-        self.pitch.1[0] = euler_angles[2];
+        self.roll.1[0] = euler_angles[0].to_degrees();
+        self.yaw.1[0] = euler_angles[1].to_degrees();
+        self.pitch.1[0] = euler_angles[2].to_degrees();
 
         self
     }
@@ -92,7 +92,7 @@ mod tests {
         for data_point in DATA_POINTS.iter() {
             print!("Testing {} m altitude ... ", data_point.altitude);
 
-            steer.init([0., 0., data_point.steering_coeffs[0]]);
+            steer.init([0., 0., data_point.steering_coeffs[0].to_radians()]);
             steer.update_steering(
                 Axis::Pitch,
                 StateVariable::TimeSinceEvent,
