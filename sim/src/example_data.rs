@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.01.24
-// Last modified by Tibor Völcker on 07.05.24
+// Last modified by Tibor Völcker on 09.05.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 #![cfg(test)]
 pub use data::DATA_POINTS;
@@ -222,7 +222,7 @@ mod data {
     use nalgebra::Vector3;
 
     use crate::constants::*;
-    use crate::{transformations::inertial_to_planet, State, Vehicle, EARTH_SPHERICAL};
+    use crate::{Vehicle, EARTH_SPHERICAL};
 
     use super::{PITCH_RATES, VEHICLES};
 
@@ -255,36 +255,16 @@ mod data {
     }
 
     impl DataPoint {
-        pub fn to_state(&self) -> State {
-            let velocity_planet = EARTH_SPHERICAL.velocity_planet(self.position, self.velocity);
-            State::from_values(
-                self.time,
-                self.time_since_event,
-                self.position,
-                inertial_to_planet(self.time, EARTH_SPHERICAL.rotation_rate)
-                    .transform_vector(&self.position),
-                self.altitude,
-                EARTH_SPHERICAL.geopotational_altitude(self.position),
-                self.velocity,
-                velocity_planet,
-                velocity_planet,
-                self.acceleration,
-                self.thrust_force,
-                self.aero_force,
-                self.vehicle_acceleration,
-                self.acceleration - self.vehicle_acceleration_inertial,
-                self.mass,
-                self.propellant_mass,
-                self.massflow,
-                self.temperature,
-                self.pressure,
-                self.density,
-                self.mach_number,
-                self.dynamic_pressure,
-                self.alpha.to_radians(),
-                self.euler_angles,
-                self.throttle,
-            )
+        pub fn gravity_acceleration(&self) -> Vector3<f64> {
+            self.acceleration - self.vehicle_acceleration_inertial
+        }
+
+        pub fn geopotational_altitude(&self) -> f64 {
+            EARTH_SPHERICAL.geopotational_altitude(self.position)
+        }
+
+        pub fn velocity_planet(&self) -> Vector3<f64> {
+            EARTH_SPHERICAL.velocity_planet(self.position, self.velocity)
         }
     }
 

@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 06.12.23
-// Last modified by Tibor Völcker on 07.05.24
+// Last modified by Tibor Völcker on 09.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use crate::{config::SteeringConfig, state::StateVariable, State};
@@ -99,7 +99,11 @@ mod tests {
                 [data_point.steering_coeffs[1], 0., 0.],
             );
 
-            let state = data_point.to_state();
+            let state = State {
+                time_since_event: data_point.time_since_event,
+                euler_angles: data_point.euler_angles,
+                ..Default::default()
+            };
 
             let output_euler = Vector3::from_column_slice(&steer.euler_angles(&state));
             let target_euler = Vector3::from_column_slice(&state.euler_angles);

@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.11.23
-// Last modified by Tibor Völcker on 07.05.24
+// Last modified by Tibor Völcker on 09.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use crate::{config::PlanetConfig, constants::*};
@@ -138,16 +138,14 @@ mod tests {
 
             print!("Testing {} m altitude ... ", data_point.altitude);
 
-            let state = data_point.to_state();
-
             assert_almost_eq_rel!(
-                EARTH_SPHERICAL.altitude(state.position),
-                state.altitude,
+                EARTH_SPHERICAL.altitude(data_point.position),
+                data_point.altitude,
                 EPSILON
             );
             assert_almost_eq_rel!(
-                vec EARTH_SPHERICAL.gravity(state.position),
-                state.gravity_acceleration,
+                vec EARTH_SPHERICAL.gravity(data_point.position),
+                data_point.gravity_acceleration(),
                 EPSILON
             );
 
@@ -157,16 +155,14 @@ mod tests {
         for data_point in DATA_POINTS[2..].iter() {
             print!("Testing {} m altitude ... ", data_point.altitude);
 
-            let state = data_point.to_state();
-
             assert_almost_eq_rel!(
-                EARTH_SPHERICAL.altitude(state.position),
-                state.altitude,
+                EARTH_SPHERICAL.altitude(data_point.position),
+                data_point.altitude,
                 EPSILON
             );
             assert_almost_eq_rel!(
-                vec EARTH_SPHERICAL.gravity(state.position),
-                state.gravity_acceleration,
+                vec EARTH_SPHERICAL.gravity(data_point.position),
+                data_point.gravity_acceleration(),
                 EPSILON
             );
 

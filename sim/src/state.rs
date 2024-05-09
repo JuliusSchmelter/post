@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 26.01.24
-// Last modified by Tibor Völcker on 28.03.24
+// Last modified by Tibor Völcker on 09.05.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{vector, SVector, Vector2, Vector3};
@@ -79,63 +79,6 @@ impl State {
             self.velocity[2],
             self.mass,
         ]
-    }
-
-    #[allow(clippy::too_many_arguments)]
-    pub fn from_values(
-        time: f64,
-        time_since_event: f64,
-        position: Vector3<f64>,
-        position_planet: Vector3<f64>,
-        altitude: f64,
-        altitude_geopotential: f64,
-        velocity: Vector3<f64>,
-        velocity_planet: Vector3<f64>,
-        velocity_atmosphere: Vector3<f64>,
-        acceleration: Vector3<f64>,
-        thrust_force_body: Vector3<f64>,
-        aero_force_body: Vector3<f64>,
-        vehicle_acceleration_body: Vector3<f64>,
-        gravity_acceleration: Vector3<f64>,
-        mass: f64,
-        propellant_mass: f64,
-        massflow: f64,
-        temperature: f64,
-        pressure: f64,
-        density: f64,
-        mach_number: f64,
-        dynamic_pressure: f64,
-        alpha: f64,
-        euler_angles: [f64; 3],
-        throttle: f64,
-    ) -> Self {
-        Self {
-            time,
-            time_since_event,
-            position,
-            position_planet,
-            altitude,
-            altitude_geopotential,
-            velocity,
-            velocity_planet,
-            velocity_atmosphere,
-            acceleration,
-            thrust_force_body,
-            aero_force_body,
-            vehicle_acceleration_body,
-            gravity_acceleration,
-            mass,
-            propellant_mass,
-            massflow,
-            temperature,
-            pressure,
-            density,
-            mach_number,
-            dynamic_pressure,
-            alpha,
-            euler_angles,
-            throttle,
-        }
     }
 }
 

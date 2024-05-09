@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 07.05.24
+// Last modified by Tibor Völcker on 09.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 pub mod standard_atmosphere_1962;
@@ -109,20 +109,26 @@ mod tests {
         const EPSILON: f64 = 0.001;
 
         let mut atm = Atmosphere::new();
-        atm.add_atmosphere();
+        atm.model = AtmosphereModel::StandardAtmosphere1962;
 
         for data_point in DATA_POINTS.iter() {
             print!("Testing {} m altitude ... ", data_point.altitude);
 
-            let state = data_point.to_state();
+            let state = State {
+                altitude: data_point.altitude,
+                altitude_geopotential: data_point.geopotational_altitude(),
+                velocity_atmosphere: data_point.velocity_planet(),
+                density: data_point.density,
+                ..Default::default()
+            };
 
-            assert_almost_eq_rel!(atm.temperature(&state), state.temperature, EPSILON);
-            assert_almost_eq_rel!(atm.pressure(&state), state.pressure, EPSILON);
-            assert_almost_eq_rel!(atm.density(&state), state.density, EPSILON);
-            assert_almost_eq_rel!(atm.mach_number(&state), state.mach_number, EPSILON);
+            assert_almost_eq_rel!(atm.temperature(&state), data_point.temperature, EPSILON);
+            assert_almost_eq_rel!(atm.pressure(&state), data_point.pressure, EPSILON);
+            assert_almost_eq_rel!(atm.density(&state), data_point.density, EPSILON);
+            assert_almost_eq_rel!(atm.mach_number(&state), data_point.mach_number, EPSILON);
             assert_almost_eq_rel!(
                 atm.dynamic_pressure(&state),
-                state.dynamic_pressure,
+                data_point.dynamic_pressure,
                 EPSILON
             );
 
