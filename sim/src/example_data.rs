@@ -222,9 +222,9 @@ mod data {
     use nalgebra::Vector3;
 
     use crate::constants::*;
-    use crate::{Vehicle, EARTH_SPHERICAL};
+    use crate::EARTH_SPHERICAL;
 
-    use super::{PITCH_RATES, VEHICLES};
+    use super::PITCH_RATES;
 
     pub struct DataPoint {
         pub time: f64,
@@ -248,7 +248,7 @@ mod data {
         pub thrust_force: Vector3<f64>,
         pub aero_force: Vector3<f64>,
         pub alpha: f64,
-        pub vehicle: Vehicle,
+        pub vehicle_idx: usize,
         pub steering_coeffs: [f64; 2],
         pub launch: [f64; 3],
         pub max_acceleration: f64,
@@ -288,7 +288,7 @@ mod data {
                 thrust_force: Vector3::new(4.97997964e6, 0., 0.) * NEWTON_PER_POUND_FORCE,
                 dynamic_pressure: 0. * PASCAL_PER_PSF,
                 aero_force: Vector3::new(-0., 0., -0.) * NEWTON_PER_POUND_FORCE,
-                vehicle: VEHICLES[0].clone(),
+                vehicle_idx: 0,
                 steering_coeffs: [0., 0.],
                 propellant_mass: 2.24900000e6 * KILOGRAM_PER_POUND,
                 massflow: -1.24646925e4 * KILOGRAM_PER_POUND,
@@ -323,7 +323,7 @@ mod data {
                 thrust_force: Vector3::new(4.99634838e6, 0., 0.) * NEWTON_PER_POUND_FORCE,
                 dynamic_pressure: 1.93297185e1 * PASCAL_PER_PSF,
                 aero_force: Vector3::new(-1.59202357e4, 0., -1.09857008e3) * NEWTON_PER_POUND_FORCE,
-                vehicle: VEHICLES[0].clone(),
+                vehicle_idx: 0,
                 steering_coeffs: [0., 0.],
                 propellant_mass: 2.06202961e6 * KILOGRAM_PER_POUND,
                 massflow: -1.24646925e4 * KILOGRAM_PER_POUND,
@@ -360,7 +360,7 @@ mod data {
                 thrust_force: Vector3::new(1.07363350e6, 0., 0.) * NEWTON_PER_POUND_FORCE,
                 dynamic_pressure: 8.63665574e-1 * PASCAL_PER_PSF,
                 aero_force: Vector3::new(-1.66106776e2, 0., -6.28680574e2) * NEWTON_PER_POUND_FORCE,
-                vehicle: VEHICLES[1].clone(),
+                vehicle_idx: 2,
                 steering_coeffs: [-9.66287352e1, PITCH_RATES[7]],
                 propellant_mass: 4.754140278e4 * KILOGRAM_PER_POUND,
                 massflow: -2.33907148e3 * KILOGRAM_PER_POUND,
@@ -397,7 +397,7 @@ mod data {
                 thrust_force: Vector3::new(9.31056380e5, 0., 0.) * NEWTON_PER_POUND_FORCE,
                 dynamic_pressure: 1.10682128e0 * PASCAL_PER_PSF,
                 aero_force: Vector3::new(-2.13216514e2, 0., -6.17695942e2) * NEWTON_PER_POUND_FORCE,
-                vehicle: VEHICLES[1].clone(),
+                vehicle_idx: 2,
                 steering_coeffs: [-9.66287352e1, PITCH_RATES[7]],
                 propellant_mass: 0.,
                 massflow: -2.02844600e3 * KILOGRAM_PER_POUND,

@@ -204,21 +204,37 @@ impl Engine {
 
 #[cfg(test)]
 mod tests {
+    use crate::config::PhaseConfig;
     use crate::example_data::DATA_POINTS;
     use crate::transformations::inertial_to_body;
-    use crate::{assert_almost_eq_rel, State};
+    use crate::{assert_almost_eq_rel, State, Vehicle};
 
     #[test]
     fn test_force() {
         const EPSILON: f64 = 0.0005;
 
+        let str = include_str!("utils/input.json");
+
+        let configs: Vec<PhaseConfig> = serde_json::from_str(str).unwrap();
+
+        // Cycle through phases to finally build the last one
+        let mut vehicles = Vec::new();
+        for config in &configs {
+            if let Some(config) = &config.vehicle {
+                let mut vehicle = Vehicle::default();
+                vehicle.update_with_config(config);
+                vehicles.push(vehicle);
+            }
+        }
+
         for data_point in DATA_POINTS.iter() {
             print!("Testing {} m altitude ... ", data_point.altitude);
 
             let inertial_to_body = inertial_to_body(data_point.launch, data_point.euler_angles);
+            let vehicle = &vehicles[data_point.vehicle_idx];
 
             assert_almost_eq_rel!(
-                data_point.vehicle.auto_throttle(
+                vehicle.auto_throttle(
                     data_point.max_acceleration,
                     data_point.mass,
                     data_point.pressure,
@@ -228,20 +244,18 @@ mod tests {
                 EPSILON
             );
             assert_almost_eq_rel!(
-                data_point.vehicle.massflow(data_point.throttle),
+                vehicle.massflow(data_point.throttle),
                 data_point.massflow,
                 EPSILON
             );
             assert_almost_eq_rel!(
-                data_point.mass - data_point.vehicle.structure_mass,
+                data_point.mass - vehicle.structure_mass,
                 data_point.propellant_mass,
                 EPSILON
             );
-            assert_almost_eq_rel!(vec data_point.vehicle.thrust_force(data_point.throttle, data_point.pressure), data_point.thrust_force, EPSILON);
+            assert_almost_eq_rel!(vec vehicle.thrust_force(data_point.throttle, data_point.pressure), data_point.thrust_force, EPSILON);
             assert_almost_eq_rel!(
-                data_point
-                    .vehicle
-                    .alpha(inertial_to_body.transform_vector(&data_point.velocity_planet())),
+                vehicle.alpha(inertial_to_body.transform_vector(&data_point.velocity_planet())),
                 data_point.alpha.to_radians(),
                 EPSILON
             );
@@ -254,7 +268,7 @@ mod tests {
                 ..Default::default()
             };
 
-            assert_almost_eq_rel!(vec data_point.vehicle.aero_force(&state), state.aero_force_body, EPSILON);
+            assert_almost_eq_rel!(vec vehicle.aero_force(&state), state.aero_force_body, EPSILON);
 
             println!("ok");
         }
