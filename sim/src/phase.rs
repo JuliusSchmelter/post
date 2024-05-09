@@ -282,6 +282,7 @@ mod tests {
     use super::*;
     use crate::assert_almost_eq_rel;
     use crate::example_data::DATA_POINTS;
+    use crate::steering::Axis;
 
     #[test]
     fn phase_1() {
@@ -319,18 +320,24 @@ mod tests {
         phase.state.mass = DATA_POINTS[2].mass;
         phase.state.position = DATA_POINTS[2].position;
         phase.state.velocity = DATA_POINTS[2].velocity;
+        phase
+            .steering
+            .init([0., 0., DATA_POINTS[2].steering_coeffs[0].to_radians()]);
+        phase.steering.update_steering(
+            Axis::Pitch,
+            StateVariable::TimeSinceEvent,
+            [DATA_POINTS[2].steering_coeffs[1], 0., 0.],
+        );
 
         phase.run();
 
-        // This is not as accurate as it should be. Might be because auto throttle.
         assert_almost_eq_rel!(
             phase.state.time_since_event,
             DATA_POINTS[3].time_since_event,
-            0.0025
+            0.001
         );
         assert_almost_eq_rel!(phase.state.mass, DATA_POINTS[3].mass, 0.001);
-        assert_almost_eq_rel!(vec phase.state.position, DATA_POINTS[3].position, 0.0025);
-        // This error is inacceptable.
-        assert_almost_eq_rel!(vec phase.state.velocity, DATA_POINTS[3].velocity, 0.5);
+        assert_almost_eq_rel!(vec phase.state.position, DATA_POINTS[3].position, 0.001);
+        assert_almost_eq_rel!(vec phase.state.velocity, DATA_POINTS[3].velocity, 0.001);
     }
 }
