@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 # Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.12.23
-# Last modified by Tibor Völcker on 11.03.24
+# Last modified by Tibor Völcker on 10.05.24
 # Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 import re
 import sys
+from pathlib import Path
 
 import numpy as np
-import pyvista
-from pyvista import examples
+import pyvista as pv
 
 
 def read_stdin():
@@ -51,24 +51,6 @@ def parse_test_output(content):
     return time, position, velocity
 
 
-def plot_earth(axes):
-    radius = 6378166
-
-    # Make data
-    u = np.linspace(0, 2 * np.pi, 100)
-    v = np.linspace(0, np.pi, 100)
-    x = radius * np.outer(np.cos(u), np.sin(v))
-    y = radius * np.outer(np.sin(u), np.sin(v))
-    z = radius * np.outer(np.ones(np.size(u)), np.cos(v))
-
-    # Plot the surface
-    axes.plot_surface(x, y, z, color=(1, 1, 1, 0))
-
-    # Plot spin axis
-    z = np.linspace(-7000000, 7000000, 100)
-    axes.plot(np.zeros_like(z), np.zeros_like(z), z, color="red")
-
-
 if __name__ == "__main__":
     content = read_file()
     if not content:
@@ -76,16 +58,26 @@ if __name__ == "__main__":
 
     t, pos, vel = parse_test_output(content)
 
-    traj = pyvista.MultipleLines(pos)
+    earth = pv.examples.planets.load_earth(radius=6378166, lat_resolution=500, lon_resolution=250)
+    earth_texture = pv.read_texture(Path(__file__).parent / "8k_earth_daymap.jpg")
 
-    earth = examples.planets.load_earth(radius=6378166)
-    earth_texture = examples.load_globe_texture()
+    pl = pv.Plotter()
 
-    pl = pyvista.Plotter(lighting="none")
+    actor = pl.add_mesh(earth, texture=earth_texture)
+    # Rotate earth so X-Y plane goes through Greenwich
+    actor.rotate_z(180)
 
-    pl.add_mesh(earth, texture=earth_texture)
-    pl.add_mesh(traj, color="r", line_width=10)
+    traj = pv.MultipleLines(pos)
+    pl.add_mesh(
+        traj,
+        color="g",
+        line_width=5,
+        render_lines_as_tubes=True,
+    )
+    pl.add_mesh(pos, color="r", point_size=6)
 
+    # Set camera and focus
+    pl.camera.position = pos[0] * 2
     pl.set_focus(pos[0])
 
     pl.show()
