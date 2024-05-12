@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 # Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.12.23
-# Last modified by Tibor Völcker on 11.05.24
+# Last modified by Tibor Völcker on 12.05.24
 # Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 import re
 import sys
@@ -12,6 +12,7 @@ from typing import Iterator
 import numpy as np
 import pandas as pd
 import pyvista as pv
+from pyvista import plotting
 
 
 @contextmanager
@@ -92,7 +93,7 @@ def plot(df: pd.DataFrame):
     Args:
         df (pd.DataFrame): The simulation data.
     """
-    pl = pv.plotting.Plotter(lighting="none")
+    pl = plotting.Plotter(lighting="none")
 
     # Add space background
     cubemap = pv.examples.download_cubemap_space_16k()
@@ -135,7 +136,7 @@ def plot(df: pd.DataFrame):
     pl.set_focus(start)
 
     # Add sunlight coming from above starting point
-    light = pv.plotting.Light()
+    light = plotting.Light()
     light.set_direction_angle(30, np.arctan2(start[1], start[0]) - 90)
     pl.add_light(light)
 
