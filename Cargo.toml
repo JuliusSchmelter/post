@@ -1,7 +1,11 @@
 [package]
 name = "post"
 version = "0.1.0"
+authors = ["Tibor Völcker <tiborvoelcker@hotmail.de>"]
 edition = "2021"
+description = "A program to optimize simulated trajectories."
+repository = "https://github.com/TiborVoelcker/post"
+license = "MIT"
 
 [workspace]
 members = ["sim"]
