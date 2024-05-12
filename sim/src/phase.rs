@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 09.05.24
+// Last modified by Tibor Völcker on 12.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use crate::atmosphere::Atmosphere;
@@ -10,7 +10,6 @@ use crate::state::{State, StateVariable};
 use crate::steering::Steering;
 use crate::transformations::{inertial_to_body, inertial_to_planet};
 use crate::vehicle::Vehicle;
-use crate::EARTH_SPHERICAL;
 use nalgebra::{vector, Vector3};
 
 #[derive(Debug, Clone)]
@@ -164,7 +163,7 @@ impl Default for Phase {
             vehicle: Vehicle::default(),
             max_acceleration: f64::INFINITY,
             steering: Steering::new(),
-            planet: EARTH_SPHERICAL,
+            planet: Planet::default(),
             launch: [0., 0., 0.],
             atmosphere: Atmosphere::new(),
             integrator: Integrator::RK4,
