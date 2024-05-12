@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 04.03.23
-// Last modified by Tibor Völcker on 09.05.24
+// Last modified by Tibor Völcker on 11.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 // allow dead code for now, as it's still WIP
@@ -17,6 +17,8 @@ mod transformations;
 mod utils;
 mod vehicle;
 
+use std::{error::Error, fs::File, io::BufReader, path::Path};
+
 use config::PhaseConfig;
 pub use phase::Phase;
 pub use planet::{Planet, EARTH_SPHERICAL};
@@ -33,6 +35,15 @@ pub struct Simulation {
 impl Simulation {
     pub fn new(config: Vec<PhaseConfig>) -> Self {
         Self { config }
+    }
+
+    pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self, Box<dyn Error>> {
+        let file = File::open(path)?;
+        let reader = BufReader::new(file);
+
+        let config = serde_json::from_reader(reader)?;
+
+        Ok(Self { config })
     }
 
     pub fn run(&self) -> State {

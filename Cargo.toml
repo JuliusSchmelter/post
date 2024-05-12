@@ -5,3 +5,7 @@ edition = "2021"
 
 [workspace]
 members = ["sim"]
+
+[dependencies]
+sim  = { path = "sim" }
+clap = { version = "4.5.4", features = ["derive"] } 
