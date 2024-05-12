@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 26.01.24
-// Last modified by Tibor Völcker on 09.05.24
+// Last modified by Tibor Völcker on 11.05.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{vector, SVector, Vector2, Vector3};
@@ -95,7 +95,6 @@ pub enum StateVariable {
     PositionPlanet1,
     PositionPlanet2,
     PositionPlanet3,
-    PositionPlanetNorm,
     Altitude,
     AltitudeGeopotential,
     Velocity1,
@@ -157,7 +156,6 @@ impl StateVariable {
             StateVariable::PositionPlanet1 => state.position_planet[0],
             StateVariable::PositionPlanet2 => state.position_planet[1],
             StateVariable::PositionPlanet3 => state.position_planet[2],
-            StateVariable::PositionPlanetNorm => state.position_planet.norm(),
             StateVariable::Altitude => state.altitude,
             StateVariable::AltitudeGeopotential => state.altitude_geopotential,
             StateVariable::Velocity1 => state.velocity[0],
