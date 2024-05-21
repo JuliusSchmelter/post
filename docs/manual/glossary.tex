@@ -1,0 +1,61 @@
+\newacronym{post}{POST}{Program to Simulate Optimized Trajectories}
+\newacronym[shortplural=DoF,longplural=Degrees of Freedom]{dof}{DoF}{Degree of
+  freedom}
+\newacronym{nasa}{NASA}{National Aeronautics and Space Administration}
+\newacronym{json}{JSON}{JavaScript Object Notation}
+\newacronym{cli}{CLI}{Command Line Interface}
+
+% Mark very common acronyms
+\glsunset{nasa}
+\glsunset{json}
+
+\newsymbol{x}{x_X}{First unit vector of frame \(X\)}
+\newsymbol{y}{y_X}{Second unit vector of frame \(X\)}
+\newsymbol{z}{z_X}{Third unit vector of frame \(X\)}
+\newsymbol{1i}{\{\}_I}{Variable in inertial frame}
+\newsymbol{1r}{\{\}_R}{Variable in earth-relative frame}
+\newsymbol{1l}{\{\}_L}{Variable in launch frame}
+\newsymbol{1b}{\{\}_b}{Variable in body frame}
+
+\newsymbol{0dot}{\dot{\{ \}}}{Derivative with respect to time}
+\newsymbol{r_I}{r_I}{Position in inertial frame}
+\newsymbol{v_I}{v_I}{Velocity in inertial frame}
+\newsymbol{IB}{[IB]}{Transformation from inertial to body frame}
+\newsymbol{A_TB}{A_{TB}}{Acceleration due to thrust in body frame}
+\newsymbol{A_AB}{A_{AB}}{Acceleration due to aerodynamic forces in body frame}
+\newsymbol{G_I}{G_I}{Acceleration due to gravity}
+
+\newsymbol{T_i}{T_i}{Thrust of engine \(i\)}
+\newsymbol{T_vac}{T_{vac, i}}{Vaccum thrust of engine \(i\)}
+\newsymbol{A_E}{A_{E,i}}{Exit area of engine \(i\)}
+\newsymbol{p}{p(h)}{Atmospheric pressure at altitude \(h\)}
+\newsymbol{m}{m}{Mass of the vehicle}
+\newsymbol{N_eng}{N_{eng}}{Number of engines}
+\newsymbol{i_p}{i_{p,i}}{Thrust pitch incidence angle of engine \(i\)}
+\newsymbol{i_y}{i_{y,i}}{Thrust yaw incidence angle of engine \(i\)}
+\newsymbol{I_sp}{I_{sp, i}}{Specific impulse of engine \(i\)}
+\newsymbol{g_0}{g_0}{Standard gravity, \(= 9.80665 \frac{m}{s^2}\)}
+
+\newsymbol{q}{q(h)}{Dynamic pressure at the altitude \(h\)}
+\newsymbol{S}{S}{Vehicle reference area}
+\newsymbol{C_A}{C_A}{Axial aerodynamic force coefficient}
+\newsymbol{C_Y}{C_Y}{Aerodynamic side-force coefficient}
+\newsymbol{C_N}{C_N}{Normal aerodynamic force coefficient}
+\newsymbol{C_D}{C_D}{Aerodynamic drag-force coefficient}
+\newsymbol{C_L}{C_L}{List drag-force coefficient}
+\newsymbol{alpha}{\alpha}{Angle-of-attack}
+
+\newsymbol{J_i}{J_i}{\(i\)-th earth's gravitational harmonics}
+\newsymbol{mu}{\mu}{\(= J_1\). Earth's gravitational constant}
+
+\newsymbol{R_A}{R_A}{Average surface altitude, \(= \frac 12(R_E + R_P)\)}
+\newsymbol{h}{h}{Altitude above earth's oblate surface}
+\newsymbol{R_E}{R_E}{Equatorial radius}
+\newsymbol{R_P}{R_P}{Polar radius}
+
+\newsymbol{A_SB}{A_{SB}}{\(=A_{TB}+A_{AB}\). Sensed acceleration in body frame}
+
+% Add all glossary terms
+\glsaddallunused[symbols]
+
+\glssetwidest{NASA\hspace{1em}}
