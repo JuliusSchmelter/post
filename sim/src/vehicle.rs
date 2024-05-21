@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 09.05.24
+// Last modified by Tibor Völcker on 12.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use std::f64::consts::PI;
@@ -70,7 +70,7 @@ impl Vehicle {
             self.side_force_coeff = config.clone();
         }
         if let Some(config) = &config.engines {
-            self.engines = config.clone();
+            self.engines.clone_from(config);
         }
     }
 }
