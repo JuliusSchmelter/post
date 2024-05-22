@@ -448,6 +448,8 @@ inherit from:
 Overwriting the propellant mass will also reset the consumed propellant.
 
 Setting a parameter to \json{null} is the same as not specifying it, so it will not be overwritten.
+Remove a table by setting it to \json{{"x": ["time", []], "data": []}}. To disable thrust, remove
+the engines by setting them to \json{[]}.
 
 \paragraph{Planet model}
 
@@ -489,63 +491,49 @@ defined:
 
 \paragraph{Simulation Variables}
 
-\begin{longtable}{l l}\json{"time"}                      & Simulation time                                                                  \\
-                 \json{"time_since_event"}               & Time since the last event                                                        \\
-                 \json{"position1"}                      & Inertial position                                                                \\
-                 \json{"position2"}                      &                                                                                  \\
-                 \json{"position3"}                      &                                                                                  \\
-                 \json{"position_norm"}                  & Distance from earth center                                                       \\
-                 \json{"position_planet1"}               & Earth-relative position                                                          \\
-                 \json{"position_planet2"}               &                                                                                  \\
-                 \json{"position_planet3"}               &                                                                                  \\
-                 \json{"altitude"}                       & Height above surface                                                             \\
-                 \json{"altitude_geopotential"}          & Used for the atmospheric model\footnote{Calculated with \(\frac{R_Ah}{R_A+h}\).} \\
-                 \json{"velocity1"}                      & Inertial velocity                                                                \\
-                 \json{"velocity2"}                      &                                                                                  \\
-                 \json{"velocity3"}                      &                                                                                  \\
-                 \json{"velocity_norm"}                  & Total inertial velocity                                                          \\
-                 \json{"velocity_planet1"}               & Earth-relative velocity                                                          \\
-                 \json{"velocity_planet2"}               &                                                                                  \\
-                 \json{"velocity_planet3"}               &                                                                                  \\
-                 \json{"velocity_planet_norm"}           & Total earth-relative velocity                                                    \\
-                 \json{"velocity_atmosphere1"}           & Atmosphere-relative velocity                                                     \\
-                 \json{"velocity_atmosphere2"}           &                                                                                  \\
-                 \json{"velocity_atmosphere3"}           &                                                                                  \\
-                 \json{"velocity_atmosphere_norm"}       & Total atmosphere-relative velocity                                               \\
-                 \json{"acceleration1"}                  & Inertial acceleration                                                            \\
-                 \json{"acceleration2"}                  &                                                                                  \\
-                 \json{"acceleration3"}                  &                                                                                  \\
-                 \json{"acceleration_norm"}              & Total inertial acceleration                                                      \\
-                 \json{"thrust_force_body1"}             & Thrust force in body frame                                                       \\
-                 \json{"thrust_force_body2"}             &                                                                                  \\
-                 \json{"thrust_force_body3"}             &                                                                                  \\
-                 \json{"thrust_force_body_norm"}         & Total thrust force in body frame                                                 \\
-                 \json{"aero_force_body1"}               & Aerodynamic force in body frame                                                  \\
-                 \json{"aero_force_body2"}               &                                                                                  \\
-                 \json{"aero_force_body3"}               &                                                                                  \\
-                 \json{"aero_force_body_norm"}           & Total aerodynamic force in body frame                                            \\
-                 \json{"vehicle_acceleration_body1"}     & Vehicle sensed acceleration                                                      \\
-                 \json{"vehicle_acceleration_body2"}     & \(\hookrightarrow\) Acceleration due to thrust and aero forces                   \\
-                 \json{"vehicle_acceleration_body3"}     &                                                                                  \\
-                 \json{"vehicle_acceleration_body_norm"} & Total vehicle senses acceleration                                                \\
-                 \json{"gravity_acceleration1"}          & Acceleration due to gravity                                                      \\
-                 \json{"gravity_acceleration2"}          &                                                                                  \\
-                 \json{"gravity_acceleration3"}          &                                                                                  \\
-                 \json{"gravity_acceleration_norm"}      & Total acceleration due to gravity                                                \\
-                 \json{"mass"}                           & Total vehicle mass                                                               \\
-                 \json{"propellant_mass"}                & Propellant mass                                                                  \\
-                 \json{"massflow"}                       & Propellant massflow                                                              \\
-                 \json{"temperature"}                    & Atmosphere temperature                                                           \\
-                 \json{"pressure"}                       & Atmosphere pressure                                                              \\
-                 \json{"density"}                        & Atmosphere density                                                               \\
-                 \json{"mach_number"}                    & Vehicle mach number                                                              \\
-                 \json{"dynamic_pressure"}               & Dynamic pressure                                                                 \\
-                 \json{"alpha"}                          & Angle of attack                                                                  \\
-                 \json{"euler_angles_roll"}              & Roll angle with respect to launch frame                                          \\
-                 \json{"euler_angles_yaw"}               & Yaw angle with respect to launch frame                                           \\
-                 \json{"euler_angles_pitch"}             & Pitch angle with respect to launch frame                                         \\
-                 \json{"throttle"}                       & Computed auto-throttle                                                           \\
+\begin{longtable}{l l}
+  \json{"time"}                         & Simulation time                          \\
+  \json{"time_since_event"}             & Time since the last event                \\
+  \json{"position1"}                    & Inertial position                        \\
+  \json{"position2"}                    &                                          \\
+  \json{"position3"}                    &                                          \\
+  \json{"position_norm"}                & Distance from earth center               \\
+  \json{"position_planet1"}             & Earth-relative position                  \\
+  \json{"position_planet2"}             &                                          \\
+  \json{"position_planet3"}             &                                          \\
+  \json{"altitude"}                     & Height above surface                     \\
+  \json{"altitude_geopotential"}        & Used for the atmospheric model\footnote{Calculated with \(\frac{R_Ah}{R_A+h}\).} \\
+  \json{"velocity1"}                    & Inertial velocity                        \\
+  \json{"velocity2"}                    &                                          \\
+  \json{"velocity3"}                    &                                          \\
+  \json{"velocity_norm"}                & Total inertial velocity                  \\
+  \json{"velocity_planet1"}             & Earth-relative velocity                  \\
+  \json{"velocity_planet2"}             &                                          \\
+  \json{"velocity_planet3"}             &                                          \\
+  \json{"velocity_planet_norm"}         & Total earth-relative velocity            \\
+  \json{"velocity_atmosphere1"}         & Atmosphere-relative velocity             \\
+  \json{"velocity_atmosphere2"}         &                                          \\
+  \json{"velocity_atmosphere3"}         &                                          \\
+  \json{"velocity_atmosphere_norm"}     & Total atmosphere-relative velocity       \\
+  \json{"gravity_acceleration1"}        & Acceleration due to gravity              \\
+  \json{"gravity_acceleration2"}        &                                          \\
+  \json{"gravity_acceleration3"}        &                                          \\
+  \json{"gravity_acceleration_norm"}    & Total acceleration due to gravity        \\
+  \json{"mass"}                         & Total vehicle mass                       \\
+  \json{"propellant_mass"}              & Propellant mass                          \\
+  \json{"temperature"}                  & Atmosphere temperature                   \\
+  \json{"pressure"}                     & Atmosphere pressure                      \\
+  \json{"density"}                      & Atmosphere density                       \\
+  \json{"mach_number"}                  & Vehicle mach number                      \\
+  \json{"dynamic_pressure"}             & Dynamic pressure                         \\
+  \json{"alpha"}                        & Angle of attack                          \\
+  \json{"euler_angles_roll"}            & Roll angle with respect to launch frame  \\
+  \json{"euler_angles_yaw"}             & Yaw angle with respect to launch frame   \\
+  \json{"euler_angles_pitch"}           & Pitch angle with respect to launch frame \\
 \end{longtable}
+
+\textbf{Important:} The values \json{"alpha"} and \json{"euler_angles_*"} are not available
+for steering, as they are not computed yet. If chosen, they will return zero (see \cref{existing-issues}).
 
 \paragraph{Aerodynamic coefficients}
 
@@ -814,6 +802,8 @@ To read more about the code of the project, visit the
   \item Thrust is generated even when propellant was consumed
   \item Bad performance due to writing to stdout, unnecessary cloning or passing
         by value
+  \item The state variable inputs allow any state variable. But when steering or
+        aerodynamic forces are calculated, not all state variables are calculated yet.
 \end{itemize}
 
 \paragraph{Planned Changes and Features}\label{planned-changes-and-features}
