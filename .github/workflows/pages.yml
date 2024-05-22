@@ -12,15 +12,11 @@ jobs:
         with:
           working_directory: docs/manual/
           root_file: main.tex
-      - name: Copy output file
-        run: |
-          mkdir output/
-          cp docs/manual/main.pdf output/
       - name: Upload Artifact
         uses: actions/upload-artifact@v4.3.3
         with:
           name: manual
-          path: output/
+          path: docs/manual/
   build-docs:
     runs-on: ubuntu-latest
     steps:
@@ -50,7 +46,7 @@ jobs:
         run: |
           mkdir pages/
           mv manual/main.pdf pages/manual.pdf
-          mv -R docs/ pages/docs/
+          mv docs/ pages/docs/
           mv repository/README.md pages/index.md
       - name: Build Jekyll for GitHub Pages
         uses: actions/jekyll-build-pages@v1.0.12
