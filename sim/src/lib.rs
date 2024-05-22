@@ -1,9 +1,6 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 04.03.23
-// Last modified by Tibor Völcker on 11.05.24
+// Last modified by Tibor Völcker on 22.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
-
-// allow dead code for now, as it's still WIP
-#![allow(dead_code)]
 
 mod atmosphere;
 mod config;
@@ -17,15 +14,10 @@ mod transformations;
 mod utils;
 mod vehicle;
 
-use std::{error::Error, fs::File, io::BufReader, path::Path};
-
 use config::PhaseConfig;
-pub use phase::Phase;
-pub use planet::{Planet, EARTH_SPHERICAL};
-pub use state::State;
-pub use steering::Steering;
-pub use utils::constants;
-pub use vehicle::{Engine, Vehicle};
+use phase::Phase;
+use state::State;
+use std::{error::Error, fs::File, io::BufReader, path::Path};
 
 #[derive(Debug, Default)]
 pub struct Simulation {

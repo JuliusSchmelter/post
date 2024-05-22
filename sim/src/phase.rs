@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 12.05.24
+// Last modified by Tibor Völcker on 22.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use crate::atmosphere::Atmosphere;
@@ -280,8 +280,8 @@ impl Phase {
 mod tests {
     use super::*;
     use crate::assert_almost_eq_rel;
+    use crate::config::SteeringConfig;
     use crate::example_data::DATA_POINTS;
-    use crate::steering::Axis;
 
     #[test]
     fn phase_1() {
@@ -322,11 +322,14 @@ mod tests {
         phase
             .steering
             .init([0., 0., DATA_POINTS[2].steering_coeffs[0].to_radians()]);
-        phase.steering.update_steering(
-            Axis::Pitch,
-            StateVariable::TimeSinceEvent,
-            [DATA_POINTS[2].steering_coeffs[1], 0., 0.],
-        );
+        phase.steering.update_with_config(&SteeringConfig {
+            roll: None,
+            yaw: None,
+            pitch: Some((
+                StateVariable::TimeSinceEvent,
+                [DATA_POINTS[2].steering_coeffs[1], 0., 0.],
+            )),
+        });
 
         phase.run();
 

@@ -1,12 +1,12 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 14.12.23
-// Last modified by Tibor Völcker on 28.03.24
+// Last modified by Tibor Völcker on 22.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use std::fmt::Debug;
 
 use serde::Deserialize;
 
-use crate::{state::StateVariable, State};
+use crate::state::{State, StateVariable};
 
 mod deserialization;
 mod linear_interpolation;

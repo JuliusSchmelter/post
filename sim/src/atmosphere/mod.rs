@@ -1,12 +1,12 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 09.05.24
+// Last modified by Tibor Völcker on 22.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
-pub mod standard_atmosphere_1962;
+mod standard_atmosphere_1962;
 
+use crate::config::AtmosphereConfig;
+use crate::state::State;
 use nalgebra::Vector3;
-
-use crate::{config::AtmosphereConfig, State};
 
 #[derive(Debug, Default, Clone)]
 pub struct Atmosphere {
@@ -39,11 +39,6 @@ impl Atmosphere {
 impl Atmosphere {
     pub fn new() -> Self {
         Self::default()
-    }
-
-    pub fn add_atmosphere(&mut self) -> &Self {
-        self.model = AtmosphereModel::StandardAtmosphere1962;
-        self
     }
 }
 

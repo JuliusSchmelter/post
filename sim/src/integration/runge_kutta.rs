@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 20.03.24
+// Last modified by Tibor Völcker on 22.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{matrix, vector, SMatrix, SVector};
@@ -56,11 +56,6 @@ pub const RK4: RungeKutta<4> = RungeKutta {
 mod tests {
     use super::*;
     use nalgebra::{Vector1, Vector2};
-
-    pub struct Example {
-        x: f64,
-        y: Vector2<f64>,
-    }
 
     fn initial() -> (Vector1<f64>, Vector2<f64>) {
         (Vector1::new(0.), Vector2::new(-0.5, 0.5))

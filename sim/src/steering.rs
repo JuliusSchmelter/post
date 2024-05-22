@@ -1,14 +1,8 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 06.12.23
-// Last modified by Tibor Völcker on 09.05.24
+// Last modified by Tibor Völcker on 22.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use crate::{config::SteeringConfig, state::StateVariable, State};
-
-pub enum Axis {
-    Roll,
-    Yaw,
-    Pitch,
-}
 
 #[derive(Debug, Default, Clone)]
 pub struct Steering {
@@ -35,17 +29,6 @@ impl Steering {
             self.pitch.0 = config.0;
             self.pitch.1[1..].copy_from_slice(&config.1);
         }
-    }
-
-    pub fn update_steering(&mut self, axis: Axis, var: StateVariable, coeffs: [f64; 3]) -> &Self {
-        let s = match axis {
-            Axis::Roll => &mut self.roll,
-            Axis::Yaw => &mut self.yaw,
-            Axis::Pitch => &mut self.pitch,
-        };
-        s.0 = var;
-        s.1[1..].copy_from_slice(&coeffs);
-        self
     }
 
     pub fn init(&mut self, euler_angles: [f64; 3]) -> &Self {
@@ -93,11 +76,15 @@ mod tests {
             print!("Testing {} m altitude ... ", data_point.altitude);
 
             steer.init([0., 0., data_point.steering_coeffs[0].to_radians()]);
-            steer.update_steering(
-                Axis::Pitch,
-                StateVariable::TimeSinceEvent,
-                [data_point.steering_coeffs[1], 0., 0.],
-            );
+
+            steer.update_with_config(&SteeringConfig {
+                roll: None,
+                yaw: None,
+                pitch: Some((
+                    StateVariable::TimeSinceEvent,
+                    [data_point.steering_coeffs[1], 0., 0.],
+                )),
+            });
 
             let state = State {
                 time_since_event: data_point.time_since_event,

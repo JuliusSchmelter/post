@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 26.01.24
-// Last modified by Tibor Völcker on 11.05.24
+// Last modified by Tibor Völcker on 22.05.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use nalgebra::{vector, SVector, Vector2, Vector3};
@@ -57,7 +57,7 @@ impl State {
         }
     }
 
-    pub fn to_differentials_vector(self) -> SVector<f64, 7> {
+    pub fn to_differentials_vector(&self) -> SVector<f64, 7> {
         vector![
             self.velocity[0],
             self.velocity[1],

@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.01.24
-// Last modified by Tibor Völcker on 12.05.24
+// Last modified by Tibor Völcker on 22.05.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 #![cfg(test)]
 pub use data::DATA_POINTS;
@@ -22,8 +22,8 @@ mod data {
     use lazy_static::lazy_static;
     use nalgebra::Vector3;
 
-    use crate::constants::*;
-    use crate::EARTH_SPHERICAL;
+    use crate::planet::EARTH_SPHERICAL;
+    use crate::utils::constants::*;
 
     use super::PITCH_RATES;
 

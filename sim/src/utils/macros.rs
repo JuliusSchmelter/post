@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.01.24
-// Last modified by Tibor Völcker on 07.05.24
+// Last modified by Tibor Völcker on 22.05.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 #[macro_export]
 macro_rules! assert_almost_eq_abs {
@@ -52,7 +52,7 @@ macro_rules! assert_almost_eq_rel {
     };
     ($left: expr, $right: expr, $eps: expr, $disp: expr) => {
         // Implementation
-        if $right.abs() < $crate::constants::NEARLY_ZERO {
+        if $right.abs() < $crate::utils::constants::NEARLY_ZERO {
             $crate::assert_almost_eq_abs!($left, $right, $eps * 100., $disp);
         } else {
             assert!(

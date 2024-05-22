@@ -1,7 +1,9 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 21.04.24
-// Last modified by Tibor Völcker on 08.05.24
+// Last modified by Tibor Völcker on 22.05.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
-use crate::{state::StateVariable, utils::Table, Engine};
+use crate::state::StateVariable;
+use crate::utils::Table;
+use crate::vehicle::Engine;
 
 use nalgebra::Vector3;
 use serde::Deserialize;

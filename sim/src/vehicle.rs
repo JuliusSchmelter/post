@@ -1,12 +1,12 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 12.05.24
+// Last modified by Tibor Völcker on 22.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 use std::f64::consts::PI;
 
 use crate::config::VehicleConfig;
-use crate::constants::{NEARLY_ZERO, STD_GRAVITY};
 use crate::state::State;
+use crate::utils::constants::*;
 use crate::utils::Table;
 use nalgebra::{vector, Vector3};
 use serde::Deserialize;
@@ -71,28 +71,6 @@ impl Vehicle {
         }
         if let Some(config) = &config.engines {
             self.engines.clone_from(config);
-        }
-    }
-}
-
-impl Vehicle {
-    pub fn new(
-        structure_mass: f64,
-        initial_propellant_mass: f64,
-        reference_area: f64,
-        drag_coeff: Table,
-        lift_coeff: Table,
-        side_force_coeff: Table,
-        engines: Vec<Engine>,
-    ) -> Self {
-        Self {
-            structure_mass,
-            initial_propellant_mass,
-            reference_area,
-            drag_coeff,
-            lift_coeff,
-            side_force_coeff,
-            engines,
         }
     }
 }
@@ -204,10 +182,11 @@ impl Engine {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+    use crate::assert_almost_eq_rel;
     use crate::config::PhaseConfig;
     use crate::example_data::DATA_POINTS;
     use crate::transformations::inertial_to_body;
-    use crate::{assert_almost_eq_rel, State, Vehicle};
 
     #[test]
     fn test_force() {
