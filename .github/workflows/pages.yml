@@ -2,7 +2,7 @@ name: pages-build-deploy
 run-name: Build pages and deploy
 on: [push]
 jobs:
-  build-user-manual:
+  build-manual:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -34,7 +34,7 @@ jobs:
           path: target/doc
   build-jekyll:
     runs-on: ubuntu-latest
-    needs: [build-user-manual, build-docs]
+    needs: [build-manual, build-docs]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -48,6 +48,7 @@ jobs:
           mv manual/main.pdf pages/manual.pdf
           mv docs/ pages/docs/
           mv repository/README.md pages/index.md
+          printf "name: POST\ntitle: null" > pages/_config.yml
       - name: Build Jekyll for GitHub Pages
         uses: actions/jekyll-build-pages@v1.0.12
         with:
