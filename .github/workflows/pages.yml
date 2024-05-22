@@ -10,13 +10,13 @@ jobs:
       - name: Build Latex
         uses: dante-ev/latex-action@2021-A
         with:
-          working_directory: docs/manual/
+          working_directory: docs/user-manual/
           root_file: main.tex
       - name: Upload Artifact
         uses: actions/upload-artifact@v4.3.3
         with:
           name: manual
-          path: docs/manual/
+          path: docs/user-manual/
   build-docs:
     runs-on: ubuntu-latest
     steps:
