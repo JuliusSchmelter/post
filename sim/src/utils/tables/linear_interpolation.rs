@@ -1,12 +1,17 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 06.01.24
-// Last modified by Tibor Völcker on 27.03.24
+// Last modified by Tibor Völcker on 24.05.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 
-fn get_idx(val_arr: &[f64], val: f64) -> (usize, usize) {
-    // Assumptions:
-    //  1. `val_arr` is sorted
-    //  2. `val_arr.len()` >= 2
+//! Defines function for linear interpolation.
 
+/// Helper function to retrieve the indexes of the value below and above the
+/// passed `val`. If `val` is bigger or smaller than all values in `val_arr`,
+/// the two last or two first indexes are returned.
+///
+/// __Attention:__ The function assumes that `val_arr` is sorted and has at
+/// least the length of 2. This is not checked for performance reasons, but
+/// should be given by the overlying table implementation.
+fn get_idx(val_arr: &[f64], val: f64) -> (usize, usize) {
     // Get index of upper base (index of closes bigger number)
     let idx1 = {
         let mut idx1 = val_arr.partition_point(|i| i < &val);
@@ -23,6 +28,16 @@ fn get_idx(val_arr: &[f64], val: f64) -> (usize, usize) {
     (idx1 - 1, idx1)
 }
 
+/// Trilinear interpolation. Interpolates `data` with `x`, `y` and `z`, as well
+/// as the arrays to interpolate: `x_arr`, `y_arr` and `z_arr`.
+///
+/// Internally calls [`bilinear_interpolate`] twice and interpolates its
+/// results.
+///
+/// __Attention:__ The function assumes that `x_arr`, `y_arr` and `z_arr` are
+/// sorted and the lengths match the corresponding array in `data`. This is not
+/// checked for performance reasons, but should be given by the overlying table
+/// implementation.
 pub fn trilinear_interpolate(
     x_arr: &[f64],
     x: f64,
@@ -55,6 +70,16 @@ pub fn trilinear_interpolate(
     y0 + (x - x0) * (y1 - y0) / (x1 - x0)
 }
 
+/// Bilinear interpolation. Interpolates `data` with `x` and `y`, as well as
+/// the arrays to interpolate: `x_arr` and `y_arr`.
+///
+/// Internally calls [`linear_interpolate`] twice and interpolates its
+/// results.
+///
+/// __Attention:__ The function assumes that `x_arr` and `y_arr` are sorted and
+/// the lengths match the corresponding array in `data`. This is not checked
+/// for performance reasons, but should be given by the overlying table
+/// implementation.
 pub fn bilinear_interpolate(
     x_arr: &[f64],
     x: f64,
@@ -85,6 +110,12 @@ pub fn bilinear_interpolate(
     y0 + (x - x0) * (y1 - y0) / (x1 - x0)
 }
 
+/// Linear interpolation. Interpolates `data` with `x`, as well as the array to
+/// interpolate: `x_arr`.
+///
+/// __Attention:__ The function assumes that `x_arr` is sorted and the length
+/// matches `data`. This is not checked for performance reasons, but should be
+/// given by the overlying table implementation.
 pub fn linear_interpolate(x_arr: &[f64], x: f64, data: &[f64]) -> f64 {
     // Assumptions:
     //   1. `x_arr` is sorted.

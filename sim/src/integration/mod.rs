@@ -1,19 +1,34 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 14.11.23
-// Last modified by Tibor Völcker on 31.03.24
+// Last modified by Tibor Völcker on 24.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
-use nalgebra::{vector, SVector, Vector2};
-
-use crate::state::State;
+//! Handles the integration.
+//!
+//! It defines the enum `Integrator` where the integration method can be
+//! selected, and which handles the conversion from vectors to the [`State`]
+//! struct.
 
 mod runge_kutta;
 
+use crate::state::State;
+use nalgebra::{vector, SVector, Vector2};
+
+/// Represents a generic interpolator. Used to select the desired integration
+/// method.
 #[derive(Debug, Clone)]
 pub enum Integrator {
+    /// Runge-Kutta 4th order. See [`runge_kutta`].
     RK4,
 }
 
 impl Integrator {
+    /// Does one integration step. It converts the function `func` from
+    /// `impl Fn(State) -> State` to `impl Fn(Vector2, Vector7) -> Vector7`,
+    /// which can then be integrated by the underlying integrators. The
+    /// `Vector2` is the two time states, the `Vector7` is the primary state.
+    /// See [`State::to_primary_vec`] for more information.
+    ///
+    /// Then, it calls the underlying integration method.
     pub(crate) fn step(
         &self,
         func: impl Fn(State) -> State,

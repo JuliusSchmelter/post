@@ -1,9 +1,17 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 22.05.24
+// Last modified by Tibor Völcker on 24.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
+
+//! Implements a generic Runge Kutta integrator.
 
 use nalgebra::{matrix, vector, SMatrix, SVector};
 
+/// Generic Runge Kutta implementation.
+///
+/// The generic `R` represents the order of the integrator.
+///
+/// It uses a Buther-Tableau to hold the coefficients used in the integration.
+/// The coefficients are then used to interpolate according to [3, p. VI-12].
 pub struct RungeKutta<const R: usize> {
     a: SMatrix<f64, R, R>,
     b: SVector<f64, R>,
@@ -11,6 +19,13 @@ pub struct RungeKutta<const R: usize> {
 }
 
 impl<const R: usize> RungeKutta<R> {
+    /// Does one integration step. `f` is the function to integrate, in the
+    /// form `y' = f(x, y)`. `x_n` is the input (e.g. the time), `y_n(x_n)` is the
+    /// initial state for the current time step. `h` is the step size.
+    ///
+    /// It calculates according to [3, p. VI-12]:
+    ///     k_i   = h*f(x_n + c_i*h, y_n + SUM[a_ij * k_j])
+    ///     y_n+1 = y_n + SUM[b_i * k_i]
     pub fn step<const D_X: usize, const D_Y: usize>(
         &self,
         f: impl Fn(SVector<f64, D_X>, SVector<f64, D_Y>) -> SVector<f64, D_Y>,
@@ -21,7 +36,6 @@ impl<const R: usize> RungeKutta<R> {
         let mut k = SMatrix::<f64, D_Y, R>::zeros();
 
         for i in 0..R {
-            // See [1] p. VI-12
             // k_i = h*f(x_n + c_i*h, y_n + SUM[a_ij * k_j])
             let ki = h * f(
                 x_n.add_scalar(self.c[i] * h),
@@ -32,7 +46,6 @@ impl<const R: usize> RungeKutta<R> {
             k.set_column(i, &ki);
         }
 
-        // See [1] p. VI-12
         // y_n+1 = y_n + SUM[b_i * k_i]
         // This could be done in one loop, but would be less readable
         (
@@ -44,6 +57,7 @@ impl<const R: usize> RungeKutta<R> {
     }
 }
 
+/// The Runge-Kutta method of 4th order.
 pub const RK4: RungeKutta<4> = RungeKutta {
     a: matrix![0., 0., 0., 0.; 0.5, 0., 0., 0.;
     0., 0.5, 0., 0.;

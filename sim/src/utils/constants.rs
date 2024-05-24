@@ -2,9 +2,12 @@
 // Last modified by Tibor Völcker on 22.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
+//! Constants used throughout the crate. They are either from [3, p. IV-7] or
+//! from https://physics.nist.gov/cuu/pdf/sp811.pdf p. 57-69 ff.
+
 pub const NEARLY_ZERO: f64 = 1e-6;
 
-// CONVERSIONS from https://physics.nist.gov/cuu/pdf/sp811.pdf pp. 57-69
+// CONVERSIONS from https://physics.nist.gov/cuu/pdf/sp811.pdf p. 57-69 ff.
 pub const METER_PER_FOOT: f64 = 3.048e-01;
 pub const SQUARE_METER_PER_SQUARE_FOOT: f64 = METER_PER_FOOT * METER_PER_FOOT;
 pub const CUBIC_METER_PER_CUBIC_FOOT: f64 = METER_PER_FOOT * METER_PER_FOOT * METER_PER_FOOT;
@@ -17,7 +20,7 @@ pub const KILOGRAM_PER_SLUG: f64 = 1.459390e+01;
 #[cfg(test)]
 pub const NEWTON_PER_POUND_FORCE: f64 = KILOGRAM_PER_POUND * STD_GRAVITY;
 
-// CONSTANTS from [1] p. IV-7
+// CONSTANTS from [3] p. IV-7
 pub const STD_GRAVITY: f64 = 9.80665; // [m / s^2]
 const AIR_MOLECULAR_WEIGHT: f64 = 28.9644; // [g / mol]
 const GAS_CONSTANT: f64 = 8.31432e3; // [J / kmol K]

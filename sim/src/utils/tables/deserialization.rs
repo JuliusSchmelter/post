@@ -1,6 +1,16 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 25.03.24
-// Last modified by Tibor Völcker on 08.05.24
+// Last modified by Tibor Völcker on 24.05.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
+
+//! Handles the deserialization of the tables. It defines the three structs
+//! [`Table1DUnchecked`], [`Table2DUnchecked`] and [`Table3DUnchecked`], which
+//! can be easily deserialized. Then it tries to build the normal tables with
+//! their `try_new` methods.
+//!
+//! The deserialization is handled automatically with serde's `derive`.
+//!
+//! Refer to the [`Table1D`], [`Table2D`] and [`Table3D`] implementations to
+//! learn more about the fields of each struct.
 
 use super::init::TableInitError;
 use super::*;

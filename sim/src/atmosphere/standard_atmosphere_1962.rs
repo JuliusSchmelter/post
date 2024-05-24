@@ -1,29 +1,38 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 22.05.24
+// Last modified by Tibor Völcker on 24.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
+
+//! Implements the 1962 Standard Atmosphere Model, according to [3, p. IV-5 ff.].
+//! It uses a big table with base altitudes which are then interpolated with
+//! special functions for each variable.
 
 use crate::utils::constants::*;
 
+/// Calculates the atmospheric temperature in K at the geopotential altitude
+/// `alt`.
+///
+/// Uses `T = T_B + L_B * (H_g - H_B)` from [3, eq. IV-7].
 pub fn temperature(alt: f64) -> f64 {
-    // T = T_B + L_B * (H_g - H_B)
     let (base_altitude, _, base_temperature, base_temp_gradient) = get_table_row(alt);
 
     base_temperature + base_temp_gradient * (alt - base_altitude)
 }
 
+/// Calculates the atmospheric pressure in Pa at the geopotential altitude
+/// `alt`.
+///
+/// Uses `P = P_B * (T_B / T)^[(g_0*M_0/R*) / L_B] if L_B != 0`
+/// and `P = P_B exp[-(g_0*M_0/R*) * (H - H_B) / T_B] if L_B = 0` from [3, eq. IV-8].
+///
+/// __Attention:__ The first equation is given as `(T_B / T)exp[(g_0*M_0/R*) / L_B]`,
+/// which is supposed to be `(T_B / T)^[(g_0*M_0/R*) / L_B]`.
+/// See the [U.S. Standard Atmosphere, 1962](https://ntrs.nasa.gov/api/citations/19630003300/downloads/19630003300.pdf)
+/// page 10 for more information.
 pub fn pressure(alt: f64) -> f64 {
-    // See [1] p. IV-6
-    // P = P_B * (T_B / T)^[(g_0*M_0/R*) / L_B] if L_B != 0
-    // P = P_B exp[-(g_0*M_0/R*) * (H - H_B) / T_B] if L_B = 0
-
-    // Watch out: first equation is given as (T_B / T)exp[(g_0*M_0/R*) / L_B],
-    // which is supposed to be (T_B / T)^[(g_0*M_0/R*) / L_B]
     let (base_altitude, base_pressure, base_temperature, base_temp_gradient) = get_table_row(alt);
     let temperature = temperature(alt);
 
     if base_temp_gradient != 0. {
-        // Watch out: in this equation in [1], (T_B / T)exp[(g_0*M_0/R*) / L_B] means (T_B / T)^[(g_0*M_0/R*) / L_B]
-        // See https://ntrs.nasa.gov/api/citations/19630003300/downloads/19630003300.pdf p. 10
         base_pressure
             * (base_temperature / temperature)
                 .powf((STD_GRAVITY / AIR_GAS_CONSTANT) / base_temp_gradient)
@@ -33,29 +42,38 @@ pub fn pressure(alt: f64) -> f64 {
     }
 }
 
+/// Calculates the atmospheric density in kg/m^3 at the geopotential altitude
+/// `alt`.
+///
+/// Uses `rho = (M_0/R*) * P / T` from [3, eq. IV-9].
 pub fn density(alt: f64) -> f64 {
-    // rho = (M_0/R*) * P / T
     let temperature = temperature(alt);
     let pressure = pressure(alt);
     pressure / (temperature * AIR_GAS_CONSTANT)
 }
 
+/// Calculates the speed of sound in m/s at the geopotential altitude `alt`.
+///
+/// Uses `C_s = (gamma*R*/M_0)^0.5 * T^0.5` from [3, eq. IV-9].
 pub fn speed_of_sound(alt: f64) -> f64 {
-    // C_s = (gamma*R*/M_0)^0.5 * T^0.5
     let temperature = temperature(alt);
     f64::sqrt(AIR_KAPPA * AIR_GAS_CONSTANT * temperature)
 }
 
-fn get_table_row(geopotational_alt: f64) -> (f64, f64, f64, f64) {
+/// Helper function to retrieve the correct table row given a geopotential
+/// altitude.
+fn get_table_row(geopotential_alt: f64) -> (f64, f64, f64, f64) {
     for i in 1..STD_ATMOS_TABLE.len() {
-        if STD_ATMOS_TABLE[i].0 > geopotational_alt {
+        if STD_ATMOS_TABLE[i].0 > geopotential_alt {
             return STD_ATMOS_TABLE[i - 1];
         }
     }
     STD_ATMOS_TABLE[STD_ATMOS_TABLE.len() - 1]
 }
 
-// TABLE DATA
+/// The table data from [3, Table IV-1].
+/// The values are the geopotential altitude in m, pressure in Pa, temperature
+/// in K, and temp. gradient in K/m.
 const STD_ATMOS_TABLE: [(f64, f64, f64, f64); 22] = [
     // [H_B, P_B, T_B, L_B]
     (

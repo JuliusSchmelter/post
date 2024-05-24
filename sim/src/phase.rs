@@ -2,6 +2,12 @@
 // Last modified by Tibor Völcker on 22.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
+//! Defines the [`Phase`] struct. The phase represents a section of the
+//! trajectory between two events. Each phase is initialized with
+//! configuration parameters and then integrated until the next event.
+//!
+//! The main logic of the equations of motion is implemented here.
+
 use crate::atmosphere::Atmosphere;
 use crate::config::{InitConfig, PhaseConfig};
 use crate::integration::Integrator;
@@ -12,24 +18,52 @@ use crate::transformations::{inertial_to_body, inertial_to_planet};
 use crate::vehicle::Vehicle;
 use nalgebra::{vector, Vector3};
 
+/// Represents a phase.
 #[derive(Debug, Clone)]
 pub struct Phase {
+    /// The current state.
     pub state: State,
+    /// The vehicle which is simulated.
     vehicle: Vehicle,
-    max_acceleration: f64,
+    /// The steering of the vehicle.
     steering: Steering,
-    planet: Planet,
-    launch: [f64; 3],
+    /// The atmosphere of the planet.
     atmosphere: Atmosphere,
+    /// The attracting planet.
+    planet: Planet,
+    /// Defines the launch frame. The array consists of the geocentric
+    /// latitude, longitude and azimuth in rad.
+    launch: [f64; 3],
+    /// The integrator used to integrate the equations of motion.
     integrator: Integrator,
+    /// The specified maximum acceleration allowed in m/s^2.
+    max_acceleration: f64,
+    /// The step size of the current time step in sec.
+    /// It is adjusted at the end of a phase to satisfy the end criterion.
     stepsize: f64,
+    /// The specified time step size in sec.
     base_stepsize: f64,
+    /// The variable and its target value to end the current phase.
     end_criterion: (StateVariable, f64),
+    /// The number of tries to hit the target value.
     end_criterion_tries: usize,
+    /// Whether the current phase has ended.
     pub ended: bool,
 }
 
 impl Phase {
+    /// Represents the equations of motion. The input is a state where only the
+    /// primary state (set by the integrator) is set. This function will slowly
+    /// fill the state incrementally.
+    ///
+    /// This function will call all the other function of the [`Planet`],
+    /// [`Vehicle`], [`Atmosphere`] and [`Steering`]. See the different modules
+    /// for their methods.
+    ///
+    /// Most function require some state variables directly. But the atmosphere
+    /// functions, the steering calculations and aero force calculations
+    /// require the complete state. As some state variables are not set yet,
+    /// this is not really safe and should be changed.
     fn system(&self, mut state: State) -> State {
         // Order of calculation is important, as they are dependent on each other
         // Faulty order will not raise warnings!
@@ -39,8 +73,9 @@ impl Phase {
         state.position_planet = inertial_to_planet.transform_vector(&state.position);
         state.velocity_planet = self.planet.velocity_planet(state.position, state.velocity);
         state.altitude = self.planet.altitude(state.position);
-        state.altitude_geopotential = self.planet.geopotational_altitude(state.position);
+        state.altitude_geopotential = self.planet.geopotential_altitude(state.position);
         state.velocity_planet = self.planet.velocity_planet(state.position, state.velocity);
+        state.propellant_mass = state.mass - self.vehicle.structure_mass;
 
         // Gravity acceleration
         state.gravity_acceleration = self.planet.gravity(state.position);
@@ -58,13 +93,10 @@ impl Phase {
         let inertial_to_body = inertial_to_body(self.launch, state.euler_angles);
 
         // Aerodynamic acceleration
-        state.alpha = self
-            .vehicle
-            .alpha(inertial_to_body.transform_vector(&state.velocity_atmosphere));
+        state.alpha = Vehicle::alpha(inertial_to_body.transform_vector(&state.velocity_atmosphere));
         state.aero_force_body = self.vehicle.aero_force(&state);
 
         // Thrust acceleration
-        state.propellant_mass = state.mass - self.vehicle.structure_mass;
         state.throttle = self.vehicle.auto_throttle(
             self.max_acceleration,
             state.mass,
@@ -93,24 +125,44 @@ impl Phase {
         state
     }
 
-    fn time_to_go(&self, state: &State) -> f64 {
-        let y_t = self.end_criterion.0.get_value(&self.state) - self.end_criterion.1;
-        let y_t_1 = self.end_criterion.0.get_value(state) - self.end_criterion.1;
+    /// Estimates the time until the target value is reached.
+    ///
+    /// It does this by estimating the derivative of the cost function (meaning
+    /// the difference between current and target value) using the change over
+    /// the last timestep.
+    fn time_to_go(&self, old_state: &State, new_state: &State) -> f64 {
+        let y_t = self.end_criterion.0.get_value(old_state) - self.end_criterion.1;
+        let y_t_1 = self.end_criterion.0.get_value(new_state) - self.end_criterion.1;
         let dt = self.stepsize;
 
         -y_t * dt / (y_t_1 - y_t)
     }
 
-    fn event_is_active(&self, state: &State) -> bool {
-        if self.end_criterion.0.get_value(state) < self.end_criterion.0.get_value(&self.state) {
+    /// Checks whether the target value was overshot
+    ///
+    /// It checks whether the value is increasing or decreasing over the last
+    /// time step and then checks whether the current value is above or below
+    /// the target value.
+    fn event_is_active(&self, old_state: &State, new_state: &State) -> bool {
+        if self.end_criterion.0.get_value(new_state) < self.end_criterion.0.get_value(old_state) {
             // Function is going down, so check if function < target
-            self.end_criterion.0.get_value(state) < self.end_criterion.1
+            self.end_criterion.0.get_value(new_state) < self.end_criterion.1
         } else {
             // Function is going up, check if function > target
-            self.end_criterion.0.get_value(state) > self.end_criterion.1
+            self.end_criterion.0.get_value(new_state) > self.end_criterion.1
         }
     }
 
+    /// Does one integration step.
+    ///
+    /// It integrates the equations of motion for one time step. Then, it
+    /// checks whether the end criterion is satisfied. If it is, the phase has
+    /// ended.
+    /// If the last time step overshot the target (checked with
+    /// [`Phase::event_is_active`]), the time step is discarded and a new step
+    /// size is calculated with [`Phase::time_to_go`].
+    /// Otherwise it will simply do another time step until one of the above
+    /// occurs.
     pub fn step(&mut self) {
         if self.ended {
             panic!("Phase already has ended")
@@ -124,13 +176,13 @@ impl Phase {
             // We found a good last stepsize. Phase has ended.
             self.ended = true;
             self.state = state;
-        } else if self.event_is_active(&state) {
+        } else if self.event_is_active(&self.state, &state) {
             // The stepsize was too big, try again.
             if self.end_criterion_tries > 20 {
                 panic!("Could not find zero crossing of event")
             }
 
-            self.stepsize = self.time_to_go(&state);
+            self.stepsize = self.time_to_go(&self.state, &state);
             self.end_criterion_tries += 1;
         } else {
             // Normal step, still more steps to go.
@@ -138,6 +190,10 @@ impl Phase {
         }
     }
 
+    /// Runs the Phase.
+    ///
+    /// This function repeatedly run [`Phase::step`] until the phase has ended.
+    /// Also, it will write the current time step to output.
     pub fn run(&mut self) {
         // Calculate initial full state
         self.state = self.system(self.state.clone());
@@ -157,15 +213,17 @@ impl Phase {
 }
 
 impl Default for Phase {
+    /// The default Phase or Phase 0. The first phase will inherit from this
+    /// phase and overwrite its parameters with its configuration.
     fn default() -> Self {
         Self {
-            state: State::new(),
+            state: State::default(),
             vehicle: Vehicle::default(),
             max_acceleration: f64::INFINITY,
-            steering: Steering::new(),
+            steering: Steering::default(),
             planet: Planet::default(),
             launch: [0., 0., 0.],
-            atmosphere: Atmosphere::new(),
+            atmosphere: Atmosphere::default(),
             integrator: Integrator::RK4,
             stepsize: 1.,
             base_stepsize: 1.,
@@ -176,6 +234,7 @@ impl Default for Phase {
     }
 }
 impl Phase {
+    /// Create a new phase from the previous phase and a configuration.
     pub fn new(prev_phase: Option<&Phase>, config: &PhaseConfig) -> Self {
         let mut phase;
         if let Some(prev_phase) = prev_phase {
@@ -231,20 +290,24 @@ impl Phase {
         phase
     }
 
+    /// Reset the phase.
+    ///
+    /// It will set the time since last event to zero, initialize the steering
+    /// with [`Steering::init`], resets the step size, resets the tries
+    /// to reach the end criterion and sets `ended` to false.
     pub fn reset(&mut self) -> &mut Self {
         self.state.time_since_event = 0.;
         self.stepsize = self.base_stepsize;
-        self.init_steering(self.state.euler_angles);
+        self.steering.init(self.state.euler_angles);
         self.ended = false;
         self.end_criterion_tries = 0;
         self
     }
 
-    pub fn init_steering(&mut self, euler_anges: [f64; 3]) -> &mut Self {
-        self.steering.init(euler_anges);
-        self
-    }
-
+    /// Initialize the phase.
+    ///
+    /// Only the first phase will be initialized. The function initializes the
+    /// launch frame and sets the state position and velocity.
     pub fn init(&mut self, config: &InitConfig) -> &mut Self {
         let (lat, long, az) = (
             config.latitude.to_radians(),

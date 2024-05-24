@@ -60,8 +60,8 @@ mod data {
             self.acceleration - self.vehicle_acceleration_inertial
         }
 
-        pub fn geopotational_altitude(&self) -> f64 {
-            EARTH_SPHERICAL.geopotational_altitude(self.position)
+        pub fn geopotential_altitude(&self) -> f64 {
+            EARTH_SPHERICAL.geopotential_altitude(self.position)
         }
 
         pub fn velocity_planet(&self) -> Vector3<f64> {

@@ -2,15 +2,27 @@
 // Last modified by Tibor Völcker on 22.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
+//! Defines the [`Planet`] struct, which handles all functions
+//! regarding the planet.
+
 use crate::config::PlanetConfig;
-use crate::utils::constants::*;
+use crate::utils::constants::{CUBIC_METER_PER_CUBIC_FOOT, METER_PER_FOOT};
 use nalgebra::{vector, Vector3};
 
+/// Represents the planet.
+///
+/// Its method use the parameters together with some state variables to
+/// calculate derived state variables.
 #[derive(Debug, Clone)]
 pub struct Planet {
+    /// The equatorial radius im m.
     pub equatorial_radius: f64,
+    /// The polar radius in m.
     pub polar_radius: f64,
+    /// The gravitational harmonics J1 to J4. The first one is the
+    /// gravitational constant in mˆ3/sˆ2.
     gravitational_parameters: [f64; 4],
+    /// The rotational rate in rad/s.
     pub rotation_rate: f64,
 }
 
@@ -21,6 +33,7 @@ impl Default for Planet {
 }
 
 impl Planet {
+    /// Updates itself with the new configuration parameters.
     pub fn update_with_config(config: &PlanetConfig) -> Self {
         match config {
             PlanetConfig::Spherical => EARTH_SPHERICAL,
@@ -41,6 +54,10 @@ impl Planet {
     }
 }
 
+/// Defines the default implementation of a spherical earth.
+///
+/// This means the equatorial radius is the same as the polar radius, and only
+/// the the gravitational constant is used.
 pub const EARTH_SPHERICAL: Planet = Planet {
     equatorial_radius: 2.0925741e7 * METER_PER_FOOT,
     polar_radius: 2.0925741e7 * METER_PER_FOOT,
@@ -48,18 +65,24 @@ pub const EARTH_SPHERICAL: Planet = Planet {
     rotation_rate: 7.29211e-5,
 };
 
+/// Defines the default implementation of the 1960 Fisher earth model, as
+/// defined in [3, p. IV-1].
+///
+/// It uses gravitational harmonics up to J2.
 const EARTH_FISHER_1960: Planet = Planet {
     equatorial_radius: 2.0925741e7 * METER_PER_FOOT,
     polar_radius: 2.0855590e7 * METER_PER_FOOT,
-    // [mu, J_2, J_3, J_4]
     gravitational_parameters: [1.4076539e16 * CUBIC_METER_PER_CUBIC_FOOT, 1.0823e-3, 0., 0.],
     rotation_rate: 7.29211e-5,
 };
 
+/// Defines the default implementation of the Smithsonial earth model, as
+/// defined in [3, p. IV-1].
+///
+/// It uses gravitational harmonics up to J4.
 const EARTH_SMITHSONIAN: Planet = Planet {
     equatorial_radius: 2.0925741e7 * METER_PER_FOOT,
     polar_radius: 2.0855590e7 * METER_PER_FOOT,
-    // [mu, J_2, J_3, J_4]
     gravitational_parameters: [
         1.407645794e16 * CUBIC_METER_PER_CUBIC_FOOT,
         1.082639e-3,
@@ -70,6 +93,7 @@ const EARTH_SMITHSONIAN: Planet = Planet {
 };
 
 impl Planet {
+    /// Calculate the altitude in m above the oblate surface.
     pub fn altitude(&self, position: Vector3<f64>) -> f64 {
         let k = (self.equatorial_radius / self.polar_radius).powi(2);
 
@@ -81,20 +105,26 @@ impl Planet {
         position.norm() - distance_to_surface
     }
 
-    pub fn geopotational_altitude(&self, position: Vector3<f64>) -> f64 {
+    /// Calculate the geopotential altitude in m
+    /// (used for the atmospheric model).
+    pub fn geopotential_altitude(&self, position: Vector3<f64>) -> f64 {
         let altitude = self.altitude(position);
         let avg_altitude = 0.5 * (self.equatorial_radius + self.polar_radius);
         avg_altitude * altitude / (avg_altitude + altitude)
     }
 
+    /// Calculate the velocity with respect to the planet in m/s.
     pub fn velocity_planet(&self, position: Vector3<f64>, velocity: Vector3<f64>) -> Vector3<f64> {
         velocity - vector![0., 0., self.rotation_rate].cross(&position)
     }
 
-    pub fn mu(&self) -> f64 {
+    /// Get the gravitational constant in m^3/s^2.
+    fn mu(&self) -> f64 {
         self.gravitational_parameters[0]
     }
 
+    /// Calculate the gravitational acceleration in m/s^2, according to
+    /// [3, p. IV-3 f.]
     #[allow(non_snake_case)]
     pub fn gravity(&self, position: Vector3<f64>) -> Vector3<f64> {
         let r = position.norm();

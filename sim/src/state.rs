@@ -2,50 +2,75 @@
 // Last modified by Tibor Völcker on 22.05.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 
+//! This module defines the [`State`] used throughout the project and the
+//! [`StateVariable`], which is used the retrieve a variable from the
+//! [`State`].
+
 use nalgebra::{vector, SVector, Vector2, Vector3};
 use serde::Deserialize;
 
+/// Represents the simulation state.
+///
+/// It is incrementally written to for each timestep.
 #[derive(Debug, Default, Clone)]
 pub struct State {
+    /// Current simulation time in sec.
     pub time: f64,
+    /// Time since last event in sec.
     pub time_since_event: f64,
+    /// Inertial position in m.
     pub position: Vector3<f64>,
+    /// Planet-relative position in m.
     pub position_planet: Vector3<f64>,
+    /// Altitude above planet's oblate surface in m.
     pub altitude: f64,
+    /// Geopotential altitude in m (used in atmospheric model).
     pub altitude_geopotential: f64,
+    /// Inertial velocity in m/s.
     pub velocity: Vector3<f64>,
+    /// Velocity with respect to the planet in m/s.
     pub velocity_planet: Vector3<f64>,
+    /// Velocity with respect to the atmosphere in m/s.
     pub velocity_atmosphere: Vector3<f64>,
+    /// Inertial acceleration in m/s^2.
     pub acceleration: Vector3<f64>,
+    /// Thrust force in body frame in N.
     pub thrust_force_body: Vector3<f64>,
+    /// Aerodynamic force in body frame in N.
     pub aero_force_body: Vector3<f64>,
+    /// "Sensed" acceleration of the vehicle in body frame in m/s^2.
     pub vehicle_acceleration_body: Vector3<f64>,
+    /// Acceleration due to gravity in m/s^2.
     pub gravity_acceleration: Vector3<f64>,
+    /// Vehicle total mass in kg.
     pub mass: f64,
+    /// Remaining propellant mass in kg.
     pub propellant_mass: f64,
+    /// Propellant mass flow in kg/s.
     pub massflow: f64,
+    /// Atmospheric temperature in K.
     pub temperature: f64,
+    /// Atmospheric pressure in Pa.
     pub pressure: f64,
+    /// Atmospheric density in kg/m^3.
     pub density: f64,
+    /// Vehicle mach number.
     pub mach_number: f64,
+    /// Dynamic pressure in Pa.
     pub dynamic_pressure: f64,
+    /// Angle-of-attack in rad.
     pub alpha: f64,
+    /// Euler-angles in rad in the order: Roll, Yaw, Pitch
     pub euler_angles: [f64; 3],
+    /// Engine throttle setting
     pub throttle: f64,
 }
 
 impl State {
-    pub fn new() -> Self {
-        Self {
-            time: 0.,
-            time_since_event: 0.,
-            position: Vector3::zeros(),
-            velocity: Vector3::zeros(),
-            mass: 1.,
-            ..Self::default()
-        }
-    }
-
+    /// Create a state from a time and state vector.
+    ///
+    /// The state vector only contains the primary states: position, velocity
+    /// and mass. All others are set to zero.
     pub fn from_vec(time: Vector2<f64>, state: SVector<f64, 7>) -> Self {
         Self {
             time: time[0],
@@ -57,6 +82,8 @@ impl State {
         }
     }
 
+    /// Return a vector of the primary state differentials: velocity,
+    /// acceleration and mass flow.
     pub fn to_differentials_vector(&self) -> SVector<f64, 7> {
         vector![
             self.velocity[0],
@@ -69,6 +96,7 @@ impl State {
         ]
     }
 
+    /// Return a vector of the primary state: position, velocity and mass.
     pub fn to_primary_vec(&self) -> SVector<f64, 7> {
         vector![
             self.position[0],
@@ -82,69 +110,128 @@ impl State {
     }
 }
 
+/// An enum for choosing a state variable.
+/// Each
 #[derive(Debug, Default, Copy, Clone, Deserialize, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum StateVariable {
+    /// Simulation time
     #[default]
     Time,
+    /// Time since the last event                                     
     TimeSinceEvent,
+    /// Inertial position (X)                                      
     Position1,
+    /// Inertial position (Y)  
     Position2,
+    /// Inertial position (Z)  
     Position3,
+    /// Distance from earth center                                    
     PositionNorm,
+    /// Earth-relative position (X)                                     
     PositionPlanet1,
+    /// Earth-relative position (Y)     
     PositionPlanet2,
+    /// Earth-relative position (Z)     
     PositionPlanet3,
+    /// Height above surface                                          
     Altitude,
+    /// Used for the atmospheric model
     AltitudeGeopotential,
+    /// Inertial velocity (X)                                             
     Velocity1,
+    /// Inertial velocity (Y)  
     Velocity2,
+    /// Inertial velocity (Z)  
     Velocity3,
+    /// Total inertial velocity                                       
     VelocityNorm,
+    /// Earth-relative velocity  (X)                                     
     VelocityPlanet1,
+    /// Earth-relative velocity  (Y)     
     VelocityPlanet2,
+    /// Earth-relative velocity  (Z)     
     VelocityPlanet3,
+    /// Total earth-relative velocity                                 
     VelocityPlanetNorm,
+    /// Atmosphere-relative velocity (X)                                  
     VelocityAtmosphere1,
+    /// Atmosphere-relative velocity (Y)
     VelocityAtmosphere2,
+    /// Atmosphere-relative velocity (Z)
     VelocityAtmosphere3,
+    /// Total atmosphere-relative velocity                            
     VelocityAtmosphereNorm,
+    /// Inertial acceleration (X)                                         
     Acceleration1,
+    /// Inertial acceleration (Y)
     Acceleration2,
+    /// Inertial acceleration (Z)
     Acceleration3,
+    /// Total inertial acceleration                                   
     AccelerationNorm,
+    /// Thrust force in body frame (X)                                    
     ThrustForceBody1,
+    /// Thrust force in body frame (Y)
     ThrustForceBody2,
+    /// Thrust force in body frame (Z)
     ThrustForceBody3,
+    /// Total thrust force in body frame                              
     ThrustForceBodyNorm,
+    /// Aerodynamic force in body framen (X)                               
     AeroForceBody1,
+    /// Aerodynamic force in body framen (Y)
     AeroForceBody2,
+    /// Aerodynamic force in body framen (Z)
     AeroForceBody3,
+    /// Total aerodynamic force in body frame                         
     AeroForceBodyNorm,
+    /// Vehicle sensed acceleration => Acceleration due to thrust and aero forces (X)                               
     VehicleAccelerationBody1,
+    /// Vehicle sensed acceleration => Acceleration due to thrust and aero forces (Y)                               
     VehicleAccelerationBody2,
+    /// Vehicle sensed acceleration => Acceleration due to thrust and aero forces (Z)                               
     VehicleAccelerationBody3,
+    /// Total vehicle senses acceleration                             
     VehicleAccelerationBodyNorm,
+    /// Acceleration due to gravity (X)                                  
     GravityAcceleration1,
+    /// Acceleration due to gravity (Y)
     GravityAcceleration2,
+    /// Acceleration due to gravity (Z)
     GravityAcceleration3,
+    /// Total acceleration due to gravity                             
     GravityAccelerationNorm,
+    /// Total vehicle mass                                            
     Mass,
+    /// Propellant mass                                               
     PropellantMass,
+    /// Propellant massflow                                           
     Massflow,
+    /// Atmosphere temperature                                        
     Temperature,
+    /// Atmosphere pressure                                           
     Pressure,
+    /// Atmosphere density                                            
     Density,
+    /// Vehicle mach number                                           
     MachNumber,
+    /// Dynamic pressure                                              
     DynamicPressure,
+    /// Angle of attack                                               
     Alpha,
+    /// Roll angle with respect to launch frame                       
     EulerAnglesRoll,
+    /// Yaw angle with respect to launch frame                        
     EulerAnglesYaw,
+    /// Pitch angle with respect to launch frame                      
     EulerAnglesPitch,
+    /// Computed auto-throttle                                        
     Throttle,
 }
 
 impl StateVariable {
+    /// Retrieves the value from a state object
     pub fn get_value(&self, state: &State) -> f64 {
         match self {
             StateVariable::Time => state.time,
