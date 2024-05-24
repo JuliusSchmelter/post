@@ -1,0 +1,15 @@
+name: bulid-test-lint
+run-name: Build project, test and lint
+on: [push]
+jobs:
+  build-test-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build
+        runs: cargo build --workspace
+      - name: Test
+        runs: cargo test --workspace
+      - name: Lint
+        runs: cargo clippy --workspace
