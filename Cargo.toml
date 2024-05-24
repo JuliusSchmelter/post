@@ -1,15 +1,27 @@
 [package]
 name = "post"
-version = "0.1.0"
-authors = ["Tibor Völcker <tiborvoelcker@hotmail.de>"]
-edition = "2021"
-description = "A program to optimize simulated trajectories."
-repository = "https://github.com/TiborVoelcker/post"
-license = "MIT"
-
-[workspace]
-members = ["sim"]
+version.workspace = true
+authors.workspace = true
+description.workspace = true
+repository.workspace = true
+documentation.workspace = true
+license.workspace = true
+edition.workspace = true
 
 [dependencies]
 sim  = { path = "sim" }
 clap = { version = "4.5.4", features = ["derive"] } 
+
+[workspace]
+members = ["sim"]
+default-members = ["sim"]
+
+[workspace.package]
+name = "post"
+version = "0.1.0"
+authors = ["Tibor Völcker <tiborvoelcker@hotmail.de>"]
+description = "A program to optimize simulated trajectories."
+repository = "https://github.com/TiborVoelcker/post"
+documentation = "https://tiborvoelcker.github.io/post/docs/post/index.html"
+license = "MIT"
+edition = "2021"

@@ -1,7 +1,12 @@
 [package]
 name = "sim"
-version = "0.1.0"
-edition = "2021"
+documentation = "https://tiborvoelcker.github.io/post/docs/sim/index.html"
+version.workspace = true
+authors.workspace = true
+description.workspace = true
+repository.workspace = true
+license.workspace = true
+edition.workspace = true
 
 [dependencies]
 dyn-clone = "1.0.17"
