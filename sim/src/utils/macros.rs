@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 17.01.24
-// Last modified by Tibor Völcker on 22.05.24
+// Last modified by Tibor Völcker on 24.05.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 /// `assert_almost_eq_abs` is a macro used in the tests to assert if a float is
@@ -25,7 +25,7 @@
 /// # #[macro_use] extern crate sim;
 /// # use nalgebra::vector;
 /// # fn main() {
-/// assert_almost_eq_abs!(vec vector![0.1_f64, 1.1, 2.1], vector![0., 1., 2.], 0.1);
+/// assert_almost_eq_abs!(vec vector![0.1_f64, 1.1, 2.1], vector![0., 1., 2.], 0.11);
 /// # }
 /// ```
 ///

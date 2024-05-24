@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 22.05.24
+// Last modified by Tibor Völcker on 24.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 //! Defines the [`Vehicle`] struct, which handles all functions
@@ -167,7 +167,7 @@ impl Vehicle {
         match opt_req_thrust {
             // The clamping can lead to a throttle which violates the maximum acceleration
             // e.g. if the aero forces are very big
-            Some(req_thrust) => req_thrust / max_thrust.norm(),
+            Some(req_thrust) => (req_thrust / max_thrust.norm()).clamp(0., 1.),
             None => 1.,
         }
     }
