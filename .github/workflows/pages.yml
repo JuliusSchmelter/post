@@ -1,6 +1,9 @@
 name: pages-build-deploy
 run-name: Build pages and deploy
-on: [push]
+on:
+  push:
+    branches:
+      - master
 jobs:
   build-manual:
     runs-on: ubuntu-latest
