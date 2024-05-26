@@ -10,6 +10,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Get version
+        run: echo "version=$(cargo pkgid | cut -d '#' -f2)" >> "$GITHUB_ENV"
+      - name: Set version
+        run: |
+          echo "Setting version: $version"
+          sed -i "s/<\$VERSION\$>/$version/" docs/user-manual/main.tex
       - name: Build Latex
         uses: dante-ev/latex-action@2021-A
         with:
