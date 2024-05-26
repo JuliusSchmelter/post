@@ -8,8 +8,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Build
-        runs: cargo build --workspace
+        run: cargo build --workspace
       - name: Test
-        runs: cargo test --workspace
+        run: cargo test --workspace
       - name: Lint
-        runs: cargo clippy --workspace
+        run: cargo clippy --workspace
