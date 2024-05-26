@@ -1,4 +1,4 @@
-name: bulid-test-lint
+name: build-test-lint
 run-name: Build project, test and lint
 on: push
 jobs:
