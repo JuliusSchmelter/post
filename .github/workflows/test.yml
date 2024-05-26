@@ -1,6 +1,6 @@
 name: bulid-test-lint
 run-name: Build project, test and lint
-on: [push]
+on: push
 jobs:
   build-test-lint:
     runs-on: ubuntu-latest
