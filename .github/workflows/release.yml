@@ -1,0 +1,114 @@
+name: build-release
+run-name: Build and Release
+on: workflow_dispatch
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get-version.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-tags: true
+      - name: Generate Lockfile
+        run: cargo generate-lockfile
+      - name: Get version
+        id: get-version
+        run: |
+          version=$(cargo pkgid | cut -d '#' -f2)
+          echo "Found version: $version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: Check if tag exists
+        continue-on-error: true
+        run: |
+          echo "Checking ${{steps.get-version.outputs.version}}"
+          git show-ref --tags --verify --quiet -- "refs/tags/v${{steps.get-version.outputs.version}}"
+          echo "tag-exists=$?" >> "$GITHUB_OUTPUT"
+  debug:
+    runs-on: ubuntu-latest
+    needs: [check-version]
+    if: ${{ needs.check-version.outputs.tag-exists }}
+    steps:
+      - run: echo "Tag already exists"
+  build:
+    needs: [check-version]
+    if: ${{ !needs.check-version.outputs.tag-exists }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-apple-darwin
+            runner: macOS-latest
+            archive: post-macOS-x86_64.zip
+          - target: aarch64-apple-darwin
+            runner: macOS-latest
+            archive: post-macOS-aarch64.zip
+          - target: x86_64-pc-windows-gnu
+            runner: windows-latest
+            archive: post-windows-x86_64.zip
+          - target: x86_64-unknown-linux-gnu
+            runner: ubuntu-latest
+            archive: post-linux-x86_64.tar.gz
+          - target: aarch64-unknown-linux-gnu
+            runner: ubuntu-latest
+            archive: post-linux-aarch64.tar.gz
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+      - name: Build
+        uses: houseabsolute/actions-rust-cross@v0
+        with:
+          target: ${{ matrix.target }}
+          args: "--workspace --release"
+      - name: Create artifact directory
+        shell: bash
+        run: |
+          if [ ${{ matrix.runner }} == "windows-latest" ]
+          then
+            bin=post.exe
+          else
+            bin=post
+          fi
+          if [ ${{ matrix.runner }} == "ubuntu-latest" ]
+          then
+            echo "zip=tar" >> "$GITHUB_ENV"
+          else
+            echo "zip=zip" >> "$GITHUB_ENV"
+          fi
+          mkdir artifact/
+          mv LICENSE artifact/
+          mv README.md artifact/
+          mv sim/src/utils/input.json artifact/
+          mv target/${{ matrix.target }}/release/$bin artifact/
+      - name: Zip artifact
+        uses: thedoctor0/zip-release@0.7.5
+        with:
+          type: ${{ env.zip }}
+          filename: ${{ matrix.archive }}
+          path: artifact/
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4.3.3
+        with:
+          name: ${{ matrix.archive }}
+          path: ${{ matrix.archive }}
+  release:
+    permissions:
+      contents: write
+    needs: [check-version, build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Make Directory
+        run: mkdir artifacts/
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+          merge-multiple: true
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.check-version.outputs.version }}
+          files: artifacts/*
+
