@@ -82,6 +82,7 @@ jobs:
           mv README.md artifact/
           mv utils/example.json artifact/
           mv target/${{ matrix.target }}/release/$bin artifact/
+          mv sim/src/utils/plot/ artifact/plotting-tool/
       - name: Zip artifact
         uses: thedoctor0/zip-release@0.7.5
         with:
