@@ -303,22 +303,27 @@ These were not used for this project.
 The tool's usage is very basic. It consists of one executable, which needs to
 be called with the file path to a configuration file, which is detailed below.
 
-Until a build pipeline is implemented, the tool needs to be build first. For
-this, the rust compiler and the cargo tool needs to be installed\footnote{\url{https://www.rust-lang.org/tools/install}}.
+The easiest way to run the program is to download the pre-built executables.
+These can be found in the \href{https://github.com/TiborVoelcker/post/releases/latest}{latest release}. Choose the respective executable
+for your operating system (Windows, macOS, or Linux as well as x86\_64 or AMD64), and
+unpack the directory.
+
+\paragraph{Build it yourself}
+
+If there is no pre-built executable for your system, you need to build it yourself. For this, download
+the project files and make sure the rust compiler and the cargo tool is installed\footnote{\label{install}\url{https://www.rust-lang.org/tools/install}}.
 
 To build the tool, run
 \begin{lstlisting}[language=sh]
  $ cargo build --release
 \end{lstlisting}
-in the project's directory. Then you can execute the script. Type
-\begin{lstlisting}[language=sh]
- $ target\release\post.exe --help
-\end{lstlisting}
-to find out about the options of the \gls{cli}.
+The executable should now be located at \texttt{target/release/post.exe}.
+
+\paragraph{Running the simulation}
 
 You can run the simulation with:
 \begin{lstlisting}[language=sh]
- $ target\release\post.exe --config <config filepath>
+ $ post.exe --config <config filepath>
 \end{lstlisting}
 
 This will write the time, position, velocity, altitude, and propellant mass
@@ -352,20 +357,24 @@ Position:
  \end{verbatim}
 \end{verbmd}
 
-Alternatively, the tool can be build and executed in one command with the \lstinline{cargo run} command.
+Alternatively, the tool can be build and executed in one command with the \lstinline{cargo run}
+command if the rust compiler and cargo tool are installed.
 
 \paragraph{Plotting tool}
 
-To plot the simulated trajectory, you can pipe the output to the included
-plotting tool. For this, Python needs to be installed. The tool was
-implemented with Python 3.12. Then, install the requirements with
+The project also includes a small plotting tool to plot the simulated trajectory. For this, you
+will need Python installed. Python version 3.12 is recommended.
+
+\subparagraph{Note:} If you built the project yourself, the plotting tool is located at \lstinline{utils/plot}.
+
+You can install the requirements with
 \begin{lstlisting}[language=sh]
- $ pip install -r sim\src\utils\plot\requirements.txt
+ $ pip install -r plotting-tool\requirements.txt
 \end{lstlisting}
 
 Then, the simulated trajectory can be piped to the plotting tool with:
 \begin{lstlisting}[language=sh]
- $ target\release\post.exe --config <config filepath> | python sim\src\utils\plot\plot.py
+ $ post.exe --config <config filepath> | python plotting-tool\plot.py
 \end{lstlisting}
 
 You should see a window open to show the simulated trajectory like in \cref{example-plot}.
@@ -385,11 +394,13 @@ The original documentation also included an example trajectory for the ascent
 of a space shuttle type vehicle. This example is used to validate this
 project.
 
-The example is included in \lstinline{sim\src\utils\input.json}. It can be used as a starting point for custom configurations.
+It is also a good baseline for custom configurations.
+
+\subparagraph{Note:} If you built the project yourself, the example is located at \lstinline{utils/example.json}.
 
 To execute the example, run:
 \begin{lstlisting}[language=sh]
- $ target\release\post.exe --config sim\src\utils\input.json | python sim\src\utils\plot\plot.py
+ $ post.exe --config example.json
 \end{lstlisting}
 
 \subsection{Configuration File}\label{configuration-file}
