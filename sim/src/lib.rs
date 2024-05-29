@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 04.03.23
-// Last modified by Tibor Völcker on 22.05.24
+// Last modified by Tibor Völcker on 29.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 //! Defines the [`Simulation`] struct which handles the simulation.
@@ -75,7 +75,7 @@ mod tests {
         const TARGET_ALT: f64 = 9.25997640e4;
         const TARGET_VEL: f64 = 7.87999440e3;
 
-        let str = include_str!("utils/input.json");
+        let str = include_str!("../../utils/example.json");
 
         let config: Vec<PhaseConfig> = serde_json::from_str(str).unwrap();
 

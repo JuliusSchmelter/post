@@ -80,7 +80,7 @@ jobs:
           mkdir artifact/
           mv LICENSE artifact/
           mv README.md artifact/
-          mv sim/src/utils/input.json artifact/
+          mv utils/example.json artifact/
           mv target/${{ matrix.target }}/release/$bin artifact/
       - name: Zip artifact
         uses: thedoctor0/zip-release@0.7.5

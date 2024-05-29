@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 22.11.23
-// Last modified by Tibor Völcker on 24.05.24
+// Last modified by Tibor Völcker on 29.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 //! Defines the [`Vehicle`] struct, which handles all functions
@@ -241,7 +241,7 @@ mod tests {
     fn test_force() {
         const EPSILON: f64 = 0.0005;
 
-        let str = include_str!("utils/input.json");
+        let str = include_str!("../../utils/example.json");
 
         let configs: Vec<PhaseConfig> = serde_json::from_str(str).unwrap();
 

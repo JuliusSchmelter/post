@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 12.11.23
-// Last modified by Tibor Völcker on 22.05.24
+// Last modified by Tibor Völcker on 29.05.24
 // Copyright (c) 2023 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 //! Defines the [`Phase`] struct. The phase represents a section of the
@@ -348,7 +348,7 @@ mod tests {
 
     #[test]
     fn phase_1() {
-        let str = include_str!("utils/input.json");
+        let str = include_str!("../../utils/example.json");
 
         let configs: Vec<PhaseConfig> = serde_json::from_str(str).unwrap();
 
@@ -368,7 +368,7 @@ mod tests {
 
     #[test]
     fn phase_11() {
-        let str = include_str!("utils/input.json");
+        let str = include_str!("../../utils/example.json");
 
         let configs: Vec<PhaseConfig> = serde_json::from_str(str).unwrap();
 

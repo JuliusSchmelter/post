@@ -1,5 +1,5 @@
 // Created by Tibor Völcker (tiborvoelcker@hotmail.de) on 21.04.24
-// Last modified by Tibor Völcker on 22.05.24
+// Last modified by Tibor Völcker on 29.05.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 
 //! Defines the [`PhaseConfig`] which can deserialize the configuration file.
@@ -141,7 +141,7 @@ mod tests {
 
     #[test]
     fn deserialize_example() {
-        let str = include_str!("utils/input.json");
+        let str = include_str!("../../utils/example.json");
 
         serde_json::from_str::<Vec<PhaseConfig>>(str).unwrap();
     }
