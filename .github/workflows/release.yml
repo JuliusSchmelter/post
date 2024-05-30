@@ -82,13 +82,13 @@ jobs:
           mv README.md artifact/
           mv utils/example.json artifact/
           mv target/${{ matrix.target }}/release/$bin artifact/
-          mv sim/src/utils/plot/ artifact/plotting-tool/
+          mv utils/plot/ artifact/plotting-tool/
       - name: Zip artifact
         uses: thedoctor0/zip-release@0.7.5
         with:
           type: ${{ env.zip }}
-          filename: ${{ matrix.archive }}
-          path: artifact/
+          filename: ../${{ matrix.archive }}
+          directory: artifact/
       - name: Upload Artifact
         uses: actions/upload-artifact@v4.3.3
         with:
