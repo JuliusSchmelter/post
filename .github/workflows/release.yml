@@ -4,8 +4,6 @@ on: workflow_dispatch
 jobs:
   check-version:
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.get-version.outputs.version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -20,11 +18,15 @@ jobs:
           echo "Found version: $version"
           echo "version=$version" >> "$GITHUB_OUTPUT"
       - name: Check if tag exists
+        id: check-tag
         continue-on-error: true
         run: |
           echo "Checking ${{steps.get-version.outputs.version}}"
           git show-ref --tags --verify --quiet -- "refs/tags/v${{steps.get-version.outputs.version}}"
           echo "tag-exists=$?" >> "$GITHUB_OUTPUT"
+    outputs:
+      version: ${{ steps.get-version.outputs.version }}
+      tag-exists: ${{ steps.check-tag.outputs.tag-exists }}
   debug:
     runs-on: ubuntu-latest
     needs: [check-version]
@@ -34,25 +36,27 @@ jobs:
   build:
     needs: [check-version]
     if: ${{ !needs.check-version.outputs.tag-exists }}
+    env:
+      version: ${{ needs.check-version.outputs.version }}
     runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
         include:
           - target: x86_64-apple-darwin
             runner: macOS-latest
-            archive: post-macOS-x86_64.zip
+            name: macOS-x86_64
           - target: aarch64-apple-darwin
             runner: macOS-latest
-            archive: post-macOS-aarch64.zip
+            name: macOS-aarch64
           - target: x86_64-pc-windows-gnu
             runner: windows-latest
-            archive: post-windows-x86_64.zip
+            name: windows-x86_64
           - target: x86_64-unknown-linux-gnu
             runner: ubuntu-latest
-            archive: post-linux-x86_64.tar.gz
+            name: linux-x86_64
           - target: aarch64-unknown-linux-gnu
             runner: ubuntu-latest
-            archive: post-linux-aarch64.tar.gz
+            name: linux-aarch64
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -63,41 +67,47 @@ jobs:
           target: ${{ matrix.target }}
           args: "--workspace --release"
       - name: Create artifact directory
+        id: create-dir
         shell: bash
         run: |
-          if [ ${{ matrix.runner }} == "windows-latest" ]
-          then
-            bin=post.exe
-          else
-            bin=post
-          fi
-          if [ ${{ matrix.runner }} == "ubuntu-latest" ]
-          then
-            echo "zip=tar" >> "$GITHUB_ENV"
-          else
-            echo "zip=zip" >> "$GITHUB_ENV"
-          fi
           mkdir artifact/
           mv LICENSE artifact/
           mv README.md artifact/
           mv utils/example.json artifact/
-          mv target/${{ matrix.target }}/release/$bin artifact/
           mv utils/plot/ artifact/plotting-tool/
-      - name: Zip artifact
-        uses: thedoctor0/zip-release@0.7.5
-        with:
-          type: ${{ env.zip }}
-          filename: ../${{ matrix.archive }}
-          directory: artifact/
+
+          if [ ${{ matrix.runner }} == "windows-latest" ]
+          then
+            mv target/${{ matrix.target }}/release/post.exe artifact/post-$version.exe
+          else
+            mv target/${{ matrix.target }}/release/post artifact/post-$version
+          fi
+
+          if [ ${{ matrix.runner }} == "ubuntu-latest" ]
+          then
+            name=post-$version-${{ matrix.name }}.tar.gz
+            tar -czf $name artifact/
+          else
+            cd artifact/
+            name=post-$version-${{ matrix.name }}.zip
+            7z a -r ../$name *
+          fi
+
+          echo "artifact=$name" >> "$GITHUB_ENV"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
       - name: Upload Artifact
         uses: actions/upload-artifact@v4.3.3
         with:
-          name: ${{ matrix.archive }}
-          path: ${{ matrix.archive }}
+          name: ${{ artifact }}
+          path: ${{ artifact }}
+    outputs:
+      version: ${{ steps.create-dir.outputs.version }}
   release:
     permissions:
       contents: write
-    needs: [check-version, build]
+    needs: build
+    env:
+      version: ${{ needs.build.outputs.version }}
     runs-on: ubuntu-latest
     steps:
       - name: Make Directory
@@ -110,6 +120,6 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ needs.check-version.outputs.version }}
+          tag_name: v${{ needs.build.outputs.version }}
           files: artifacts/*
 

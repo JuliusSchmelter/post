@@ -13,7 +13,10 @@ jobs:
       - name: Generate Lockfile
         run: cargo generate-lockfile
       - name: Get version
-        run: echo "version=$(cargo pkgid | cut -d '#' -f2)" >> "$GITHUB_ENV"
+        run: |
+          version=$(cargo pkgid | cut -d '#' -f2)
+          echo "Found version: $version"
+          echo "version=$version" >> "$GITHUB_ENV"
       - name: Set version
         run: |
           echo "Setting version: $version"
