@@ -1,0 +1,72 @@
+name: deploy-pages
+run-name: Build and deploy pages
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+jobs:
+  build-manual:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set version
+        run: |
+          echo "Setting version: ${{ inputs.version }}"
+          sed -i "s/<\$VERSION\$>/${{ inputs.version }}/" docs/user-manual/manual.tex
+      - name: Build Latex
+        uses: dante-ev/latex-action@2021-A
+        with:
+          working_directory: docs/user-manual/
+          root_file: manual.tex
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4.3.3
+        with:
+          name: manual
+          path: docs/user-manual/manual.pdf
+  build-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build Docs
+        run: cargo doc --workspace --no-deps --document-private-items
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4.3.3
+        with:
+          name: docs
+          path: target/doc
+  build-jekyll:
+    needs: [build-manual, build-docs]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: repository/
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4.1.7
+      - name: Create Pages Directory
+        run: |
+          mkdir pages/
+          mv manual/manual.pdf pages/
+          mv docs/ pages/docs/
+          mv repository/README.md pages/index.md
+          printf "name: POST\ntitle: null" > pages/_config.yml
+      - name: Build Jekyll for GitHub Pages
+        uses: actions/jekyll-build-pages@v1.0.12
+        with:
+          source: pages/
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v3.0.1
+  deploy-pages:
+    needs: build-jekyll
+    permissions:
+      pages: write
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy GitHub Pages site
+        uses: actions/deploy-pages@v4.0.5
