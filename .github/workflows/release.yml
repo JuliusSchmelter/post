@@ -204,4 +204,4 @@ jobs:
           tag_name: v${{ env.version }}
           files: artifacts/*
           fail_on_unmatched_files: error
-
+          body: Automatically created by Github Actions.
