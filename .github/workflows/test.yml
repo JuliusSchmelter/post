@@ -1,14 +1,12 @@
-name: build-test-lint
-run-name: Build project, test and lint
+name: test-lint
+run-name: Test and lint
 on: push
 jobs:
-  build-test-lint:
+  test-lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Build
-        run: cargo build --workspace
       - name: Test
         run: cargo test --workspace
       - name: Lint
