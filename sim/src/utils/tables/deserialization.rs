@@ -2,15 +2,7 @@
 // Last modified by Tibor Völcker on 24.05.24
 // Copyright (c) 2024 Tibor Völcker (tiborvoelcker@hotmail.de)
 
-//! Handles the deserialization of the tables. It defines the three structs
-//! [`Table1DUnchecked`], [`Table2DUnchecked`] and [`Table3DUnchecked`], which
-//! can be easily deserialized. Then it tries to build the normal tables with
-//! their `try_new` methods.
-//!
-//! The deserialization is handled automatically with serde's `derive`.
-//!
-//! Refer to the [`Table1D`], [`Table2D`] and [`Table3D`] implementations to
-//! learn more about the fields of each struct.
+//! Handles the deserialization of the tables. It uses serde's `derive`.
 
 use super::init::TableInitError;
 use super::*;
@@ -18,67 +10,18 @@ use serde::Deserialize;
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
-pub struct Table1DUnchecked {
-    x: (StateVariable, Box<[f64]>),
-    data: Box<[f64]>,
+pub struct TableUnchecked {
+    vars: Vec<(StateVariable, Box<[f64]>)>,
+    data: TableData,
     #[serde(default)]
     interpolator: Interpolator,
 }
 
-impl TryFrom<Table1DUnchecked> for Table1D {
+impl TryFrom<TableUnchecked> for Table {
     type Error = TableInitError;
 
-    fn try_from(value: Table1DUnchecked) -> Result<Self, Self::Error> {
-        Self::try_new((value.x.0, &value.x.1), &value.data, value.interpolator)
-    }
-}
-
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct Table2DUnchecked {
-    x: (StateVariable, Box<[f64]>),
-    y: (StateVariable, Box<[f64]>),
-    data: Box<[Box<[f64]>]>,
-    #[serde(default)]
-    interpolator: Interpolator,
-}
-
-impl TryFrom<Table2DUnchecked> for Table2D {
-    type Error = TableInitError;
-
-    fn try_from(value: Table2DUnchecked) -> Result<Self, Self::Error> {
-        Self::try_new(
-            (value.x.0, &value.x.1),
-            (value.y.0, &value.y.1),
-            &value.data,
-            value.interpolator,
-        )
-    }
-}
-
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct Table3DUnchecked {
-    x: (StateVariable, Box<[f64]>),
-    y: (StateVariable, Box<[f64]>),
-    z: (StateVariable, Box<[f64]>),
-    #[allow(clippy::type_complexity)]
-    data: Box<[Box<[Box<[f64]>]>]>,
-    #[serde(default)]
-    interpolator: Interpolator,
-}
-
-impl TryFrom<Table3DUnchecked> for Table3D {
-    type Error = TableInitError;
-
-    fn try_from(value: Table3DUnchecked) -> Result<Self, Self::Error> {
-        Self::try_new(
-            (value.x.0, &value.x.1),
-            (value.y.0, &value.y.1),
-            (value.z.0, &value.z.1),
-            &value.data,
-            value.interpolator,
-        )
+    fn try_from(table: TableUnchecked) -> Result<Self, Self::Error> {
+        Self::try_new(table.vars, table.data, table.interpolator)
     }
 }
 
@@ -88,82 +31,99 @@ mod tests {
 
     #[test]
     fn empty_table() {
-        let input = r#"{"x": ["time", []], "data": []}"#;
-        let table: Table = serde_json::from_str(input).unwrap();
-
-        assert_eq!(table, Table::D1(Table1D::default()))
+        let input = r#"{"vars": [], "data": []}"#;
+        serde_json::from_str::<Table>(input).unwrap_err();
     }
 
     #[test]
     fn empty_table_with_interpolator() {
-        let input = r#"{"x": ["time", []], "data": [], "interpolator": "linear"}"#;
+        let input = r#"{"vars": [["time", []]], "data": [], "interpolator": "linear"}"#;
         let table: Table = serde_json::from_str(input).unwrap();
 
-        assert_eq!(table, Table::D1(Table1D::default()))
+        assert_eq!(
+            table,
+            Table::try_new(
+                vec![(StateVariable::Time, [].into())],
+                TableData::Values([].into()),
+                Interpolator::Linear
+            )
+            .unwrap()
+        )
     }
 
     #[test]
     fn invalid_iterator() {
-        let input = r#"{"x": ["time", [0.0]], "data": [0.0], "interpolator": "not_there"}"#;
+        let input = r#"{"vars": [["time", [0.0]]], "data": [0.0], "interpolator": "not_there"}"#;
         serde_json::from_str::<Table>(input).unwrap_err();
     }
 
     #[test]
     fn invalid_length() {
-        let input = r#"{"x": ["time", [0.0, 1.0]], "data": [0.0]}"#;
+        let input = r#"{"vars": [["time", [0.0, 1.0]]], "data": [0.0]}"#;
         serde_json::from_str::<Table>(input).unwrap_err();
     }
 
     #[test]
     fn example_1d() {
-        let input = r#"{"x": ["time", [0.0]], "data": [1.0]}"#;
+        let input = r#"{"vars": [["time", [0.0]]], "data": [1.0]}"#;
         let table: Table = serde_json::from_str(input).unwrap();
 
         assert_eq!(
             table,
-            Table::D1(
-                Table1D::try_new((StateVariable::Time, &[0.]), &[1.], Interpolator::Linear)
-                    .unwrap()
+            Table::try_new(
+                vec![(StateVariable::Time, [0.].into())],
+                TableData::Values([1.].into()),
+                Interpolator::Linear
             )
+            .unwrap()
         );
     }
 
     #[test]
     fn example_2d() {
-        let input = r#"{"x": ["time", [0.0]], "y": ["mass", [0.0]], "data": [[1.0]]}"#;
+        let input = r#"{"vars": [["time", [0.0]], ["mass", [0.0]]], "data": [[1.0]]}"#;
         let table: Table = serde_json::from_str(input).unwrap();
 
         assert_eq!(
             table,
-            Table::D2(
-                Table2D::try_new(
-                    (StateVariable::Time, &[0.]),
-                    (StateVariable::Mass, &[0.]),
-                    &[[1.].into()],
-                    Interpolator::Linear
-                )
-                .unwrap()
+            Table::try_new(
+                vec![
+                    (StateVariable::Time, [0.].into()),
+                    (StateVariable::Mass, [0.].into())
+                ],
+                TableData::Table([TableData::Values([1.].into())].into()),
+                Interpolator::Linear
             )
+            .unwrap()
         );
     }
 
     #[test]
     fn example_3d() {
-        let input = r#"{"x": ["time", [0.0]], "y": ["mass", [0.0, 1.0]], "z": ["altitude", [0.0]], "data": [[[1.0], [2.0]]]}"#;
+        let input = r#"{"vars": [["time", [0.0]], ["mass", [0.0, 1.0]], ["altitude", [0.0]]], "data": [[[1.0], [2.0]]]}"#;
         let table: Table = serde_json::from_str(input).unwrap();
 
         assert_eq!(
             table,
-            Table::D3(
-                Table3D::try_new(
-                    (StateVariable::Time, &[0.]),
-                    (StateVariable::Mass, &[0., 1.]),
-                    (StateVariable::Altitude, &[0.]),
-                    &[[[1.].into(), [2.].into()].into()],
-                    Interpolator::Linear
-                )
-                .unwrap()
+            Table::try_new(
+                vec![
+                    (StateVariable::Time, [0.].into()),
+                    (StateVariable::Mass, [0., 1.].into()),
+                    (StateVariable::Altitude, [0.].into()),
+                ],
+                TableData::Table(
+                    [TableData::Table(
+                        [
+                            TableData::Values([1.].into()),
+                            TableData::Values([2.].into())
+                        ]
+                        .into()
+                    )]
+                    .into()
+                ),
+                Interpolator::Linear
             )
+            .unwrap()
         );
     }
 }

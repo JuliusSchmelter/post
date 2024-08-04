@@ -17,7 +17,7 @@ members = ["sim"]
 default-members = ["sim"]
 
 [workspace.package]
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Tibor Völcker <tiborvoelcker@hotmail.de>"]
 description = "A program to optimize simulated trajectories."
 repository = "https://github.com/TiborVoelcker/post"

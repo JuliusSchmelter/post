@@ -4,6 +4,8 @@
 
 //! Defines function for linear interpolation.
 
+use super::TableData;
+
 /// Helper function to retrieve the indexes of the value below and above the
 /// passed `val`. If `val` is bigger or smaller than all values in `val_arr`,
 /// the two last or two first indexes are returned.
@@ -28,116 +30,65 @@ fn get_idx(val_arr: &[f64], val: f64) -> (usize, usize) {
     (idx1 - 1, idx1)
 }
 
-/// Trilinear interpolation. Interpolates `data` with `x`, `y` and `z`, as well
-/// as the arrays to interpolate: `x_arr`, `y_arr` and `z_arr`.
-///
-/// Internally calls [`bilinear_interpolate`] twice and interpolates its
-/// results.
-///
-/// __Attention:__ The function assumes that `x_arr`, `y_arr` and `z_arr` are
-/// sorted and the lengths match the corresponding array in `data`. This is not
-/// checked for performance reasons, but should be given by the overlying table
-/// implementation.
-pub fn trilinear_interpolate(
-    x_arr: &[f64],
-    x: f64,
-    y_arr: &[f64],
-    y: f64,
-    z_arr: &[f64],
-    z: f64,
-    data: &[Box<[Box<[f64]>]>],
-) -> f64 {
-    // Assumptions:
-    //   1. `x_arr`, `y_arr` and `z_arr` are sorted.
-    //   2. Lengths of `x_arr`, `y_arr` and `z_arr` correspond to lengths of data.
+/// Linear interpolation.
+/// __Attention:__ Assumes that arrays in `arr` are sorted.
+pub fn interpolate(arr: &[&[f64]], at: &[f64], data: &TableData) -> f64 {
+    assert_eq!(arr.len(), at.len(), "length of `arr` and `at` must match.");
 
-    if data.is_empty() {
-        // No data cannot be interpolated.
-        return f64::NAN;
+    match data {
+        TableData::Table(table) => {
+            if table.is_empty() {
+                // No data cannot be interpolated.
+                return f64::NAN;
+            }
+            if table.len() == 1 {
+                // Interpolate single data point with a straight line.
+                return interpolate(&arr[1..], &at[1..], &table[0]);
+            }
+
+            let x_arr = arr[0];
+            let x = at[0];
+
+            let (idx0, idx1) = get_idx(x_arr, x);
+
+            let x0 = x_arr[idx0];
+            let x1 = x_arr[idx1];
+            let y0 = interpolate(&arr[1..], &at[1..], &table[idx0]);
+            let y1 = interpolate(&arr[1..], &at[1..], &table[idx1]);
+
+            y0 + (x - x0) * (y1 - y0) / (x1 - x0)
+        }
+        TableData::Values(values) => {
+            if values.is_empty() {
+                // No data cannot be interpolated.
+                return f64::NAN;
+            }
+
+            assert!(arr.len() == 1, "dimension mismatch in interpolate");
+            assert!(at.len() == 1, "dimension mismatch in interpolate");
+            assert!(
+                values.len() == arr[0].len(),
+                "data length mismatch in interpolate"
+            );
+
+            if values.len() == 1 {
+                // Interpolate single data point with a straight line.
+                return values[0];
+            }
+
+            let x_arr = arr[0];
+            let x = at[0];
+
+            let (idx0, idx1) = get_idx(x_arr, x);
+
+            let x0 = x_arr[idx0];
+            let x1 = x_arr[idx1];
+            let y0 = values[idx0];
+            let y1 = values[idx1];
+
+            y0 + (x - x0) * (y1 - y0) / (x1 - x0)
+        }
     }
-    if data.len() == 1 {
-        // Interpolate single data point with a straight line.
-        return bilinear_interpolate(y_arr, y, z_arr, z, &data[0]);
-    }
-
-    let (idx0, idx1) = get_idx(x_arr, x);
-
-    let x0 = x_arr[idx0];
-    let x1 = x_arr[idx1];
-    let y0 = bilinear_interpolate(y_arr, y, z_arr, z, &data[idx0]);
-    let y1 = bilinear_interpolate(y_arr, y, z_arr, z, &data[idx1]);
-
-    y0 + (x - x0) * (y1 - y0) / (x1 - x0)
-}
-
-/// Bilinear interpolation. Interpolates `data` with `x` and `y`, as well as
-/// the arrays to interpolate: `x_arr` and `y_arr`.
-///
-/// Internally calls [`linear_interpolate`] twice and interpolates its
-/// results.
-///
-/// __Attention:__ The function assumes that `x_arr` and `y_arr` are sorted and
-/// the lengths match the corresponding array in `data`. This is not checked
-/// for performance reasons, but should be given by the overlying table
-/// implementation.
-pub fn bilinear_interpolate(
-    x_arr: &[f64],
-    x: f64,
-    y_arr: &[f64],
-    y: f64,
-    data: &[Box<[f64]>],
-) -> f64 {
-    // Assumptions:
-    //   1. `x_arr` and `y_arr` are sorted.
-    //   2. Lengths of `x_arr` and `y_arr` correspond to lengths of data.
-
-    if data.is_empty() {
-        // No data cannot be interpolated.
-        return f64::NAN;
-    }
-    if data.len() == 1 {
-        // Interpolate single data point with a straight line.
-        return linear_interpolate(y_arr, y, &data[0]);
-    }
-
-    let (idx0, idx1) = get_idx(x_arr, x);
-
-    let x0 = x_arr[idx0];
-    let x1 = x_arr[idx1];
-    let y0 = linear_interpolate(y_arr, y, &data[idx0]);
-    let y1 = linear_interpolate(y_arr, y, &data[idx1]);
-
-    y0 + (x - x0) * (y1 - y0) / (x1 - x0)
-}
-
-/// Linear interpolation. Interpolates `data` with `x`, as well as the array to
-/// interpolate: `x_arr`.
-///
-/// __Attention:__ The function assumes that `x_arr` is sorted and the length
-/// matches `data`. This is not checked for performance reasons, but should be
-/// given by the overlying table implementation.
-pub fn linear_interpolate(x_arr: &[f64], x: f64, data: &[f64]) -> f64 {
-    // Assumptions:
-    //   1. `x_arr` is sorted.
-    //   2. Length of `x_arr` correspond to length of data.
-
-    if data.is_empty() {
-        // No data cannot be interpolated.
-        return f64::NAN;
-    }
-    if data.len() == 1 {
-        // Interpolate single data point with a straight line.
-        return data[0];
-    }
-
-    let (idx0, idx1) = get_idx(x_arr, x);
-
-    let x0 = x_arr[idx0];
-    let x1 = x_arr[idx1];
-    let y0 = data[idx0];
-    let y1 = data[idx1];
-
-    y0 + (x - x0) * (y1 - y0) / (x1 - x0)
 }
 
 #[cfg(test)]
@@ -147,54 +98,60 @@ mod tests {
     #[test]
     fn empty() {
         let x_arr = [];
-        let data = [];
+        let data = TableData::Values([].into());
 
-        assert!(linear_interpolate(&x_arr, 1.25, &data).is_nan())
+        assert!(interpolate(&[&x_arr], &[1.25], &data).is_nan())
     }
 
     #[test]
     fn one_entry() {
         let x_arr = [0.];
-        let data = [1.34];
+        let data = TableData::Values([1.34].into());
 
-        assert_eq!(linear_interpolate(&x_arr, 0., &data), 1.34);
+        assert_eq!(interpolate(&[&x_arr], &[0.], &data), 1.34);
 
-        assert_eq!(linear_interpolate(&x_arr, 999., &data), 1.34);
+        assert_eq!(interpolate(&[&x_arr], &[999.], &data), 1.34);
     }
 
     #[test]
     fn extrapolate_below() {
         let x_arr = [2., 3., 4., 5.];
-        let data = [20., 30., 40., 50.];
+        let data = TableData::Values([20., 30., 40., 50.].into());
 
         // Extrapolate below
-        assert_eq!(linear_interpolate(&x_arr, 1., &data), 10.);
+        assert_eq!(interpolate(&[&x_arr], &[1.], &data), 10.);
         // Extrapolate above
-        assert_eq!(linear_interpolate(&x_arr, 6., &data), 60.);
+        assert_eq!(interpolate(&[&x_arr], &[6.], &data), 60.);
         // Interpolate included data point
-        assert_eq!(linear_interpolate(&x_arr, 4., &data), 40.);
+        assert_eq!(interpolate(&[&x_arr], &[4.], &data), 40.);
         // Interpolate between data points
-        assert_eq!(linear_interpolate(&x_arr, 3.5, &data), 35.);
+        assert_eq!(interpolate(&[&x_arr], &[3.5], &data), 35.);
         // Interpolate random data point
-        assert_eq!(linear_interpolate(&x_arr, 3.125, &data), 31.25);
+        assert_eq!(interpolate(&[&x_arr], &[3.125], &data), 31.25);
     }
 
     #[test]
     fn empty_2d() {
         let x_arr = [];
         let y_arr = [];
-        let data = [[].into()];
+        let data = TableData::Table([TableData::Values([].into())].into());
 
-        assert!(bilinear_interpolate(&x_arr, 1.25, &y_arr, 3.61, &data).is_nan())
+        assert!(interpolate(&[&x_arr, &y_arr], &[1.25, 3.61], &data).is_nan())
     }
 
     #[test]
     fn interpolate_2d() {
         let x_arr = [1., 2.];
         let y_arr = [10., 20.];
-        let data = [[100., 200.].into(), [300., 400.].into()];
+        let data = TableData::Table(
+            [
+                TableData::Values([100., 200.].into()),
+                TableData::Values([300., 400.].into()),
+            ]
+            .into(),
+        );
 
-        assert_eq!(bilinear_interpolate(&x_arr, 1.5, &y_arr, 15., &data), 250.)
+        assert_eq!(interpolate(&[&x_arr, &y_arr], &[1.5, 15.], &data), 250.)
     }
 
     #[test]
@@ -202,9 +159,10 @@ mod tests {
         let x_arr = [];
         let y_arr = [];
         let z_arr = [];
-        let data = [[[].into()].into()];
+        let data =
+            TableData::Table([TableData::Table([TableData::Values([].into())].into())].into());
 
-        assert!(trilinear_interpolate(&x_arr, 1.25, &y_arr, 3.61, &z_arr, 9.12, &data).is_nan())
+        assert!(interpolate(&[&x_arr, &y_arr, &z_arr], &[1.25, 3.61, 9.12], &data).is_nan())
     }
 
     #[test]
@@ -212,14 +170,88 @@ mod tests {
         let x_arr = [1., 2.];
         let y_arr = [10., 20.];
         let z_arr = [100., 200.];
-        let data = [
-            [[1000., 2000.].into(), [3000., 4000.].into()].into(),
-            [[5000., 6000.].into(), [7000., 8000.].into()].into(),
-        ];
+        let data = TableData::Table(
+            [
+                TableData::Table(
+                    [
+                        TableData::Values([1000., 2000.].into()),
+                        TableData::Values([3000., 4000.].into()),
+                    ]
+                    .into(),
+                ),
+                TableData::Table(
+                    [
+                        TableData::Values([5000., 6000.].into()),
+                        TableData::Values([7000., 8000.].into()),
+                    ]
+                    .into(),
+                ),
+            ]
+            .into(),
+        );
 
         assert_eq!(
-            trilinear_interpolate(&x_arr, 1.5, &y_arr, 15., &z_arr, 150., &data),
+            interpolate(&[&x_arr, &y_arr, &z_arr], &[1.5, 15., 150.], &data),
             4500.
+        )
+    }
+    #[test]
+    fn interpolate_4d() {
+        let a_arr = [0., 1.];
+        let x_arr = [1., 2.];
+        let y_arr = [10., 20.];
+        let z_arr = [100., 200.];
+        let data = TableData::Table(
+            [
+                TableData::Table(
+                    [
+                        TableData::Table(
+                            [
+                                TableData::Values([2000., 4000.].into()),
+                                TableData::Values([6000., 8000.].into()),
+                            ]
+                            .into(),
+                        ),
+                        TableData::Table(
+                            [
+                                TableData::Values([10000., 12000.].into()),
+                                TableData::Values([14000., 16000.].into()),
+                            ]
+                            .into(),
+                        ),
+                    ]
+                    .into(),
+                ),
+                TableData::Table(
+                    [
+                        TableData::Table(
+                            [
+                                TableData::Values([1000., 2000.].into()),
+                                TableData::Values([3000., 4000.].into()),
+                            ]
+                            .into(),
+                        ),
+                        TableData::Table(
+                            [
+                                TableData::Values([5000., 6000.].into()),
+                                TableData::Values([7000., 8000.].into()),
+                            ]
+                            .into(),
+                        ),
+                    ]
+                    .into(),
+                ),
+            ]
+            .into(),
+        );
+
+        assert_eq!(
+            interpolate(
+                &[&a_arr, &x_arr, &y_arr, &z_arr],
+                &[0.5, 1.5, 15., 150.],
+                &data
+            ),
+            6750.
         )
     }
 }
